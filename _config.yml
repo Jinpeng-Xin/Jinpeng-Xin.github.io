@@ -22,9 +22,9 @@ favicon: https://github.com/dotponder/dotponder.github.io/raw/master/images/lemo
 # and URL Link(e.g. 'Theme' tab below) tabs. If you don't need one, just delete
 # it from the list(Delete '- name: ' and 'url: ', too!)
 navigation:
-  - name: 首页
+  - name: 创作笔记
     url: /
-  - name: 关于
+  - name: 个人简介
     url: /about
   - name: 归档
     url: /archive
