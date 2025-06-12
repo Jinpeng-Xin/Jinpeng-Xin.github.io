@@ -25,12 +25,13 @@ navigation:
   - name: 创作笔记
     url: /
   - name: 个人简介
-    url: /about
+    url: /Briefintroduction
   - name: 归档
     url: /archive
   - name: 标签
     url: /tags
-
+  - name: about
+    url: /about
 # Pagination
 paginate: 8
 
