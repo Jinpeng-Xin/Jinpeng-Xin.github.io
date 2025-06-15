@@ -319,7 +319,6 @@ img {
 //
 
 .wrapper-sidebar {
-  /* 原样式不变 */
   width: 30%;
   background-color: $background-color;
   height: 100%;
@@ -341,6 +340,7 @@ img {
 
 .sidebar {
   padding: 20px 0;
+  position: relative; /* 确保内部元素定位正确 */
 
   @include mobile {
     text-align: center;
@@ -349,82 +349,81 @@ img {
 
 .site-info {
   text-align: center;
-  margin: 100px auto 0; /* 顶部边距，控制整体位置 */
+  margin: 100px auto 0;
   position: relative;
-  
+
+  @include mobile {
+    margin: 50px auto 0;
+  }
+
   .site-avatar {
-    display: block; /* 块级元素，独占一行 */
-    margin: 0 auto 20px; /* 上下居中+底部20px间距 */
-    max-width: 240px; /* 限制头像最大宽度，避免过大 */
-    overflow: hidden; /* 超出部分隐藏 */
+    display: block;
+    margin: 0 auto 20px;
+    max-width: 240px;
+    border-radius: 5px;
     
-    img {
-      width: 100%; /* 100%宽度填充容器 */
-      height: auto; /* 保持比例 */
-      border-radius: 50%; /* 圆形头像，可移除 */
+    @include mobile {
+      max-width: 160px;
+      margin-bottom: 15px;
     }
-  }
-  
-  .site-name {
-    margin: 0 auto 15px; /* 名称与头像/描述的间距 */
-    font-size: 28px;
-    line-height: 1.3;
-  }
-  
-  .site-description {
-    margin: 0 auto;
-    font-size: 16px;
-    max-width: 80%; /* 限制描述宽度，避免过宽 */
-    line-height: 1.6;
   }
 }
 
-/* 响应式适配 - 移动端强化 */
-@include mobile {
-  .site-info {
-    margin: 50px auto 0; /* 移动端顶部边距减半 */
-  }
+.site-name {
+  margin: 0 auto 15px;
+  font-size: 28px;
   
-  .site-avatar {
-    max-width: 160px; /* 移动端头像最大宽度 */
-    margin-bottom: 15px; /* 间距缩小 */
-  }
-  
-  .site-name {
-    font-size: 24px; /* 字号缩小 */
+  @include mobile {
+    font-size: 24px;
     margin-bottom: 10px;
   }
+}
+
+.site-description {
+  margin: 0 auto 30px; /* 增加底部边距，为菜单留出空间 */
+  max-width: 80%;
   
-  .site-description {
-    font-size: 14px;
-    max-width: 90%; /* 移动端放宽描述宽度 */
+  @include mobile {
+    margin-bottom: 20px;
   }
 }
-.navlist{
-  text-align:center;
+
+.navlist {
+  text-align: center;
+  margin-top: 0; /* 确保菜单紧跟描述 */
+  padding: 0 20px; /* 内边距防止链接溢出 */
 }
 
 nav {
   display: block;
-  margin-top: 23px; // @TODO: Vertically middle align
+  margin-top: 0; /* 移除默认边距，紧密排列 */
   font-family: $base-font;
   font-weight: 500;
-  font-size: 18px;
+  font-size: 16px; /* 略微缩小字号，避免拥挤 */
 
   @include mobile {
-    margin-top: 9px;
-    font-size: 16px;
+    margin-top: 0;
+    font-size: 14px;
   }
 
   a {
-    margin: 0 10px;
-    text-align: right;
-    font-weight: 300;
-    letter-spacing: 1px;
+    display: inline-block; /* 行内块元素，便于设置间距 */
+    margin: 0 8px; /* 调整间距 */
+    padding: 5px 10px; /* 增加内边距，提升点击区域 */
+    font-weight: 400;
+    letter-spacing: 0.5px;
+    border-radius: 3px; /* 圆角，增强视觉效果 */
+    transition: background 0.3s; /* 过渡动画 */
+
+    &:hover {
+      background-color: $link-bghv-color; /* 悬停背景色 */
+      color: $link-color;
+    }
 
     @include mobile {
-      margin: 0 10px;
-      color: $link-color;
+      margin: 0 5px;
+      padding: 4px 8px;
+      font-size: 13px;
     }
   }
 }
