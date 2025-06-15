@@ -318,16 +318,15 @@ img {
 // .sidebar
 //
 
+/* 侧边栏完整代码 - 替换原site-info部分 */
 .wrapper-sidebar {
   width: 30%;
-	-webkit-background-size: cover;
-	background-size: cover;
-	background-color: $background-color;
-	height: 100%;
-	top: 0;
-	left:0;
-	position: fixed;
-	z-index: 4;
+  background-color: $background-color;
+  height: 100%;
+  top: 0;
+  left: 0;
+  position: fixed;
+  z-index: 4;
   border-right: 1px solid $divider-color;
 
   @include mobile {
@@ -349,51 +348,58 @@ img {
 }
 
 .site-info {
-  text-align:center;
-  margin: 30px auto 0;
+  text-align: center;
+  margin: 100px auto 0; /* 顶部边距，可调整整体垂直位置 */
+  position: relative;
 
   @include mobile {
-    float: none;
-    display: block;
-    margin: 0 auto;
+    margin: 50px auto 0;
   }
 
   .site-avatar {
-    margin:0 auto;
-    display: block;
-    max-width: 200px;
-    max-height: 200px;
-
+    display: block; /* 块级元素，确保垂直排列 */
+    margin: 0 auto 20px; /* 居中+底部20px间距 */
+    max-width: 240px; /* 桌面端最大宽度 */
+    border-radius: 5px; /* 圆角，可移除 */
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1); /* 轻微阴影，增强立体感 */
+    
     @include mobile {
-      max-width: 120px;
-      max-height: 120px;
+      max-width: 160px; /* 移动端最大宽度 */
+      margin-bottom: 15px;
     }
-
+    
     img {
-      width: 100%; /* 100%宽度填充容器 */
-      height: auto; /* 保持比例 */
-      border-radius: 50%; /* 圆形头像，可移除 */
+      width: 100%;
+      height: auto;
+      display: block; /* 避免底部留白 */
     }
   }
 }
 
 .site-name {
-  margin: 0 auto  15px;
+  margin: 0 auto 15px; /* 名称与头像/描述间距 */
   color: $base-color;
-  cursor: pointer;
   font-family: $base-font;
   font-weight: 700;
   font-size: 28px;
   letter-spacing: 1px;
+  
+  @include mobile {
+    font-size: 24px;
+    margin-bottom: 10px;
+  }
 }
 
 .site-description {
-  margin: 15px auto;
+  margin: 0 auto;
   color: $base-lighten-color;
   font-size: 16px;
-
+  max-width: 80%; /* 限制描述宽度 */
+  line-height: 1.6;
+  
   @include mobile {
-    margin: 10px auto;
+    font-size: 14px;
+    max-width: 90%;
   }
 }
 
@@ -403,7 +409,7 @@ img {
 
 nav {
   display: block;
-  margin-top: 23px; // @TODO: Vertically middle align
+  margin-top: 23px;
   font-family: $base-font;
   font-weight: 500;
   font-size: 18px;
