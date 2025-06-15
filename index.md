@@ -1,4 +1,5 @@
-### 联系方式
+### 联系方式  
+
 +86 136-7936-3202（Wechat） | [22231030@bjtu.edu.cn](mailto:22231030@bjtu.edu.cn) | [Xin Jinpeng](https://jinpeng-xin.github.io/)
 
 ------------
