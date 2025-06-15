@@ -349,47 +349,57 @@ img {
 
 .site-info {
   text-align: center;
-  margin: 100px auto 0;
-
-  @include mobile {
-    float: none;
-    display: block;
-    margin: 0 auto;
-  }
-
+  margin: 100px auto 0; /* 顶部边距，控制整体位置 */
+  position: relative;
+  
   .site-avatar {
-    margin: 0 auto 20px; /* 头像底部间距固定为20px */
-    display: inline-block;
-    max-width: 100%; /* 自适应所有头像尺寸 */
+    display: block; /* 块级元素，独占一行 */
+    margin: 0 auto 20px; /* 上下居中+底部20px间距 */
+    max-width: 240px; /* 限制头像最大宽度，避免过大 */
+    overflow: hidden; /* 超出部分隐藏 */
     
     img {
-      display: inline-block;
-      border-radius: 5px;
+      width: 100%; /* 100%宽度填充容器 */
+      height: auto; /* 保持比例 */
+      border-radius: 50%; /* 圆形头像，可移除 */
     }
   }
-}
-
-.site-name {
-  margin: 0 auto 15px; /* 名称与描述间距15px */
-  color: $base-color;
-  cursor: pointer;
-  font-family: $base-font;
-  font-weight: 700;
-  font-size: 28px;
-  letter-spacing: 1px;
-}
-
-.site-description {
-  margin: 0 auto; /* 描述居中 */
-  color: $base-lighten-color;
-  font-size: 16px;
-  max-width: 80%; /* 限制描述宽度 */
-
-  @include mobile {
+  
+  .site-name {
+    margin: 0 auto 15px; /* 名称与头像/描述的间距 */
+    font-size: 28px;
+    line-height: 1.3;
+  }
+  
+  .site-description {
     margin: 0 auto;
+    font-size: 16px;
+    max-width: 80%; /* 限制描述宽度，避免过宽 */
+    line-height: 1.6;
   }
 }
 
+/* 响应式适配 - 移动端强化 */
+@include mobile {
+  .site-info {
+    margin: 50px auto 0; /* 移动端顶部边距减半 */
+  }
+  
+  .site-avatar {
+    max-width: 160px; /* 移动端头像最大宽度 */
+    margin-bottom: 15px; /* 间距缩小 */
+  }
+  
+  .site-name {
+    font-size: 24px; /* 字号缩小 */
+    margin-bottom: 10px;
+  }
+  
+  .site-description {
+    font-size: 14px;
+    max-width: 90%; /* 移动端放宽描述宽度 */
+  }
+}
 .navlist{
   text-align:center;
 }
