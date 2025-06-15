@@ -24,7 +24,7 @@ favicon: https://github.com/dotponder/dotponder.github.io/raw/master/images/lemo
 navigation:
   - name: 个人简介
     url: /Briefintroduction
-      - name: 创作笔记
+  - name: 创作笔记
     url: /
   - name: 归档
     url: /archive
