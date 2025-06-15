@@ -23,9 +23,9 @@ favicon: https://github.com/dotponder/dotponder.github.io/raw/master/images/lemo
 # it from the list(Delete '- name: ' and 'url: ', too!)
 navigation:
   - name: 个人简介
-    url: /Briefintroduction
-  - name: 创作笔记
     url: /
+  - name: 创作笔记
+    url: /notes
   - name: 归档
     url: /archive
   - name: 标签
