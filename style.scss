@@ -319,15 +319,14 @@ img {
 //
 
 .wrapper-sidebar {
+  /* 原样式不变 */
   width: 30%;
-	-webkit-background-size: cover;
-	background-size: cover;
-	background-color: $background-color;
-	height: 100%;
-	top: 0;
-	left:0;
-	position: fixed;
-	z-index: 4;
+  background-color: $background-color;
+  height: 100%;
+  top: 0;
+  left: 0;
+  position: fixed;
+  z-index: 4;
   border-right: 1px solid $divider-color;
 
   @include mobile {
@@ -349,7 +348,7 @@ img {
 }
 
 .site-info {
-  text-align:center;
+  text-align: center;
   margin: 100px auto 0;
 
   @include mobile {
@@ -359,26 +358,19 @@ img {
   }
 
   .site-avatar {
-    margin-bottom: 50px;
-    margin:0 auto;
-    display: block;
-    max-width: 200px;
-    max-height: 200px;
-
-    @include mobile {
-      max-width: 120px;
-      max-height: 120px;
-    }
-
+    margin: 0 auto 20px; /* 头像底部间距固定为20px */
+    display: inline-block;
+    max-width: 100%; /* 自适应所有头像尺寸 */
+    
     img {
       display: inline-block;
-      border-radius: 2px;
+      border-radius: 5px;
     }
   }
 }
 
 .site-name {
-   margin-bottom: 50px;; 
+  margin: 0 auto 15px; /* 名称与描述间距15px */
   color: $base-color;
   cursor: pointer;
   font-family: $base-font;
@@ -388,12 +380,13 @@ img {
 }
 
 .site-description {
-  margin: 15px auto;
+  margin: 0 auto; /* 描述居中 */
   color: $base-lighten-color;
   font-size: 16px;
+  max-width: 80%; /* 限制描述宽度 */
 
   @include mobile {
-    margin: 10px auto;
+    margin: 0 auto;
   }
 }
 
