@@ -319,14 +319,15 @@ img {
 //
 
 .wrapper-sidebar {
-  /* 原样式不变 */
   width: 30%;
-  background-color: $background-color;
-  height: 100%;
-  top: 0;
-  left: 0;
-  position: fixed;
-  z-index: 4;
+	-webkit-background-size: cover;
+	background-size: cover;
+	background-color: $background-color;
+	height: 100%;
+	top: 0;
+	left:0;
+	position: fixed;
+	z-index: 4;
   border-right: 1px solid $divider-color;
 
   @include mobile {
@@ -347,8 +348,8 @@ img {
   }
 }
 
-.site-info {Add commentMore actions
-  text-align: center;
+.site-info {
+  text-align:center;
   margin: 100px auto 0;
 
   @include mobile {
@@ -357,30 +358,26 @@ img {
     margin: 0 auto;
   }
 
-  margin: 100px auto 0; /* 顶部边距，控制整体位置 */
-  position: relative;
-  
   .site-avatar {
-    margin: 0 auto 20px; /* 头像底部间距固定为20px */
-    display: inline-block;
-    max-width: 100%; /* 自适应所有头像尺寸 */
-    display: block; /* 块级元素，独占一行 */
-    margin: 0 auto 20px; /* 上下居中+底部20px间距 */
-    max-width: 240px; /* 限制头像最大宽度，避免过大 */
-    overflow: hidden; /* 超出部分隐藏 */
+    margin:0 auto;
+    display: block;
+    max-width: 200px;
+    max-height: 200px;
+
+    @include mobile {
+      max-width: 120px;
+      max-height: 120px;
+    }
 
     img {
       display: inline-block;
-      border-radius: 5px;
-      width: 100%; /* 100%宽度填充容器 */
-      height: auto; /* 保持比例 */
-      border-radius: 50%; /* 圆形头像，可移除 */
+      border-radius: 2px;
     }
   }
 }
 
 .site-name {
-  margin: 0 auto 15px; /* 名称与描述间距15px */
+  margin: 0 auto;
   color: $base-color;
   cursor: pointer;
   font-family: $base-font;
@@ -390,48 +387,15 @@ img {
 }
 
 .site-description {
-  margin: 0 auto; /* 描述居中 */
+  margin: 15px auto;
   color: $base-lighten-color;
   font-size: 16px;
-  max-width: 80%; /* 限制描述宽度 */
 
   @include mobile {
-  
-  .site-name {
-    margin: 0 auto 15px; /* 名称与头像/描述的间距 */
-    font-size: 28px;
-    line-height: 1.3;
-  }
-  
-  .site-description {
-    margin: 0 auto;
-    font-size: 16px;
-    max-width: 80%; /* 限制描述宽度，避免过宽 */
-    line-height: 1.6;
+    margin: 10px auto;
   }
 }
 
-/* 响应式适配 - 移动端强化 */
-@include mobile {
-  .site-info {
-    margin: 50px auto 0; /* 移动端顶部边距减半 */
-  }
-  
-  .site-avatar {
-    max-width: 160px; /* 移动端头像最大宽度 */
-    margin-bottom: 15px; /* 间距缩小 */
-  }
-  
-  .site-name {
-    font-size: 24px; /* 字号缩小 */
-    margin-bottom: 10px;
-  }
-  
-  .site-description {
-    font-size: 14px;
-    max-width: 90%; /* 移动端放宽描述宽度 */
-  }
-}
 .navlist{
   text-align:center;
 }
@@ -772,4 +736,4 @@ footer {
 // Settled on moving the import of syntax highlighting to the bottom of the CSS
 // ... Otherwise it really bloats up the top of the CSS file and makes it difficult to find the start
 @import "highlights";
-@import "gitalk"; 
+@import "gitalk";
