@@ -350,7 +350,7 @@ img {
 
 .site-info {
   text-align:center;
-  margin: 100px auto 0;
+  margin: 30px auto 0;
 
   @include mobile {
     float: none;
@@ -370,14 +370,15 @@ img {
     }
 
     img {
-      display: inline-block;
-      border-radius: 2px;
+      width: 100%; /* 100%宽度填充容器 */
+      height: auto; /* 保持比例 */
+      border-radius: 50%; /* 圆形头像，可移除 */
     }
   }
 }
 
 .site-name {
-  margin: 0 auto;
+  margin: 0 auto  15px;
   color: $base-color;
   cursor: pointer;
   font-family: $base-font;
