@@ -359,6 +359,7 @@ img {
   }
 
   .site-avatar {
+    margin-bottom: 20px;
     margin:0 auto;
     display: block;
     max-width: 200px;
@@ -377,7 +378,7 @@ img {
 }
 
 .site-name {
-  margin-top: 15px; 
+   margin-bottom: 20px;; 
   color: $base-color;
   cursor: pointer;
   font-family: $base-font;
