@@ -349,7 +349,7 @@ img {
 
 .site-info {
   text-align: center;
-  margin: 100px auto 0; /* 顶部边距，可调整整体垂直位置 */
+  margin: 30 px auto 0; /* 顶部边距，可调整整体垂直位置 */
   position: relative;
 
   @include mobile {
@@ -358,7 +358,7 @@ img {
 
   .site-avatar {
     display: block; /* 块级元素，确保垂直排列 */
-    margin: 0 auto 20px; /* 居中+底部20px间距 */
+    margin: 0 auto 10px; /* 居中+底部20px间距 */
     max-width: 240px; /* 桌面端最大宽度 */
     border-radius: 5px; /* 圆角，可移除 */
     box-shadow: 0 4px 12px rgba(0,0,0,0.1); /* 轻微阴影，增强立体感 */
@@ -369,7 +369,7 @@ img {
     }
     
     img {
-      width: 100%;
+      width: 50%;
       height: auto;
       display: block; /* 避免底部留白 */
     }
@@ -377,7 +377,7 @@ img {
 }
 
 .site-name {
-  margin: 0 auto 15px; /* 名称与头像/描述间距 */
+  margin: 0 auto 10px; /* 名称与头像/描述间距 */
   color: $base-color;
   font-family: $base-font;
   font-weight: 700;
@@ -409,10 +409,10 @@ img {
 
 nav {
   display: block;
-  margin-top: 23px;
+  margin-top: 20px;
   font-family: $base-font;
   font-weight: 500;
-  font-size: 18px;
+  font-size: 15px;
 
   @include mobile {
     margin-top: 9px;
