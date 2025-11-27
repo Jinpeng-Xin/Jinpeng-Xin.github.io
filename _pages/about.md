@@ -1,56 +1,129 @@
+### 联系方式
+
+|   |   |   |
+|---|---|---|
+|+86 136-7936-3202（Wechat）|[22231030@bjtu.edu.cn](mailto:22231030@bjtu.edu.cn)|[Xin Jinpeng](https://jinpeng-xin.github.io/)|
+
 ---
-permalink: /
-title: "Academic Pages is a ready-to-fork GitHub Pages template for academic personal websites"
-author_profile: true
-redirect_from: 
-  - /about/
-  - /about.html
+
+### 教育背景
+
+|   |   |   |   |
+|---|---|---|---|
+|北京交通大学（211）|土木工程|本科|2022.09 - 至今|
+
+|   |   |   |   |
+|---|---|---|---|
+|GPA : 3.69/4.0|加权平均成绩：88.6/100|排名：11/135（前10%）|英语能力：CET6已通过|
+
 ---
 
-This is the front page of a website that is powered by the [Academic Pages template](https://github.com/academicpages/academicpages.github.io) and hosted on GitHub pages. [GitHub pages](https://pages.github.com) is a free service in which websites are built and hosted from code and data stored in a GitHub repository, automatically updating when a new commit is made to the repository. This template was forked from the [Minimal Mistakes Jekyll Theme](https://mmistakes.github.io/minimal-mistakes/) created by Michael Rose, and then extended to support the kinds of content that academics have: publications, talks, teaching, a portfolio, blog posts, and a dynamically-generated CV. Incidentally, these same features make it a great template for anyone that needs to show off a professional template!
+### 科研经历
 
- You can fork [this template](https://github.com/academicpages/academicpages.github.io) right now, modify the configuration and Markdown files, add your own PDFs and other content, and have your own site for free, with no ads!
+#### Machine Learning-Based Prediction of Unconfined Compressive Strength in Frozen Soils
 
-A data-driven personal website
-======
-Like many other Jekyll-based GitHub Pages templates, Academic Pages makes you separate the website's content from its form. The content & metadata of your website are in structured Markdown files, while various other files constitute the theme, specifying how to transform that content & metadata into HTML pages. You keep these various Markdown (.md), YAML (.yml), HTML, and CSS files in a public GitHub repository. Each time you commit and push an update to the repository, the [GitHub pages](https://pages.github.com/) service creates static HTML pages based on these files, which are hosted on GitHub's servers free of charge.
+|   |   |   |   |
+|---|---|---|---|
+|国家级大创项目|项目负责人|导师：李旭 教授|2024.03-2025.01|
 
-Many of the features of dynamic content management systems (like Wordpress) can be achieved in this fashion, using a fraction of the computational resources and with far less vulnerability to hacking and DDoSing. You can also modify the theme to your heart's content without touching the content of your site. If you get to a point where you've broken something in Jekyll/HTML/CSS beyond repair, your Markdown files describing your talks, publications, etc. are safe. You can rollback the changes or even delete the repository and start over - just be sure to save the Markdown files! You can also write scripts that process the structured data on the site, such as [this one](https://github.com/academicpages/academicpages.github.io/blob/master/talkmap.ipynb) that analyzes metadata in pages about talks to display [a map of every location you've given a talk](https://academicpages.github.io/talkmap.html).
+- **目标**：利用机器学习建立冻土无侧限抗压强度的高精度预测模型，为寒冷地区的工程设计提供支持
+- **贡献**：构建并优化了ANN模型(U-UCS)，整体预测精度达到0.98
+- **成果**：在《**_Bulletin of Engineering Geology and the Environment_**》提交论文，并在GitHub上开源该模型
 
-For those users that need more advanced functionality, the template also supports the following popular tools:
-- [MathJax](https://www.mathjax.org/) for mathematical equations
-- [Mermaid](https://mermaid.js.org/) for diagraming
-- [Plotly](https://plotly.com/javascript/) for plotting
+#### Compression Index Prediction based on the global soil data for a machine algorithm
 
-Getting started
-======
-1. Register a GitHub account if you don't have one and confirm your e-mail (required!)
-1. Fork [this template](https://github.com/academicpages/academicpages.github.io) by clicking the "Use this template" button in the top right. 
-1. Go to the repository's settings (rightmost item in the tabs that start with "Code", should be below "Unwatch"). Rename the repository "[your GitHub username].github.io", which will also be your website's URL.
-1. Set site-wide configuration and create content & metadata (see below -- also see [this set of diffs](https://archive.is/3TPas) showing what files were changed to set up [an example site](https://getorg-testacct.github.io) for a user with the username "getorg-testacct")
-1. Upload any files (like PDFs, .zip files, etc.) to the files/ directory. They will appear at https://[your GitHub username].github.io/files/example.pdf.  
-1. Check status by going to the repository settings, in the "GitHub pages" section
+|   |   |   |
+|---|---|---|
+|核心成员|导师：李旭 教授|2024.06-2025.01|
 
-Site-wide configuration
-------
-The main configuration file for the site is in the base directory in [_config.yml](https://github.com/academicpages/academicpages.github.io/blob/master/_config.yml), which defines the content in the sidebars and other site-wide features. You will need to replace the default variables with ones about yourself and your site's github repository. The configuration file for the top menu is in [_data/navigation.yml](https://github.com/academicpages/academicpages.github.io/blob/master/_data/navigation.yml). For example, if you don't have a portfolio or blog posts, you can remove those items from that navigation.yml file to remove them from the header. 
+- **目标**：开发基于机器学习的土体压缩指数预测框架，通过整合地理信息和解决缺失的输入特征来预测土壤压缩指数（Cc），提高预测精度和数据利用效率
+- **贡献**：构建了Trunk-Branch的ML框架，完成缺失数据处理，框架最终拟合精度达到0.901，显著提高预测精度
+- **成果**：在SCI一区期刊《**_Engineering Applications of Artificial Intelligence_**》发表论文
 
-Create content & metadata
-------
-For site content, there is one Markdown file for each type of content, which are stored in directories like _publications, _talks, _posts, _teaching, or _pages. For example, each talk is a Markdown file in the [_talks directory](https://github.com/academicpages/academicpages.github.io/tree/master/_talks). At the top of each Markdown file is structured data in YAML about the talk, which the theme will parse to do lots of cool stuff. The same structured data about a talk is used to generate the list of talks on the [Talks page](https://academicpages.github.io/talks), each [individual page](https://academicpages.github.io/talks/2012-03-01-talk-1) for specific talks, the talks section for the [CV page](https://academicpages.github.io/cv), and the [map of places you've given a talk](https://academicpages.github.io/talkmap.html) (if you run this [python file](https://github.com/academicpages/academicpages.github.io/blob/master/talkmap.py) or [Jupyter notebook](https://github.com/academicpages/academicpages.github.io/blob/master/talkmap.ipynb), which creates the HTML for the map based on the contents of the _talks directory).
+#### 基于半监督聚类机器学习算法的长距离孤石地层识别研究
 
-**Markdown generator**
+|   |   |   |
+|---|---|---|
+|负责人|导师 ：李旭 教授|2025.06-至今|
 
-The repository includes [a set of Jupyter notebooks](https://github.com/academicpages/academicpages.github.io/tree/master/markdown_generator
-) that converts a CSV containing structured data about talks or presentations into individual Markdown files that will be properly formatted for the Academic Pages template. The sample CSVs in that directory are the ones I used to create my own personal website at stuartgeiger.com. My usual workflow is that I keep a spreadsheet of my publications and talks, then run the code in these notebooks to generate the Markdown files, then commit and push them to the GitHub repository.
+- **目标**：针对盾构隧道施工过程中突遇孤石地层引起施工困难问题，依据已有的稀疏钻孔数据与盾构行进过程采集数据，提出一种知识-数据双驱动的半监督聚类孤石地层识别算法
+- **预期成果**：发表SCI论文一篇
 
-How to edit your site's GitHub repository
-------
-Many people use a git client to create files on their local computer and then push them to GitHub's servers. If you are not familiar with git, you can directly edit these configuration and Markdown files directly in the github.com interface. Navigate to a file (like [this one](https://github.com/academicpages/academicpages.github.io/blob/master/_talks/2012-03-01-talk-1.md) and click the pencil icon in the top right of the content preview (to the right of the "Raw | Blame | History" buttons). You can delete a file by clicking the trashcan icon to the right of the pencil icon. You can also create new files or upload files by navigating to a directory and clicking the "Create new file" or "Upload files" buttons. 
+---
 
-Example: editing a Markdown file for a talk
-![Editing a Markdown file for a talk](/images/editing-talk.png)
+### 竞赛经历
 
-For more info
-------
-More info about configuring Academic Pages can be found in [the guide](https://academicpages.github.io/markdown/), the [growing wiki](https://github.com/academicpages/academicpages.github.io/wiki), and you can always [ask a question on GitHub](https://github.com/academicpages/academicpages.github.io/discussions). The [guides for the Minimal Mistakes theme](https://mmistakes.github.io/minimal-mistakes/docs/configuration/) (which this theme was forked from) might also be helpful.
+#### ISSMGE TC309-TC304 Postgraduate Student Contest
+
+|   |   |   |
+|---|---|---|
+|核心成员|Best Student Award|2024.06 - 2025.08|
+
+- 团队在第九届岩土工程安全与风险国际研讨会（ISGSR 2025）期间汇报项目研究成果及提案，获得Best Student Award
+
+#### 第五届全国大学生工业化建筑与智慧建造竞赛
+
+|   |   |   |
+|---|---|---|
+|插件负责人|全国一等奖|2025.04 - 2025.06|
+
+- 基于Autodesk Revit进行个性化C# Plugin开发，对设计方案所需的密肋复合墙板进行建模与等效计算
+
+#### 第六届全国大学生茅以升公益桥创新设计大赛
+
+|   |   |   |
+|---|---|---|
+|团队负责人|全国三等奖|2024.06 - 2024.11|
+
+- 主要负责利用MIDAS CIVIL进行建模计算，队伍成员均为大三本科生，最终设计方案为UHPC上承式耐候钢管拱桥
+
+#### 第十三届北京市大学生建筑结构设计竞赛
+
+|   |   |   |
+|---|---|---|
+|团队负责人|市级二等奖|2024.04 - 2024.06|
+
+- 主要负责SAP2000理论模型建模计算，设计方案为方形筒中筒结构模型，最终位列二等奖第一名
+
+#### 北京交通大学力学竞赛
+
+|   |   |   |
+|---|---|---|
+|个人|校级一等奖|2024.07 - 2024.07|
+
+- 竞赛考察知识覆盖《材料力学》与《工程力学》内容，包含基础题与提高题，比赛一等奖共三名
+
+---
+
+### 学术成果
+
+**[1] XIN J**, WANG J, RENG H, et al. A Novel Data - driven Prediction Method for Frozen Soil Unconfined Compressive Strength Considering Uncertainty: Partial Bayesian Neural Network [J].Bulletin of Engineering Geology and the Environment, 2025. **(Under Review)**
+
+**[2]** Pang Y, Li X, **Xin J**, et al. A framework for compression index prediction considering geographical information and feature missing[J]. Engineering Applications of Artificial Intelligence.2025,145:110192. https://doi.org/10.1016/j.engappai.2025.110192
+
+---
+
+### 所获荣誉
+
+- 国家励志奖学金 2022-2023 & 2023-2024
+- 北京交通大学三好学生 2022-2023
+- 二等学习优秀奖学金 2022-2023
+- 三等社会工作奖学金 2022-2023
+- 三等学习优秀奖学金 2023-2024
+
+---
+
+### 相关技能
+
+- 利用python进行机器学习与深度学习
+- 掌握专业软件AUTOCAD、MIDAS CIVIL、SAP2000、SPSS、Origin、Revit等
+- 熟悉ARCGIS的基本使用，亦可使用GDAL库与Richdem库完成相关工作
+
+---
+
+### 兴趣方向
+
+- 岩土大数据与智能化
+- 灾害链转化
+- 计算岩土力学
+- 岩土数值模拟
