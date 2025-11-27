@@ -1,3 +1,7 @@
+| permalink | title                                                                                  | author_profile | redirect_from                                            |
+| --------- | -------------------------------------------------------------------------------------- | -------------- | -------------------------------------------------------- |
+| /         | Academic Pages is a ready-to-fork GitHub Pages template for academic personal websites | true           | \|   \|   \|<br>\|---\|---\|<br>\|/about/\|/about.html\| |
+
 ### 联系方式
 
 |   |   |   |
