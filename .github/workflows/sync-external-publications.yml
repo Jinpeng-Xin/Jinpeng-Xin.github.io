@@ -4,49 +4,41 @@ on:
     - cron: "0 0 * * *"  # 每天凌晨自动同步
   workflow_dispatch:  # 支持手动触发
 
-# 关键修复1：添加权限声明，允许 bot 推送分支和操作 Pages
 permissions:
-  contents: write  # 必须！用于推送 gh-pages 分支
-  pages: write     # 可选（适配 GitHub Pages 部署）
-  id-token: write  # 可选（Pages 身份验证）
+  contents: write
+  pages: write
+  id-token: write
 
 jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
-      # 1. 克隆主博客仓库（包含 _publications/ 目录）
+      # 1. 克隆主博客仓库
       - name: Checkout main repo
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # 关键！避免浅克隆导致后续 Git 操作失败
+          fetch-depth: 0
 
-      # 2. 拉取外部私有仓库的 notes/publications/ 文件夹，同步到主博客 _publications/ 根目录
+      # 2. 同步外部私有仓库的文件（不变）
       - name: Sync external notes/publications to _publications/
         run: |
-          # 定义变量（请再次核对以下参数是否正确！）
-          GITHUB_USERNAME="Jinpeng-Xin"  # 你的 GitHub 用户名（必须与外部仓库所有者一致）
-          EXTERNAL_REPO_NAME="jinpeng-xin"  # 外部私有仓库名（无需 .git 结尾，确认拼写正确）
-          EXTERNAL_BRANCH="main"  # 外部仓库的目标分支（确认存在该分支）
-          EXTERNAL_FOLDER="src/site/notes/publications/"  # 外部仓库的目标文件夹（确认路径正确）
-          TARGET_FOLDER="../_publications/"  # 主仓库的目标路径（相对于 temp-repo 的路径，无需修改）
+          GITHUB_USERNAME="Jinpeng-Xin"
+          EXTERNAL_REPO_NAME="jinpeng-xin"
+          EXTERNAL_BRANCH="main"
+          EXTERNAL_FOLDER="src/site/notes/publications/"
+          TARGET_FOLDER="../_publications/"
 
-          # 用 PAT 构建授权克隆链接（私有仓库必需）
           EXTERNAL_REPO_URL="https://${GITHUB_USERNAME}:${{ secrets.PRIVATE_REPO_TOKEN }}@github.com/${GITHUB_USERNAME}/${EXTERNAL_REPO_NAME}.git"
 
-          # 克隆外部仓库（稀疏检出，只拉取需要的文件夹，速度更快）
           git clone --depth 1 --branch $EXTERNAL_BRANCH --filter=blob:none --sparse --quiet $EXTERNAL_REPO_URL temp-repo
-
-          # 进入临时仓库，设置稀疏检出的目标文件夹
           cd temp-repo
           git sparse-checkout set "$EXTERNAL_FOLDER"
 
-          # 验证外部文件夹是否存在，不存在则报错退出
           if [ ! -d "$EXTERNAL_FOLDER" ]; then
             echo "错误：外部仓库 $EXTERNAL_REPO_NAME 的 $EXTERNAL_FOLDER 文件夹不存在！"
             exit 1
           fi
 
-          # 复制外部文件夹内容到主仓库的 _publications/ 根目录（跳过已存在的文件）
           for file in "$EXTERNAL_FOLDER"*; do
             filename=$(basename "$file")
             if [ -f "$TARGET_FOLDER/$filename" ] || [ -d "$TARGET_FOLDER/$filename" ]; then
@@ -57,24 +49,29 @@ jobs:
             echo "成功同步：$filename → $TARGET_FOLDER"
           done
 
-          # 清理临时文件
           cd ..
           rm -rf temp-repo
 
-      # 关键修复2：补充「构建博客」步骤（否则 _site 目录为空，部署失败）
-      # 请根据你的博客框架修改构建命令（以下是 Jekyll 示例，其他框架替换对应命令）
-      - name: Build blog (Jekyll 示例)
+      # 关键修复：配置 Ruby 环境（自动安装 bundler 和对应 Ruby 版本）
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1  # 官方 Ruby 环境配置动作
+        with:
+          ruby-version: "3.3"  # 推荐使用 3.0+ 稳定版（Jekyll 兼容）
+          bundler-cache: true  # 缓存依赖，加速后续构建（可选但推荐）
+
+      # 修复后的构建步骤：现在能正常使用 bundle 命令
+      - name: Build blog (Jekyll)
         run: |
-          # 安装依赖（如果是 Jekyll，需要 Ruby 环境，GitHub Actions 已预装）
+          # 安装 Jekyll 及依赖（从 Gemfile 读取）
           bundle install --path vendor/bundle
-          # 构建博客，输出到 _site 目录（与 publish_dir 对应）
+          # 构建博客到 _site 目录
           bundle exec jekyll build
 
-      # 3. 部署到 GitHub Pages（修复权限和构建依赖）
+      # 3. 部署到 GitHub Pages（不变）
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}  # 已通过 permissions 授权，无需替换 PAT（除非仍报错）
-          publish_dir: ./_site  # 构建后的输出目录（必须与构建步骤的输出一致）
-          force_orphan: true  # 强制创建独立分支，避免历史冲突（推荐）
-          commit_message: "Sync external publications: ${{ github.sha }}"  # 自定义提交信息，便于追溯
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./_site
+          force_orphan: true
+          commit_message: "Sync external publications: ${{ github.sha }}"
