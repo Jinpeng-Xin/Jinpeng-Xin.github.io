@@ -1,0 +1,37 @@
+name: Sync External Repo to Publications Root
+on:
+  schedule:
+    - cron: "0 0 * * *"  # 每天凌晨自动同步（可调整频率）
+  workflow_dispatch:  # 支持手动触发
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      # 1. 克隆主博客仓库（包含 _publications/ 目录）
+      - name: Checkout main repo
+        uses: actions/checkout@v4
+
+      # 2. 拉取外部仓库的 papers/ 文件夹，直接同步到主博客 _publications/ 根目录
+      - name: Sync external papers to _publications/
+        run: |
+
+          # 克隆外部仓库（稀疏检出，只拉取需要的文件夹）
+          git clone --depth 1 --filter=blob:none --sparse https://github.com/Jinpeng-Xin/my-research.git temp-repo
+          cd temp-repo
+          git sparse-checkout set papers/  # 只拉取外部仓库的 papers/ 文件夹
+          
+          # 关键：将外部 papers/ 下的所有文件/子文件夹，直接复制到主博客 _publications/ 根目录
+          # 注意：如果主博客 _publications/ 已有同名文件，会被覆盖！
+          cp -r papers/* ../_publications/
+          
+          # 清理临时文件
+          cd ..
+          rm -rf temp-repo
+
+      # 3. 构建并部署博客到 GitHub Pages（保持不变）
+      - name: Build and deploy
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./_site
