@@ -21,7 +21,7 @@ main:
     url: /portfolio/
         
   - title: "Blog Posts"
-    url: /year-archive/
+    url: https://jinpeng-xin-bn2y.vercel.app
     
   - title: "CV"
     url: /cv/
