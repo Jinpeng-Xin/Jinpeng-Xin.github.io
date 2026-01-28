@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog | JINPENG XIN</title>
+    <link rel="stylesheet" href="style.css"> <link rel="stylesheet" href="blog.css">  </head>
+<body>
+
+    <nav class="navbar">
+        <a href="index.html" class="nav-logo">
+            <img src="https://jinpeng-assets.oss-cn-beijing.aliyuncs.com/%E4%B8%AA%E4%BA%BA%E4%B8%BB%E9%A1%B5/%E5%9F%BA%E6%9C%AC%E5%9B%BE%E7%89%87/logo3.0.svg" alt="Jinpeng Xin Logo">
+        </a>
+        <div class="nav-links">
+            <a href="index.html#about">About</a>
+            <a href="blog.html" class="active">Blog</a> <a href="research.html">Research</a>
+            <a href="index.html#contact">Contact</a>
+        </div>
+    </nav>
+
+    <main class="container">
+
+        <header class="blog-header">
+            <h1 class="blog-title">Thinking in Life & Study</h1>
+            <p class="blog-subtitle">记录，为了回忆与遗忘</p>
+            
+            <div class="filter-bar">
+                <button class="filter-btn active" data-filter="all">All</button>
+                <button class="filter-btn" data-filter="research">Research</button>
+                <button class="filter-btn" data-filter="coding">Coding</button>
+                <button class="filter-btn" data-filter="life">Life</button>
+            </div>
+        </header>
+
+        <section class="featured-section">
+            <article class="featured-card">
+                <div class="featured-image">
+                    <img src="https://images.unsplash.com/photo-1518432031352-d6fc5c10da5a?auto=format&fit=crop&w=1200&q=80" alt="Featured">
+                </div>
+                <div class="featured-content">
+                    <div class="meta-tags">
+                        <span class="tag research">Research</span>
+                        <span class="date">Jan 28, 2026</span>
+                    </div>
+                    <h2><a href="#">Deep Learning in TBM: 隧道掘进数据的智能化解析</a></h2>
+                    <p>探讨如何利用 TCN-GRU 模型处理盾构机产生的海量时间序列数据，以及在实际工程中的降噪与特征提取实践。</p>
+                    <a href="#" class="read-more">Read Article &rarr;</a>
+                </div>
+            </article>
+        </section>
+
+        <section class="blog-grid" id="blog-posts">
+            
+            <article class="blog-card" data-category="coding">
+                <div class="card-cover">
+                    <img src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=600&q=80" alt="Code">
+                </div>
+                <div class="card-body">
+                    <div class="meta-tags">
+                        <span class="tag coding">Coding</span>
+                        <span class="date">Jan 20, 2026</span>
+                    </div>
+                    <h3><a href="#">Supabase + Three.js：打造我的 3D 个人主页</a></h3>
+                    <p>从零开始构建一个带有 AI 电子宠物的全栈个人网站，踩坑记录与技术复盘。</p>
+                </div>
+            </article>
+
+            <article class="blog-card" data-category="life">
+                <div class="card-cover">
+                    <img src="https://images.unsplash.com/photo-1491841550275-ad7854e35ca6?auto=format&fit=crop&w=600&q=80" alt="Life">
+                </div>
+                <div class="card-body">
+                    <div class="meta-tags">
+                        <span class="tag life">Life</span>
+                        <span class="date">Dec 15, 2025</span>
+                    </div>
+                    <h3><a href="#">读《三体》：当物理学不存在了</a></h3>
+                    <p>重读刘慈欣经典，关于宇宙社会学与工程伦理的一些胡思乱想。</p>
+                </div>
+            </article>
+
+            <article class="blog-card" data-category="research">
+                <div class="card-cover">
+                    <img src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=600&q=80" alt="Research">
+                </div>
+                <div class="card-body">
+                    <div class="meta-tags">
+                        <span class="tag research">Research</span>
+                        <span class="date">Nov 30, 2025</span>
+                    </div>
+                    <h3><a href="#">PyTorch 在岩土工程中的应用现状</a></h3>
+                    <p>综述：虽然 CV 和 NLP 发展迅猛，但在地下工程领域，数据的稀缺性依然是最大瓶颈。</p>
+                </div>
+            </article>
+
+            <article class="blog-card" data-category="life">
+                <div class="card-cover">
+                    <img src="https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=600&q=80" alt="Travel">
+                </div>
+                <div class="card-body">
+                    <div class="meta-tags">
+                        <span class="tag life">Life</span>
+                        <span class="date">Oct 05, 2025</span>
+                    </div>
+                    <h3><a href="#">独行西北：风与沙的协奏曲</a></h3>
+                    <p>大西北环线 7 日游记。在这个荒凉的地方，感受到了从未有过的平静。</p>
+                </div>
+            </article>
+
+        </section>
+
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <p>&copy; 2026 Jinpeng Xin. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        const filterBtns = document.querySelectorAll('.filter-btn');
+        const posts = document.querySelectorAll('.blog-card');
+
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                // 1. 切换按钮状态
+                filterBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                // 2. 筛选文章
+                const filter = btn.getAttribute('data-filter');
+                posts.forEach(post => {
+                    if (filter === 'all' || post.getAttribute('data-category') === filter) {
+                        post.style.display = 'flex'; // 恢复显示
+                        setTimeout(() => post.style.opacity = '1', 50); // 渐显动画
+                    } else {
+                        post.style.opacity = '0';
+                        setTimeout(() => post.style.display = 'none', 300); // 动画结束后隐藏
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

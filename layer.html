@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>TBM 数字孪生 - 实体地质建模版</title>
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+            "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+        }
+    }
+    </script>
+    <style>
+        :root { 
+            --bg: #111; 
+            --panel: rgba(30,30,30,0.9); 
+            --text: #eee; 
+            --accent: #00d2ff;
+            --text-main: #66fcf1;
+            --text-sub: #c5c6c7;
+            --border: #1f2833;
+            --highlight: rgba(102, 252, 241, 0.15);
+        }
+        body { 
+            margin: 0; 
+            background: var(--bg); 
+            overflow: hidden; 
+            color: var(--text); 
+            font-family: sans-serif; 
+            display: flex;
+        }
+        
+        #sidebar { 
+            position: relative;
+            left: 0; 
+            top: 0; 
+            width: 340px; 
+            height: 100vh; 
+            background: var(--panel); 
+            border-right: 1px solid #444; 
+            padding: 20px; 
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 5px 0 15px rgba(0,0,0,0.5);
+            z-index: 10;
+        }
+        h2 { 
+            color: var(--accent); 
+            border-bottom: 2px solid var(--accent); 
+            padding-bottom: 10px; 
+            margin-top: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .control-item { 
+            margin-bottom: 15px; 
+            padding: 12px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 6px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        label { 
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px; 
+            font-size: 12px; 
+            color: #aaa; 
+        }
+        input[type=range] { 
+            width: 100%; 
+            accent-color: var(--accent); 
+            cursor: pointer;
+        }
+        button { 
+            width: 100%; 
+            padding: 12px; 
+            border: 1px solid var(--accent); 
+            background: rgba(0, 210, 255, 0.2); 
+            color: white; 
+            cursor: pointer; 
+            margin-top: 10px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        button:hover { 
+            background: var(--accent); 
+            color: black; 
+            box-shadow: 0 0 15px var(--accent);
+        }
+        button.paused {
+            border-color: #ff4444;
+            color: #ff4444;
+            background: rgba(255, 68, 68, 0.1);
+        }
+        button.paused:hover {
+            background: #ff4444;
+            color: #fff;
+        }
+        
+        #legend { 
+            margin-top: 20px; 
+            font-size: 12px; 
+        }
+        .legend-item { 
+            display: flex; 
+            align-items: center; 
+            margin-bottom: 5px; 
+        }
+        .color-dot { 
+            width: 12px; 
+            height: 12px; 
+            margin-right: 10px; 
+            display: inline-block; 
+        }
+
+        #status-bar { 
+            position: fixed; 
+            bottom: 20px; 
+            left: 360px; 
+            color: #888; 
+            font-size: 14px; 
+            pointer-events: none;
+            background: rgba(0,0,0,0.8);
+            padding: 8px 15px;
+            border-radius: 4px;
+            border-left: 3px solid var(--accent);
+        }
+
+        /* TBM部件列表样式 */
+        #part-list { 
+            flex: 1; 
+            overflow-y: auto; 
+            padding: 10px 0;
+            margin-top: 15px;
+        }
+        .list-item { 
+            display: flex; 
+            align-items: center; 
+            padding: 12px; 
+            margin-bottom: 6px; 
+            background: rgba(0,0,0,0.2); 
+            border-radius: 4px; 
+            font-size: 13px; 
+            cursor: pointer; 
+            border-left: 3px solid transparent; 
+            color: var(--text-sub); 
+            transition: all 0.2s;
+        }
+        .list-item:hover { 
+            background: rgba(255,255,255,0.08); 
+            color: #fff; 
+        }
+        .list-item.active { 
+            border-left: 3px solid var(--text-main); 
+            background: var(--highlight); 
+            color: var(--text-main); 
+        }
+        .list-icon { 
+            margin-right: 10px; 
+            font-size: 14px; 
+            opacity: 0.8;
+        }
+
+        /* TBM信息面板样式 */
+        #info-panel { 
+            position: fixed; 
+            top: 20px; 
+            right: 20px; 
+            width: 280px; 
+            background: var(--panel); 
+            padding: 20px; 
+            border-radius: 4px; 
+            border: 1px solid var(--accent); 
+            display: none; 
+            z-index: 20; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8); 
+            backdrop-filter: blur(10px);
+        }
+        .panel-title { 
+            margin: 0 0 15px 0; 
+            color: var(--text-main); 
+            font-size: 16px; 
+            border-bottom: 1px solid var(--border); 
+            padding-bottom: 10px; 
+        }
+        .info-row { 
+            font-size: 12px; 
+            color: #ccc; 
+            margin-bottom: 8px; 
+            display: flex; 
+            justify-content: space-between; 
+            padding: 4px 0; 
+            border-bottom: 1px dashed #333; 
+        }
+        .info-val { 
+            font-family: 'Consolas', monospace; 
+            color: var(--text-main); 
+        }
+        .info-section { 
+            color: var(--accent); 
+            margin: 15px 0 5px 0; 
+            font-size: 11px; 
+            font-weight: bold; 
+            letter-spacing: 1px; 
+        }
+    </style>
+</head>
+<body>
+
+<div id="sidebar">
+    <h2>⚒️ 地质建模 & TBM 系统</h2>
+    
+    <div class="control-item">
+        <label>地层起伏度 (Fluctuation)
+            <span id="wave-val" style="color:var(--text-main)">40</span>
+        </label>
+        <input type="range" id="wave-slider" min="0" max="100" value="40">
+    </div>
+    <div class="control-item">
+        <label>网格显示 (Wireframe)</label>
+        <button id="btn-wireframe">切换网格线</button>
+    </div>
+
+    <div class="control-item">
+        <label>掘进速度 (m/s)
+            <span id="speed-val" style="color:var(--text-main)">0.0</span>
+        </label>
+        <input type="range" id="dig-speed" min="0" max="5" step="0.1" value="0">
+    </div>
+    <button class="btn-main paused" onclick="togglePause()" id="btn-pause">▶ 启动TBM系统</button>
+    
+    <div id="legend">
+        <h3>地层图例</h3>
+    </div>
+
+    <div id="part-list"></div>
+</div>
+
+<div id="info-panel">
+    <h4 id="panel-name" class="panel-title">未选择</h4>
+    <div class="info-row"><span>部件层级</span><span id="info-type" class="info-val">-</span></div>
+    <div class="info-section">本地状态 (LOCAL)</div>
+    <div class="info-row"><span>转速 (Rad/s)</span><span id="info-rot-speed" class="info-val">-</span></div>
+    <div class="info-section">世界坐标 (WORLD)</div>
+    <div class="info-row"><span>X (掘进里程)</span><span id="info-wx" class="info-val">-</span></div>
+    <div class="info-row"><span>Y (海拔高程)</span><span id="info-wy" class="info-val">-</span></div>
+    <div class="info-row"><span>Z (中心偏差)</span><span id="info-wz" class="info-val">-</span></div>
+</div>
+
+<div id="status-bar">系统就绪 | 渲染模式: 实体三角网 (TIN)</div>
+
+<script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+    import { MTLLoader } from 'three/addons/loaders/MTLLoader.js';
+    import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
+
+    // 地质建模变量
+    let scene, camera, renderer, controls;
+    let geologyGroup;
+    let showWireframe = true;
+    let waveIntensity = 40;
+
+    // TBM相关变量
+    let mainRig; 
+    let isPaused = true; 
+    let diggingSpeed = 0; 
+    const rotationRegistry = new Map(); 
+    let selectedObject = null;
+    const sectionPlane = new THREE.Plane(new THREE.Vector3(0, 0, -1), 0);
+    const highlightMat = new THREE.MeshStandardMaterial({
+        color: 0x66fcf1, emissive: 0x002222, metalness: 0.8, roughness: 0.2, side: THREE.DoubleSide
+    });
+
+    // 参考图片中的颜色配置 (从下到上)
+    const LAYERS = [
+        { name: "基岩 (Bedrock)", color: 0x000000, height: 150 }, // 黑色底层
+        { name: "深层土 (Green)", color: 0x55ff55, height: 120 }, // 绿色
+        { name: "粘土层 (Red)",   color: 0xff4444, height: 100 }, // 红色
+        { name: "砂层 (Blue)",    color: 0x4444ff, height: 80 },  // 蓝色
+        { name: "粉土 (Yellow)",  color: 0xffff44, height: 60 },  // 黄色
+        { name: "含水层 (Pink)",  color: 0xff00ff, height: 50 },  // 紫粉色
+        { name: "表土 (Cyan)",    color: 0x00ffff, height: 40 }   // 青色表层
+    ];
+
+    // 模型参数
+    const WIDTH = 2000;
+    const DEPTH = 1000;
+    const SEGMENTS_W = 40; // X轴分段数 (决定网格密度)
+    const SEGMENTS_D = 20; // Z轴分段数
+
+    init();
+    rebuildGeology();
+    loadTBMModel(); // 加载TBM模型
+    animate();
+
+    function init() {
+        // 1. 场景
+        scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x1a1a2e); // 深蓝黑背景，类似CAD环境
+        
+        // --- 修改处：移除雾效 ---
+        // scene.fog = new THREE.FogExp2(0x1a1a2e, 0.002);
+
+        // 2. 相机
+        camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 10000);
+        camera.position.set(1500, 1200, 1500);
+        camera.lookAt(0, 0, 0);
+
+        // 3. 渲染器
+        renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        renderer.localClippingEnabled = true; // 启用剖切平面
+        renderer.outputEncoding = THREE.sRGBEncoding;
+        document.body.appendChild(renderer.domElement);
+
+        // 控制器
+        controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.maxPolarAngle = Math.PI / 2 + 0.1;
+
+        // 4. 灯光 (为了让低多边形风格好看，需要强光)
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+        scene.add(ambientLight);
+        const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        dirLight.position.set(500, 1000, 500);
+        dirLight.castShadow = true;
+        scene.add(dirLight);
+
+        // 5. 辅助网格
+        const grid = new THREE.GridHelper(5000, 50, 0x444444, 0x222222);
+        grid.position.y = -500;
+        scene.add(grid);
+
+        // 6. UI 生成
+        const legendDiv = document.getElementById('legend');
+        [...LAYERS].reverse().forEach(layer => {
+            const div = document.createElement('div');
+            div.className = 'legend-item';
+            div.innerHTML = `<span class="color-dot" style="background:#${layer.color.toString(16).padStart(6,'0')}"></span>${layer.name}`;
+            legendDiv.appendChild(div);
+        });
+
+        // 7. 事件绑定
+        // 地质控制事件
+        document.getElementById('wave-slider').addEventListener('input', (e) => {
+            waveIntensity = parseInt(e.target.value);
+            document.getElementById('wave-val').innerText = waveIntensity;
+            rebuildGeology();
+        });
+        document.getElementById('btn-wireframe').addEventListener('click', () => {
+            showWireframe = !showWireframe;
+            rebuildGeology();
+        });
+
+        // TBM控制事件
+        document.getElementById('dig-speed').addEventListener('input', (e) => {
+            diggingSpeed = parseFloat(e.target.value);
+            document.getElementById('speed-val').innerText = diggingSpeed.toFixed(1);
+        });
+
+        // 窗口大小调整
+        window.addEventListener('resize', onResize);
+
+        // 设置TBM交互
+        setupTBMInteraction();
+
+        // 初始化地质组和TBM组
+        geologyGroup = new THREE.Group();
+        scene.add(geologyGroup);
+
+        mainRig = new THREE.Group();
+        mainRig.name = "TBM_Whole_Machine";
+        // 调整TBM初始位置到地质模型中心
+        mainRig.position.set(0, -200, 0);
+        scene.add(mainRig);
+    }
+
+    // --- 地质建模核心函数 ---
+    function rebuildGeology() {
+        // 清理旧模型
+        while(geologyGroup.children.length > 0) {
+            const obj = geologyGroup.children[0];
+            if(obj.geometry) obj.geometry.dispose();
+            if(obj.material) {
+                if(Array.isArray(obj.material)) obj.material.forEach(m=>m.dispose());
+                else obj.material.dispose();
+            }
+            geologyGroup.remove(obj);
+        }
+
+        // 1. 预计算所有分界面的高度数据 (Heightmaps)
+        const interfaceHeights = [];
+        let currentBaseY = -400; // 起始高度
+
+        // 生成最底下的基准面 (平的或者微波浪)
+        interfaceHeights.push(generateHeightMap(currentBaseY, waveIntensity * 0.2));
+
+        // 逐层累加高度
+        LAYERS.forEach(layer => {
+            currentBaseY += layer.height;
+            interfaceHeights.push(generateHeightMap(currentBaseY, waveIntensity));
+        });
+
+        // 2. 逐层构建 Mesh
+        LAYERS.forEach((layer, index) => {
+            const bottomH = interfaceHeights[index];     // 当前层底面数据
+            const topH = interfaceHeights[index + 1];    // 当前层顶面数据
+            
+            const geometry = buildLayerGeometry(bottomH, topH, SEGMENTS_W, SEGMENTS_D, WIDTH, DEPTH);
+            
+            // 材质：使用 FlatShading (平面着色) 来还原参考图的低多边形感
+            const material = new THREE.MeshPhongMaterial({
+                color: layer.color,
+                flatShading: true,
+                shininess: 30,
+                side: THREE.DoubleSide
+            });
+
+            const mesh = new THREE.Mesh(geometry, material);
+            geologyGroup.add(mesh);
+
+            // 3. 添加网格线 (Wireframe)
+            if (showWireframe) {
+                const wireGeo = new THREE.WireframeGeometry(geometry);
+                const wireMat = new THREE.LineBasicMaterial({ color: 0x000000, opacity: 0.3, transparent: true });
+                const wire = new THREE.LineSegments(wireGeo, wireMat);
+                geologyGroup.add(wire);
+            }
+        });
+    }
+
+    function generateHeightMap(baseY, intensity) {
+        const map = [];
+        const offset = Math.random() * 100; 
+        
+        for (let i = 0; i <= SEGMENTS_W; i++) {
+            const row = [];
+            for (let j = 0; j <= SEGMENTS_D; j++) {
+                const x = i / SEGMENTS_W;
+                const z = j / SEGMENTS_D;
+                
+                const wave1 = Math.sin(x * 5 + offset) * Math.cos(z * 3 + offset);
+                const wave2 = Math.sin(x * 12 + offset) * Math.cos(z * 10);
+                
+                const y = baseY + (wave1 + wave2 * 0.5) * intensity;
+                row.push(y);
+            }
+            map.push(row);
+        }
+        return map;
+    }
+
+    function buildLayerGeometry(bottomMap, topMap, segW, segD, width, depth) {
+        const vertices = [];
+        const indices = [];
+
+        const gridW = width / segW;
+        const gridD = depth / segD;
+        const offsetX = -width / 2;
+        const offsetZ = -depth / 2;
+
+        // 创建顶点数组：顶面点 + 底面点
+        for (let i = 0; i <= segW; i++) {
+            for (let j = 0; j <= segD; j++) {
+                const x = offsetX + i * gridW;
+                const z = offsetZ + j * gridD;
+                
+                // 顶面点
+                vertices.push(x, topMap[i][j], z);
+                
+                // 底面点
+                vertices.push(x, bottomMap[i][j], z);
+            }
+        }
+
+        const pointCountPerLayer = (segW + 1) * (segD + 1);
+
+        // 生成索引
+        // 顶面和底面
+        for (let i = 0; i < segW; i++) {
+            for (let j = 0; j < segD; j++) {
+                const a = i * (segD + 1) + j;
+                const b = i * (segD + 1) + (j + 1);
+                const c = (i + 1) * (segD + 1) + (j + 1);
+                const d = (i + 1) * (segD + 1) + j;
+
+                const A = a + pointCountPerLayer;
+                const B = b + pointCountPerLayer;
+                const C = c + pointCountPerLayer;
+                const D = d + pointCountPerLayer;
+
+                // 顶面三角形
+                indices.push(a, b, d);
+                indices.push(b, c, d);
+
+                // 底面三角形
+                indices.push(A, D, B);
+                indices.push(B, D, C);
+            }
+        }
+
+        // 四个侧面
+        // 前面 (z = min)
+        for (let i = 0; i < segW; i++) {
+            const top1 = i * (segD + 1) + 0;
+            const top2 = (i + 1) * (segD + 1) + 0;
+            const bot1 = top1 + pointCountPerLayer;
+            const bot2 = top2 + pointCountPerLayer;
+            indices.push(top1, bot1, top2);
+            indices.push(bot1, bot2, top2);
+        }
+
+        // 后面 (z = max)
+        for (let i = 0; i < segW; i++) {
+            const top1 = i * (segD + 1) + segD;
+            const top2 = (i + 1) * (segD + 1) + segD;
+            const bot1 = top1 + pointCountPerLayer;
+            const bot2 = top2 + pointCountPerLayer;
+            indices.push(top2, bot2, top1);
+            indices.push(bot2, bot1, top1);
+        }
+
+        // 左面 (x = min)
+        for (let j = 0; j < segD; j++) {
+            const top1 = 0 * (segD + 1) + j;
+            const top2 = 0 * (segD + 1) + (j + 1);
+            const bot1 = top1 + pointCountPerLayer;
+            const bot2 = top2 + pointCountPerLayer;
+            indices.push(top2, bot2, top1);
+            indices.push(bot2, bot1, top1);
+        }
+
+        // 右面 (x = max)
+        for (let j = 0; j < segD; j++) {
+            const top1 = segW * (segD + 1) + j;
+            const top2 = segW * (segD + 1) + (j + 1);
+            const bot1 = top1 + pointCountPerLayer;
+            const bot2 = top2 + pointCountPerLayer;
+            indices.push(top1, bot1, top2);
+            indices.push(bot1, bot2, top2);
+        }
+
+        const geo = new THREE.BufferGeometry();
+        geo.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+        geo.setIndex(indices);
+        geo.computeVertexNormals();
+        return geo;
+    }
+
+    // --- TBM相关核心函数 ---
+    function loadTBMModel() {
+        const status = document.getElementById('status-bar');
+        status.innerText = "正在加载TBM模型并分析尺寸...";
+
+        // 尝试加载MTL和OBJ文件
+        const mtlLoader = new MTLLoader();
+        mtlLoader.setPath('./'); 
+        
+        mtlLoader.load('TBM-3D.mtl', (materials) => {
+            materials.preload();
+            const objLoader = new OBJLoader();
+            objLoader.setMaterials(materials);
+            
+            objLoader.load('TBM-3D.obj', (loadedObj) => {
+                const allMeshes = [...loadedObj.children]; 
+                allMeshes.forEach(child => {
+                    if (child.isMesh) {
+                        child.userData.originalMat = child.material;
+                        child.castShadow = true;
+                        child.receiveShadow = true;
+                        if (child.material) {
+                            child.material.fog = false;
+                        }
+                    }
+                    mainRig.add(child); 
+                });
+
+                // 自动对齐TBM模型
+                const box = new THREE.Box3().setFromObject(mainRig);
+                const size = new THREE.Vector3();
+                const center = new THREE.Vector3();
+                box.getSize(size);
+                box.getCenter(center);
+
+                mainRig.children.forEach(child => {
+                    child.position.y -= center.y;
+                    child.position.z -= center.z;
+                });
+
+                const maxDiameter = Math.max(size.y, size.z);
+                const exactRadius = maxDiameter / 2;
+                const newBox = new THREE.Box3().setFromObject(mainRig);
+                const faceX = newBox.max.x; 
+
+                status.innerText = `系统就绪 | TBM加载完毕 | 直径: ${maxDiameter.toFixed(2)}`;
+                setupDynamicTunnel(exactRadius, faceX);
+                setupDefaultTBMRotation(); // 设置默认TBM旋转参数
+
+            }, undefined, (err) => {
+                console.warn("OBJ加载失败，使用演示模型");
+                handleTBMLoadError(150, 200);
+            });
+        }, undefined, (err) => { 
+            console.warn("MTL加载失败，使用演示模型"); 
+            handleTBMLoadError(150, 200); 
+        });
+    }
+
+    // TBM加载失败时的备用模型
+    function handleTBMLoadError(radius, faceX) {
+        const geometry = new THREE.BoxGeometry(radius*2, radius*2, radius*4);
+        const material = new THREE.MeshStandardMaterial({color: 0x0077ff, fog: false}); 
+        const cube = new THREE.Mesh(geometry, material);
+        mainRig.add(cube);
+        setupDynamicTunnel(radius, faceX);
+        setupDefaultTBMRotation();
+    }
+
+    // 创建隧道和掌子面
+    function setupDynamicTunnel(radius, faceXPosition) {
+        // 纹理准备
+        const rockTexture = createProceduralRockTexture(); 
+        const segmentTexture = createProceduralSegmentTexture(); 
+        const faceTexture = createProceduralFaceTexture(); 
+
+        rockTexture.wrapS = rockTexture.wrapT = THREE.RepeatWrapping;
+        rockTexture.repeat.set(150, 150);
+
+        segmentTexture.wrapS = segmentTexture.wrapT = THREE.RepeatWrapping;
+        segmentTexture.repeat.set(20, 50);
+
+        // 隧道壁 (已挖掘部分)
+        const tunnelGeo = new THREE.CylinderGeometry(radius, radius, 100000, 64, 1, true);
+        tunnelGeo.rotateZ(Math.PI / 2); 
+        const tunnelMat = new THREE.MeshStandardMaterial({
+            map: segmentTexture, color: 0xaaaaaa, roughness: 0.6, metalness: 0.1,
+            side: THREE.BackSide, clippingPlanes: [ sectionPlane ], fog: false
+        });
+        const tunnel = new THREE.Mesh(tunnelGeo, tunnelMat);
+        tunnel.name = "Excavated_Tunnel_Wall";
+        scene.add(tunnel);
+
+        // 未开挖掌子面
+        const faceGeo = new THREE.PlaneGeometry(radius*2.2, radius*2.2);
+        const faceMat = new THREE.MeshStandardMaterial({
+            map: faceTexture, side: THREE.FrontSide, roughness: 1.0,
+            emissive: 0x333333, emissiveIntensity: 0.6, color: 0xdddddd,
+            clippingPlanes: [ sectionPlane ], fog: false 
+        });
+        const face = new THREE.Mesh(faceGeo, faceMat);
+        face.name = "Tunnel_Face";
+        face.position.set(faceXPosition + 0.2, 0, 0);
+        mainRig.add(face);
+
+        // TBM车头灯
+        const tbmLight = new THREE.PointLight(0xffaa00, 1.5, radius * 20);
+        tbmLight.position.set(faceXPosition - radius, 0, 0);
+        mainRig.add(tbmLight);
+    }
+
+    // 纹理生成函数
+    function createProceduralRockTexture() {
+        const canvas = document.createElement('canvas');
+        canvas.width = 1024; canvas.height = 1024;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#2c2c2c'; ctx.fillRect(0,0,1024,1024);
+        for(let i=0; i<80000; i++) {
+            ctx.fillStyle = Math.random() > 0.5 ? '#111' : '#444';
+            ctx.globalAlpha = 0.5;
+            ctx.beginPath(); ctx.arc(Math.random()*1024, Math.random()*1024, Math.random()*2, 0, Math.PI*2); ctx.fill();
+        }
+        return new THREE.CanvasTexture(canvas);
+    }
+
+    function createProceduralSegmentTexture() {
+        const canvas = document.createElement('canvas');
+        canvas.width = 1024; canvas.height = 1024;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#999999'; ctx.fillRect(0,0,1024,1024);
+        for(let i=0; i<50000; i++) {
+            ctx.fillStyle = Math.random() > 0.5 ? '#888' : '#aaa';
+            ctx.globalAlpha = 0.3;
+            ctx.fillRect(Math.random()*1024, Math.random()*1024, 2, 2);
+        }
+        ctx.globalAlpha = 0.6; ctx.strokeStyle = '#555'; ctx.lineWidth = 4; ctx.beginPath();
+        for(let y=0; y<=1024; y+=128) { ctx.moveTo(0, y); ctx.lineTo(1024, y); }
+        for(let x=0; x<=1024; x+=256) { ctx.moveTo(x, 0); ctx.lineTo(x, 1024); }
+        ctx.stroke();
+        return new THREE.CanvasTexture(canvas);
+    }
+
+    function createProceduralFaceTexture() {
+        const canvas = document.createElement('canvas');
+        canvas.width = 512; canvas.height = 512;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#3a3a3a'; ctx.fillRect(0,0,512,512);
+        for(let i=0; i<5000; i++) {
+            ctx.fillStyle = Math.random() > 0.5 ? '#222' : '#555';
+            ctx.fillRect(Math.random()*512, Math.random()*512, 2, 2);
+        }
+        ctx.strokeStyle = '#111'; ctx.lineWidth = 3; ctx.beginPath();
+        for(let i=0; i<250; i++) {
+            const angle = 0.1 * i;
+            const x = 256 + (1 + angle)*Math.cos(angle)*1.5; 
+            const y = 256 + (1 + angle)*Math.sin(angle)*1.5;
+            ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+        return new THREE.CanvasTexture(canvas);
+    }
+
+    // 设置默认TBM旋转参数（刀盘旋转）
+    function setupDefaultTBMRotation() {
+        // 创建刀盘组（演示用）
+        const cutterHeadGroup = new THREE.Group();
+        cutterHeadGroup.name = "刀盘模组 (Cutter_Head)";
+        cutterHeadGroup.position.set(0, 0, 0);
+        
+        // 将TBM的第一个Mesh作为刀盘
+        if (mainRig.children.length > 0) {
+            const cutterHead = mainRig.children[0];
+            mainRig.remove(cutterHead);
+            cutterHeadGroup.add(cutterHead);
+            mainRig.add(cutterHeadGroup);
+        }
+
+        // 注册刀盘旋转（0.05 rad/s 适中的旋转速度）
+        rotationRegistry.set(cutterHeadGroup.uuid, { 
+            object: cutterHeadGroup, 
+            speed: 0.05, 
+            isGroup: true 
+        });
+
+        // 渲染侧边栏部件列表
+        renderTBMPartList();
+    }
+
+    // 渲染TBM部件列表
+    function renderTBMPartList() {
+        const listDiv = document.getElementById('part-list');
+        listDiv.innerHTML = '';
+        
+        // 添加整机项
+        const mainDiv = document.createElement('div');
+        mainDiv.className = 'list-item';
+        mainDiv.onclick = () => selectTBMObject(mainRig);
+        mainDiv.innerHTML = `<span class="list-icon">🚄</span><span class="list-name">TBM 整机</span>`;
+        listDiv.appendChild(mainDiv);
+        
+        // 添加旋转部件项
+        rotationRegistry.forEach((data, uuid) => {
+            const div = document.createElement('div');
+            div.className = `list-item ${selectedObject && selectedObject.uuid === uuid ? 'active' : ''}`;
+            div.onclick = () => selectTBMObject(data.object);
+            div.innerHTML = `<span class="list-icon">${data.isGroup ? '⚙️' : '🔩'}</span><span class="list-name">${data.object.name}</span>`;
+            listDiv.appendChild(div);
+        });
+    }
+
+    // 选择TBM部件
+    function selectTBMObject(object) {
+        if (selectedObject && selectedObject !== mainRig) applyMatRecursive(selectedObject, false);
+        selectedObject = object;
+        if (selectedObject !== mainRig) applyMatRecursive(selectedObject, true);
+        renderTBMPartList();
+        document.getElementById('info-panel').style.display = 'block';
+        updateTBMInfoPanel();
+    }
+
+    // 更新TBM信息面板
+    function updateTBMInfoPanel() {
+        if (!selectedObject) return;
+        
+        let rotSpeed = 0;
+        let typeStr = "静态部件";
+        
+        if (selectedObject === mainRig) {
+            typeStr = "整机容器";
+        } else if (rotationRegistry.has(selectedObject.uuid)) {
+            const data = rotationRegistry.get(selectedObject.uuid);
+            rotSpeed = data.speed;
+            typeStr = data.isGroup ? "功能模组" : "独立零件";
+        }
+        
+        document.getElementById('panel-name').innerText = selectedObject.name;
+        document.getElementById('info-type').innerText = typeStr;
+        document.getElementById('info-rot-speed').innerText = rotSpeed.toFixed(4);
+        
+        const worldPos = new THREE.Vector3();
+        selectedObject.getWorldPosition(worldPos);
+        document.getElementById('info-wx').innerText = worldPos.x.toFixed(2);
+        document.getElementById('info-wy').innerText = worldPos.y.toFixed(2);
+        document.getElementById('info-wz').innerText = worldPos.z.toFixed(2);
+    }
+
+    // 应用高亮材质
+    function applyMatRecursive(obj, useHighlight) {
+        if (obj.isMesh) {
+            obj.material = useHighlight ? highlightMat : (obj.userData.originalMat || obj.material);
+        }
+        if (obj.children) {
+            obj.children.forEach(c => applyMatRecursive(c, useHighlight));
+        }
+    }
+
+    // 切换TBM运行状态
+    function togglePause() {
+        isPaused = !isPaused;
+        const btn = document.getElementById('btn-pause');
+        const status = document.getElementById('status-bar');
+        
+        if (isPaused) {
+            btn.innerText = "▶ 启动TBM系统";
+            btn.classList.add('paused');
+            status.innerText = "系统就绪 | TBM已暂停";
+        } else {
+            btn.innerText = "⏸ 停止TBM运行";
+            btn.classList.remove('paused');
+            status.innerText = "系统运行中 | TBM掘进中";
+        }
+    }
+
+    // 设置TBM交互
+    function setupTBMInteraction() {
+        window.addEventListener('dblclick', (event) => {
+            const rect = renderer.domElement.getBoundingClientRect();
+            const mouse = new THREE.Vector2();
+            mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+            mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+            
+            const raycaster = new THREE.Raycaster();
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(mainRig.children, true);
+            
+            if (intersects.length > 0) {
+                let target = intersects[0].object;
+                let p = target;
+                while(p && p !== mainRig) {
+                    if (rotationRegistry.has(p.uuid)) { 
+                        selectTBMObject(p); 
+                        return; 
+                    }
+                    p = p.parent;
+                }
+                selectTBMObject(mainRig);
+            }
+        });
+    }
+
+    // 通用函数
+    function onResize() {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+
+    function animate() {
+        requestAnimationFrame(animate);
+        
+        // TBM运行逻辑
+        if (!isPaused) {
+            // 实时掘进（X轴移动）
+            if (diggingSpeed > 0) {
+                mainRig.position.x += diggingSpeed;
+            }
+            // 刀盘旋转
+            rotationRegistry.forEach(data => { 
+                data.object.rotation.x += data.speed; 
+            });
+            // 更新信息面板
+            if (selectedObject) {
+                updateTBMInfoPanel();
+            }
+        }
+
+        controls.update();
+        renderer.render(scene, camera);
+    }
+</script>
+</body>
+</html>

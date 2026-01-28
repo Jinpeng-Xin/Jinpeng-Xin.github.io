@@ -1,0 +1,2714 @@
+/* --- 字体注册 --- */
+@font-face {
+    font-family: 'Inter';
+    src: url('./Font/Inter-Regular.woff2') format('woff2');
+    font-weight: 400; font-display: swap;
+}
+@font-face {
+    font-family: 'Inter';
+    src: url('./Font/Inter-Medium.woff2') format('woff2');
+    font-weight: 500; font-display: swap;
+}
+@font-face {
+    font-family: 'Inter';
+    src: url('./Font/Inter-Black.woff2') format('woff2');
+    font-weight: 900; font-display: swap;
+}
+
+/* --- 全局基础 --- */
+:root {
+    --font-main: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --color-text: #000;
+    --color-secondary: #86868b;
+    --nav-bg: rgba(255, 255, 255, 0.4);
+}
+
+* { 
+    margin: 0; 
+    padding: 0; 
+    box-sizing: border-box; 
+}
+
+html { 
+    scroll-behavior: smooth; 
+}
+
+body {
+    font-family: var(--font-main);
+    background-color: #F0F2F5;
+    color: var(--color-text);
+    line-height: 1.5;
+    padding-top: 80px; /* 为固定导航栏预留空间 */
+    -webkit-font-smoothing: antialiased;
+}
+
+
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 5vw;
+}
+
+/* --- 导航栏 --- */
+.navbar {
+    position: fixed;
+    top: 0; 
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 25px 5vw;
+    z-index: 1000;
+    background: var(--nav-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+}
+
+/* --- 修改后的 .nav-logo 容器 --- */
+.nav-logo {
+    display: flex;         /* 使用 Flexbox 布局 */
+    align-items: center;   /* 让图片垂直居中 */
+    text-decoration: none; /* 如果是 a 标签，去掉默认下划线 */
+    margin-left: -40px;
+    /* 移除原来的字体大小设置，因为现在是图片了 */
+    /* font-size: 1.4rem;  <-- 删除这行 */
+    /* font-weight: 500;   <-- 删除这行 */
+}
+
+/* --- 新增：控制 Logo 图片大小 --- */
+.nav-logo img {
+    height: 30px;  /* 关键：设定高度，宽度会自动等比缩放 */
+    width: auto;   /* 保持比例 */
+    display: block;/* 消除图片底部的微小空隙 */
+    
+    /* 可选：如果你希望鼠标放上去 Logo 稍微亮一点或暗一点 */
+    transition: opacity 0.2s ease;
+}
+
+.nav-logo:hover img {
+    opacity: 0.8; /* 悬停时的微交互 */
+}
+
+.nav-links { 
+    display: flex; 
+    gap: 30px; 
+}
+
+.nav-links a {
+    text-decoration: none;
+    font-size: 18px; 
+    font-weight: 500; 
+    color: var(--color-text); 
+    transition: opacity 0.2s;
+}
+
+.nav-links a:hover { 
+    opacity: 0.4; 
+}
+
+/* --- Hero Section (左文右图布局) --- */
+.hero { 
+    margin: 15vh 0; 
+    display: flex;
+    justify-content: space-between;
+    align-items: center; 
+    gap: 60px;
+}
+
+.hero-text { 
+    flex: 1.2; 
+}
+
+h1 {
+    font-size: clamp(2.5rem, 8vw, 4.5rem);
+    font-weight: 400; 
+    line-height: 1.0;
+    letter-spacing: -0.05em; 
+    margin-bottom: 25px;
+}
+
+h1 span { 
+    color:#000000;
+    font-weight: 400;
+    margin-left: 10px;
+}
+
+.intro {
+    font-size: clamp(1.1rem, 2.2vw, 1.5rem);
+    max-width: 500px; 
+    color: #1d1d1f;
+    font-weight: 400;
+    letter-spacing: -0.02em;
+}
+
+/* --- 个人头像样式（核心修改：自适应+完整显示） --- */
+.hero-image { 
+    flex: 1; 
+    display: flex; 
+    justify-content: flex-end; 
+    /* 确保容器自适应，不限制图片比例 */
+    max-width: 320px; /* 限制图片最大宽度，避免过大 */
+}
+
+.hero-image img {
+    width: 100%; /* 宽度自适应容器 */
+    height: auto; /* 高度根据图片比例自动计算，保证比例不变 */
+    max-height: 400px; /* 限制最大高度，避免图片过高 */
+    object-fit: contain; /* 关键：完整显示图片，不裁剪，保留原有比例 */
+    border-radius: 4px;
+    transition: filter 0.5s ease, transform 0.5s ease;
+}
+
+.hero-image img:hover { 
+    filter: grayscale(0%); 
+    transform: scale(1.02); /* 悬停时轻微放大增加交互感 */
+}
+
+.hero-btn {
+    /* 在原有基础上增加 */
+    display: inline-flex;
+    align-items: center; /* 垂直居中 */
+    gap: 8px; /* 图标和文字的间距 */
+}
+
+.hero-btn svg {
+    transition: transform 0.3s ease;
+}
+
+.hero-btn:hover svg {
+    transform: rotate(-10deg) scale(1.1); /* 鼠标放上去图标动一下 */
+}
+
+
+/* --- 响应式设计 --- */
+@media (max-width: 800px) {
+    .nav-links { 
+        display: none; 
+    }
+    
+    .hero { 
+        flex-direction: column-reverse; 
+        margin: 10vh 0;
+        gap: 30px;
+    }
+    
+    .hero-image { 
+        justify-content: flex-start; 
+        max-width: 100%; /* 移动端容器宽度自适应 */
+    }
+    
+    .hero-image img { 
+        max-width: 180px; /* 移动端图片最大宽度 */
+        max-height: none; /* 取消高度限制，完全自适应 */
+    }
+
+    h1 {
+        font-size: 3.5rem;
+    }
+}
+
+/* --- 通用板块样式 --- */
+.section-block {
+    margin-bottom: 100px; /* 板块间距 */
+    padding-top: 60px; /* 配合锚点定位，避免被导航栏遮挡 */
+    margin-top: -60px;
+}
+
+.section-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 40px;
+    border-bottom: 1px solid #eaeaea; /* 极简分割线 */
+    padding-bottom: 15px;
+    letter-spacing: -0.02em;
+}
+
+/* --- 网格布局系统 --- */
+.grid-container {
+    display: grid;
+    /* 核心代码：自动填充，每列至少 350px 宽，空间不够自动换行 */
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 40px; /* 卡片之间的间距 */
+}
+
+/* --- 卡片组件样式 --- */
+.card {
+    background: #fff;
+    border: 1px solid #f0f0f0; /* 非常淡的边框 */
+    border-radius: 12px;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+/* 鼠标悬停时的上浮效果 */
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    border-color: transparent;
+}
+
+/* 图片区域占位符 (有了真实图片后可删除 placeholder-bg 类) */
+.card-image {
+    height: 200px;
+    width: 100%;
+    background-color: #f5f5f7; /* Apple 风格的浅灰背景 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-secondary);
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+/* 如果放入真实图片，让它填满区域 */
+.card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.card-content {
+    padding: 25px;
+    flex: 1; /* 让内容区域撑满剩余空间 */
+    display: flex;
+    flex-direction: column;
+}
+
+/* --- 标签系统 (Tags) --- */
+.card-tags {
+    margin-bottom: 15px;
+    display: flex;
+    gap: 8px;
+}
+
+.tag {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: #555;
+    background-color: #f5f5f7;
+    padding: 4px 10px;
+    border-radius: 4px;
+    letter-spacing: 0.03em;
+}
+
+/* --- 卡片排版 --- */
+.card h3 {
+    font-size: 1.25rem;
+    margin-bottom: 10px;
+    line-height: 1.3;
+}
+
+.card h3 a {
+    text-decoration: none;
+    color: var(--color-text);
+    transition: color 0.2s;
+}
+
+.card h3 a:hover {
+    color: #0066cc; /* 悬停时标题变蓝 */
+}
+
+.card p {
+    font-size: 0.95rem;
+    color: #555;
+    line-height: 1.6;
+    margin-bottom: 20px;
+    flex: 1; /* 把底部链接推到最下方 */
+}
+
+.card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.85rem;
+    color: var(--color-secondary);
+    border-top: 1px solid #f5f5f5;
+    padding-top: 15px;
+    margin-top: auto; /* 确保 footer 永远在卡片底部 */
+}
+
+.arrow-link {
+    text-decoration: none;
+    color: var(--color-text);
+    font-weight: 500;
+    transition: opacity 0.2s;
+}
+
+.arrow-link:hover {
+    opacity: 0.6;
+}
+
+
+
+
+/* --- Publications 列表样式 --- */
+.pub-list {
+    display: flex;
+    flex-direction: column;
+    gap: 30px; /* 论文之间的间距 */
+}
+
+.pub-item {
+    display: flex;
+    gap: 20px;
+    align-items: baseline; /* 让年份和标题在第一行对齐 */
+}
+
+.pub-year {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--color-secondary);
+    min-width: 60px; /* 固定宽度的年份栏，保持整齐 */
+    text-align: right;
+    font-variant-numeric: tabular-nums; /* 数字等宽，看起来更专业 */
+}
+
+.pub-content {
+    flex: 1;
+}
+
+.pub-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 6px;
+    line-height: 1.4;
+    color: var(--color-text);
+}
+
+.pub-authors {
+    font-size: 0.95rem;
+    color: #444;
+    margin-bottom: 4px;
+}
+
+.pub-venue {
+    font-size: 0.9rem;
+    color: var(--color-secondary);
+    margin-bottom: 8px;
+}
+
+.pub-links a {
+    font-size: 0.85rem;
+    color: #0066cc; /* 链接蓝色 */
+    text-decoration: none;
+    margin-right: 10px;
+    font-weight: 500;
+}
+
+.pub-links a:hover {
+    text-decoration: underline;
+}
+
+/* --- Education 垂直列表样式 --- */
+.edu-item {
+    margin-bottom: 40px; /* 如果有多个学位，这是间距 */
+}
+
+.edu-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline; /* 文字底部对齐 */
+    margin-bottom: 5px;
+    flex-wrap: wrap; /* 手机上自动换行 */
+}
+
+.edu-school {
+    display: flex;          /* 启用 Flex 布局 */
+    align-items: center;    /* 让 Logo 和文字垂直居中对齐 */
+    gap: 15px;              /* Logo 和文字之间的间距 */
+    
+    /* 保留原有的字体样式 */
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--color-text);
+}
+
+/* --- 新增：校徽图片样式 --- */
+.school-logo {
+    height: 60px;           /* 设定高度，根据你的 Logo 形状调整 (通常 40-50px 合适) */
+    width: auto;            /* 宽度自动保持比例 */
+    border-radius: 4px;     /* 可选：给 Logo 加一点点圆角，看起来更柔和 */
+    object-fit: contain;    /* 确保图片完全显示，不被裁剪 */
+}
+
+/* --- 移动端适配优化 --- */
+@media (max-width: 600px) {
+    .edu-school {
+        /* 手机上如果名字太长，可以允许 Logo 和文字换行，或者保持现状 */
+        font-size: 1.1rem;
+    }
+    .school-logo {
+        height: 36px;       /* 手机上 Logo稍微小一点 */
+        gap: 10px;
+    }
+}
+
+.edu-time {
+    font-size: 0.9rem;
+    color: var(--color-secondary);
+    font-weight: 500;
+}
+
+.edu-degree {
+    font-size: 1.1rem;
+    color: #333;
+    margin-bottom: 15px;
+    font-weight: 500;
+}
+
+.edu-details {
+    font-size: 0.95rem;
+    color: #555;
+    line-height: 1.6;
+}
+
+.edu-courses {
+    margin-top: 10px;
+    color: var(--color-secondary);
+}
+
+/* --- 移动端适配调整 --- */
+@media (max-width: 600px) {
+    /* 手机上把论文年份放到标题上面，而不是左边 */
+    .pub-item {
+        flex-direction: column;
+        gap: 5px;
+    }
+    .pub-year {
+        text-align: left;
+        font-size: 0.8rem;
+        color: #999;
+    }
+}
+
+
+
+/* --- Contact 联系方式样式 --- */
+.contact-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 50px;
+    background-color: #f9f9fa; /* 独立的浅灰背景块 */
+    padding: 40px;
+    border-radius: 16px;
+}
+
+.contact-text {
+    flex: 1;
+    font-size: 1.05rem;
+    line-height: 1.6;
+    color: #333;
+}
+
+.contact-links {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    min-width: 200px;
+}
+
+.contact-btn {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+    border: 1px solid #e1e1e1;
+    background-color: #fff;
+    color: var(--color-text);
+}
+
+.contact-btn:hover {
+    border-color: #bbb;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+/* 强调主要按钮（邮箱） */
+.contact-btn.primary {
+    background-color: #1d1d1f;
+    color: #fff;
+    border: 1px solid #1d1d1f;
+}
+
+.contact-btn.primary:hover {
+    background-color: #333;
+    border-color: #333;
+    opacity: 1;
+}
+
+.icon {
+    margin-right: 10px;
+    font-family: monospace; /* 简单的图标占位符 */
+}
+
+/* --- Footer 页脚样式 --- */
+.site-footer {
+    border-top: 1px solid #eaeaea;
+    padding: 40px 0;
+    margin-top: 80px;
+    color: var(--color-secondary);
+    font-size: 0.85rem;
+    text-align: center;
+}
+
+.footer-note {
+    margin-top: 5px;
+    font-size: 0.75rem;
+    opacity: 0.7;
+}
+
+/* --- 移动端 Contact 适配 --- */
+@media (max-width: 700px) {
+    .contact-container {
+        flex-direction: column;
+        text-align: center;
+        padding: 30px 20px;
+    }
+    
+    .contact-links {
+        width: 100%;
+    }
+    
+    .contact-btn {
+        justify-content: center;
+    }
+}
+
+
+
+
+.interest-grid {
+    display: grid;
+    /* 自动填充网格 */
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 20px;
+}
+
+.interest-item {
+    height: 180px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    cursor: pointer;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); /* 弹性动画 */
+    position: relative;
+    overflow: hidden;
+}
+
+.interest-item h3 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    z-index: 2;
+    letter-spacing: 0.05em;
+}
+
+/* 悬停时的趣味效果 */
+.interest-item:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 15px 25px rgba(0,0,0,0.1);
+}
+
+/* 可选：给色块加一点噪点纹理，显得不那么单调 */
+.interest-item::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: linear-gradient(45deg, rgba(255,255,255,0.1) 0%, transparent 100%);
+    z-index: 1;
+}
+
+
+
+
+/* 仿终端样式 */
+.terminal-box {
+    background: #1e1e1e; /* 深色背景 */
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    overflow: hidden;
+    max-width: 700px;
+    margin-bottom: 60px; /* 与下方隔开 */
+}
+
+.terminal-header {
+    background: #2d2d2d;
+    padding: 10px 15px;
+    display: flex;
+    gap: 8px;
+}
+
+.dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+}
+.red { background: #ff5f56; }
+.yellow { background: #ffbd2e; }
+.green { background: #27c93f; }
+
+.terminal-content {
+    padding: 25px;
+    color: #fff;
+    font-family: 'Courier New', monospace; /* 代码字体 */
+}
+
+.console-text {
+    font-size: 1.05rem;
+    line-height: 1.6;
+    margin-bottom: 15px;
+}
+
+.prompt {
+    color: #27c93f; /* 亮绿色箭头 */
+    margin-right: 10px;
+    font-weight: bold;
+}
+
+.console-meta {
+    font-size: 0.8rem;
+    color: #666;
+    text-align: right;
+}
+
+
+
+
+/* --- Life Grid (Bento 风格布局) --- */
+.life-grid {
+    display: grid;
+    /* 基础网格：每一列最小 250px，自动填充 */
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    /* 设置固定的行高，控制格子高度 */
+    grid-auto-rows: 250px; 
+    gap: 20px;
+}
+
+/* 每一个单独的格子 */
+.life-item {
+    position: relative;
+    border-radius: 16px;
+    overflow: hidden; /* 关键：让图片放大时不超出圆角 */
+    background-color: #eee; /* 图片加载前的背景色 */
+    cursor: pointer;
+}
+
+/* --- 特殊格子尺寸控制 --- */
+/* 大格子：跨越 2 列，跨越 2 行 */
+@media (min-width: 768px) {
+    .life-item.large {
+        grid-column: span 2;
+        grid-row: span 3;
+    }
+    
+    /* 宽格子：跨越 2 列 */
+    .life-item.wide {
+        grid-column: span 2;
+    }
+}
+
+/* --- 图片样式与动画 --- */
+.life-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* 关键：确保图片填满格子且不变形 */
+    transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94); /* 平滑的缓动效果 */
+}
+
+/* 悬停时图片缓慢放大 */
+.life-item:hover img {
+    transform: scale(1.1);
+}
+
+/* --- 遮罩层与文字 (Overlay) --- */
+.life-overlay {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.3); /* 半透明黑色遮罩 */
+    display: flex;
+    align-items: flex-end; /* 文字放在底部 */
+    padding: 20px;
+    opacity: 0; /* 默认隐藏 */
+    transition: opacity 0.3s ease;
+}
+
+.life-text {
+    color: #fff;
+    font-weight: 600;
+    font-size: 1.1rem;
+    transform: translateY(10px); /* 默认稍微向下一点 */
+    transition: transform 0.3s ease;
+}
+
+/* 悬停时显示遮罩和文字 */
+.life-item:hover .life-overlay {
+    opacity: 1;
+}
+
+.life-item:hover .life-text {
+    transform: translateY(0); /* 文字上浮归位 */
+}
+
+
+
+.glass-widget {
+    background: rgba(255, 255, 255, 0.7); /* 半透明白 */
+    backdrop-filter: blur(10px); /* 毛玻璃模糊 */
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 20px;
+    padding: 25px;
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05); /* 柔和的高级投影 */
+    max-width: 600px;
+}
+
+.widget-icon {
+    font-size: 1.5rem;
+    background: #f0f5ff;
+    width: 50px; 
+    height: 50px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.widget-content h4 {
+    margin: 0 0 5px 0;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #888;
+}
+
+.widget-content p {
+    margin: 0;
+    font-size: 1.05rem;
+    color: #333;
+    line-height: 1.5;
+}
+
+.widget-time {
+    display: block;
+    margin-top: 10px;
+    font-size: 0.75rem;
+    color: #bbb;
+}
+
+
+
+
+
+/* --- Hero Section 布局 --- */
+.hero {
+    position: relative; /* 关键：限制背景文字不跑出去 */
+    overflow: hidden;   /* 关键：隐藏溢出的滚动文字 */
+    margin: 15vh 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 60px;
+}
+
+/* --- 名字渐变特效 --- */
+h1 {
+    font-size: clamp(2.5rem, 8vw, 4.5rem);
+    font-weight: 600;
+    line-height: 1.3;
+    margin-bottom: 25px;
+    letter-spacing: -0.05em;
+
+    /* 极光渐变色：深蓝 -> 亮蓝 -> 紫 */
+    background: linear-gradient(135deg, #83e556 0%, #3498db 50%, #ffd900 100%);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    
+    /* 让渐变色缓慢流动，增加一点生命力 */
+    animation: gradientMove 5s ease infinite;
+}
+
+/* 名字旁边的中文小字 */
+h1 span {
+    font-size: 0.5em; /* 稍微调小一点 */
+    font-weight: 400;
+    margin-left: 15px;
+    -webkit-text-fill-color: var(--color-secondary); /* 保持灰色，不渐变 */
+}
+
+@keyframes gradientMove {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* --- 简介文字 --- */
+.intro {
+    font-size: clamp(1.1rem, 2.2vw, 1.25rem);
+    max-width: 550px;
+    color: #000000;
+    font-weight: 400;
+    line-height: 1.7;
+    margin-bottom: 35px;
+}
+
+/* 容器布局：让按钮横向排列并居中 */
+.hero-contact {
+    display: flex;
+    gap: 15px; /* 按钮之间的间距 */
+    flex-wrap: wrap; /* 屏幕小的时候自动换行 */
+    margin-top: 20px;
+}
+
+/* 按钮通用样式 */
+.hero-btn {
+    text-decoration: none;
+    padding: 10px 24px;
+    border-radius: 30px; /* 胶囊形状 */
+    font-family: 'Inter', -apple-system, sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(0, 0, 0, 0.1); /* 淡淡的边框 */
+    
+    /* 默认颜色：白底黑字 */
+    background: transparent;
+    color: #1d1d1f;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+/* 鼠标悬停效果：轻微上浮 + 阴影加深 */
+.hero-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    background: #f5f5f7;
+    border-color: #d2d2d7;
+}
+
+/* 点击时的效果 */
+.hero-btn:active {
+    transform: scale(0.98);
+}
+
+/* --- 动态背景 (Marquee) --- */
+/* --- 动态背景容器 --- */
+.dynamic-bg {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 100%;
+    transform: translateY(-50%) rotate(-5deg); /* 关键：整体稍微倾斜一点，更有动感和错落感 */
+    z-index: -1;
+    opacity: 0.15; /* 这里控制整体淡出程度，想要更亮就改大，比如 0.15 */
+    pointer-events: none;
+    user-select: none;
+    
+    display: flex;
+    flex-direction: column;
+    gap: 15px; /* 行与行之间的间距 */
+}
+
+/* --- 每一行的通用样式 --- */
+.marquee-line {
+    display: flex;
+    white-space: nowrap;
+    width: 100%;
+}
+
+/* --- 字体与颜色设置 --- */
+.marquee-item {
+    font-family: var(--font-main); /* 使用全局字体 */
+    font-weight: 900; /* 超粗体，视觉冲击力强 */
+    font-size: 4rem; /* 字体大小 */
+    margin-right: 40px;
+    text-transform: uppercase; /* 强制大写，更整齐 */
+}
+
+/* 鲜艳颜色定义 */
+.marquee-item.blue   { color: #007AFF; } /* 亮蓝 */
+.marquee-item.purple { color: #AF52DE; } /* 亮紫 */
+.marquee-item.orange { color: #FF9500; } /* 亮橙 */
+
+/* --- 动画定义 --- */
+
+/* 1. 向左滚动 (正常速度) */
+.scroll-left {
+    animation: scrollLeft 30s linear infinite;
+}
+
+/* 2. 向右滚动 (反方向，营造错落感) */
+.scroll-right {
+    animation: scrollRight 35s linear infinite;
+    transform: translateX(-20%); /* 初始位置错开 */
+}
+
+/* 3. 向左滚动 (慢速) */
+.scroll-left-slow {
+    animation: scrollLeft 45s linear infinite;
+}
+
+/* --- 关键帧 --- */
+@keyframes scrollLeft {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+}
+
+@keyframes scrollRight {
+    0% { transform: translateX(-50%); }
+    100% { transform: translateX(0); }
+}
+
+/* --- 移动端适配 --- */
+@media (max-width: 800px) {
+    .dynamic-bg {
+        transform: translateY(-50%) rotate(0deg); /* 手机上不倾斜，节省空间 */
+        gap: 10px;
+    }
+    .marquee-item {
+        font-size: 2.5rem; /* 手机上字体改小 */
+    }
+}
+
+
+
+/* --- Culture / Media Section --- */
+.culture-grid {
+    display: grid;
+    /* 三列布局，每列最小 300px，空间不够自动换行 */
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 50px;
+}
+
+.col-header {
+    /* --- 核心修改 --- */
+    font-weight: 400; /* 400 = 正常(Regular)，去掉加粗。想要更细可以用 300 */
+    font-family: 'Inter', sans-serif; /* 确保使用 Inter 字体 */
+    
+    /* --- 其他样式保持不变或微调 --- */
+    font-size: 0.85rem; /* 字体稍微调小一点，显得更精致 */
+    text-transform: uppercase; /* 全大写 */
+    letter-spacing: 0.15em; /* 字间距稍微加大，增加高级感 */
+    color: #888; /* 灰色 */
+    
+    /* 布局样式 */
+    margin-bottom: 25px;
+    border-bottom: 1px solid #e5e5e5; /* 边框变细一点，配合不加粗的文字 */
+    padding-bottom: 10px;
+    display: inline-block;
+}
+
+/* --- 媒体条目卡片 --- */
+.media-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+    text-decoration: none; /* 去掉链接下划线 */
+    padding: 10px;
+    border-radius: 12px;
+    transition: background-color 0.2s ease;
+}
+
+.media-item:hover {
+    background-color: #f5f5f7; /* 悬停时背景变浅灰 */
+}
+
+/* --- 封面图样式 --- */
+.media-cover {
+    flex-shrink: 0; /* 防止图片被压缩 */
+    overflow: hidden;
+    border-radius: 6px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.media-cover img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.media-item:hover .media-cover img {
+    transform: scale(1.05); /* 悬停微放大 */
+}
+
+/* 不同类型的封面尺寸 */
+.book-cover {
+    width: 50px;
+    height: 75px; /* 书籍：长方形 */
+}
+
+.music-cover {
+    width: 60px;
+    height: 60px; /* 音乐：正方形 */
+}
+
+.movie-cover {
+    width: 50px;
+    height: 75px; /* 电影：海报比例 */
+}
+
+/* --- 文字信息 --- */
+.media-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.media-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #1d1d1f;
+    margin: 0 0 4px 0;
+}
+
+.media-meta {
+    font-size: 0.85rem;
+    color: #666;
+}
+
+.media-note {
+    font-size: 0.75rem;
+    color: #999;
+    margin-top: 4px;
+    font-style: italic;
+}
+
+/* --- 🎵 音乐律动特效 (Visualizer) --- */
+.equalizer {
+    display: flex;
+    align-items: flex-end;
+    gap: 2px;
+    height: 12px;
+    margin-top: 6px;
+}
+
+.equalizer span {
+    width: 3px;
+    background-color: #0066cc; /* 你的主题色 */
+    animation: bounce 1s infinite ease-in-out;
+}
+
+/* 让三根柱子跳动节奏不一样 */
+.equalizer span:nth-child(1) { animation-duration: 0.6s; height: 40%; }
+.equalizer span:nth-child(2) { animation-duration: 0.8s; height: 100%; }
+.equalizer span:nth-child(3) { animation-duration: 0.5s; height: 60%; }
+
+@keyframes bounce {
+    0%, 100% { height: 20%; }
+    50% { height: 100%; }
+}
+
+
+
+
+
+/* --- 容器调整 --- */
+.mission-board {
+    display: flex;
+    flex-direction: column;
+    gap: 16px; /* 增加间距，让呼吸感更强 */
+    padding: 10px 5px; /* 预留一点空间给投影 */
+}
+
+/* --- 卡片通用样式 (Glassy / Soft UI) --- */
+.mission-item {
+    display: flex;
+    align-items: center;
+    padding: 20px 24px;
+    background: #fff;
+    /* 核心改变：去掉实线边框，改用极淡的内描边 + 柔光投影 */
+    border: 1px solid rgba(0, 0, 0, 0.04); 
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02); 
+    border-radius: 16px; /* 更大的圆角，更现代 */
+    transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); /* 丝滑的动画曲线 */
+    position: relative;
+    cursor: default;
+}
+
+/* 悬停交互：轻轻浮起，投影加深 */
+.mission-item:hover {
+    transform: translateY(-4px) scale(1.005);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.06);
+    z-index: 10;
+}
+
+/* --- 复选框/图标 (重绘) --- */
+.mission-checkbox {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%; /* 变成圆形，比方形更精致 */
+    border: 2px solid #e0e0e0;
+    margin-right: 20px;
+    position: relative;
+    flex-shrink: 0;
+    transition: all 0.3s ease;
+}
+
+/* --- 文本排版优化 --- */
+.mission-content {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* 左右对齐 */
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.mission-text {
+    font-size: 1.05rem;
+    font-weight: 500;
+    color: #2d2d2d; /* 深灰比纯黑更柔和 */
+    letter-spacing: -0.01em;
+}
+
+.mission-meta, .status-badge {
+    margin-left: auto;
+}
+
+/* ============================
+   状态设计：Completed (已完成)
+   设计思路：低调、褪色、融入背景
+   ============================ */
+.mission-item.completed {
+    background: #fafafa; /* 极浅的灰背景 */
+    box-shadow: none; /* 去掉投影，让它“沉”下去 */
+    border-color: transparent;
+}
+
+.mission-item.completed .mission-text {
+    color: #b0b0b0;
+    text-decoration: line-through; /* 删除线 */
+    text-decoration-color: #ddd;
+}
+
+.mission-item.completed .mission-checkbox {
+    background: #e0e0e0;
+    border-color: #e0e0e0;
+}
+
+/* 对勾图标 */
+.mission-item.completed .mission-checkbox::after {
+    content: '';
+    position: absolute;
+    left: 7px;
+    top: 4px;
+    width: 5px;
+    height: 9px;
+    border: solid #fff;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+.mission-item.completed .mission-meta {
+    font-size: 0.75rem;
+    color: #ccc;
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+}
+
+/* ============================
+   状态设计：Active (进行中)
+   设计思路：聚焦、光晕、精致的色彩
+   ============================ */
+.mission-item.active {
+    background: #fff;
+    /* 核心：用更清晰的投影来强调层级 */
+    box-shadow: 0 8px 25px rgba(0, 102, 204, 0.1); 
+    border: 1px solid rgba(0, 102, 204, 0.15); /* 极淡的蓝色边框 */
+}
+
+/* 选中状态的圆圈变成“靶心”样式 */
+.mission-item.active .mission-checkbox {
+    border-color: #0066cc;
+    background: transparent;
+}
+
+.mission-item.active .mission-checkbox::before {
+    content: '';
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 10px;
+    height: 10px;
+    background: #0066cc;
+    border-radius: 50%;
+    animation: dot-pulse 2s infinite; /* 圆点呼吸 */
+}
+
+.mission-item.active .mission-text {
+    color: #000;
+    font-weight: 600; /* 加粗 */
+}
+
+/* 精致的胶囊标签 */
+.status-badge {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #0066cc;
+    background: rgba(0, 102, 204, 0.08); /* 极淡的蓝色背景 */
+    padding: 6px 12px;
+    border-radius: 20px;
+    letter-spacing: 0.05em;
+    border: 1px solid rgba(0, 102, 204, 0.1);
+}
+
+@keyframes dot-pulse {
+    0% { box-shadow: 0 0 0 0 rgba(0, 102, 204, 0.4); }
+    70% { box-shadow: 0 0 0 6px rgba(0, 102, 204, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(0, 102, 204, 0); }
+}
+
+/* ============================
+   状态设计：Pending (未来)
+   设计思路：虚空、等待填充
+   ============================ */
+.mission-item:not(.active):not(.completed) .mission-checkbox {
+    border: 2px dashed #ccc; /* 虚线边框，表示待填 */
+}
+
+.mission-item:not(.active):not(.completed):hover {
+    border-color: #ccc;
+}
+
+
+/* --- Link Wrapper (去除默认链接样式) --- */
+.year-entry-link {
+    text-decoration: none; /* 去掉下划线 */
+    display: block;
+    color: inherit; /* 继承文字颜色 */
+    transition: all 0.3s ease;
+}
+
+/* 整个卡片容器 */
+.year-entry {
+    display: grid;
+    grid-template-columns: 140px 1fr; 
+    gap: 40px;
+    padding: 30px 20px; /* 增加内边距，增加点击区域 */
+    border-radius: 16px; /* 圆角 */
+    border: 1px solid transparent; /* 预留边框位置 */
+    transition: all 0.3s ease;
+}
+
+/* --- 悬停交互 (Hover Effects) --- */
+.year-entry-link:hover .year-entry {
+    background: #fff; /* 悬停时背景变亮 */
+    border-color: rgba(0,0,0,0.05); /* 出现淡淡的边框 */
+    transform: translateY(-5px); /* 整体上浮 */
+    box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+}
+
+/* 悬停时，年份数字变色 */
+.year-entry-link:hover .year-number {
+    color: #0066cc; /* 变成主题蓝 */
+    transform: translateX(5px); /* 稍微动一下 */
+}
+
+/* 悬停时，箭头向右飞 */
+.year-entry-link:hover .read-more span {
+    transform: translateX(5px);
+}
+
+
+/* --- 内部元素样式 (保持之前的风格) --- */
+.year-number {
+    font-family: var(--font-main);
+    font-size: 4rem;
+    font-weight: 900;
+    color: #94aed0; /* 默认是浅灰 */
+    line-height: 1;
+    text-align: right;
+    transition: all 0.3s ease;
+}
+
+.year-theme {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #1d1d1f;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+}
+
+.year-theme::before {
+    content: '';
+    display: inline-block;
+    width: 20px;
+    height: 2px;
+    background: #0066cc;
+    margin-right: 12px;
+}
+
+.year-text {
+    font-size: 1.05rem;
+    color: #666;
+    line-height: 1.7;
+    margin-bottom: 20px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2; /* 只显示两行，多余的省略 */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Read More 按钮 */
+.read-more {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #0066cc;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.read-more span {
+    transition: transform 0.3s ease;
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+    .year-entry {
+        grid-template-columns: 1fr;
+        gap: 10px;
+        padding: 20px 0;
+    }
+    .year-number {
+        text-align: left;
+        font-size: 3rem;
+    }
+}
+
+
+
+/* ============================
+   2. My Poems (印刷风格)
+   ============================ */
+.poem-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 40px;
+}
+
+.poem-card {
+    /* 纸张质感 */
+    background: #fafafa; 
+    padding: 40px 30px;
+    text-align: center; /* 诗歌居中对齐 */
+    border-radius: 8px; /* 较小的圆角，像纸张 */
+    transition: all 0.3s ease;
+    border: 1px solid transparent;
+}
+
+.poem-card:hover {
+    background: #fff;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    border-color: #f0f0f0;
+    transform: translateY(-5px);
+}
+
+.poem-title {
+    font-family: var(--font-main); /* 标题用无衬线体 */
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #000;
+    margin-bottom: 25px;
+    letter-spacing: 0.05em;
+}
+
+.poem-body {
+    /* 核心：正文使用衬线体，营造文学感 */
+    font-family: 'Georgia', 'Times New Roman', serif;
+    font-size: 1rem;
+    color: #444;
+    line-height: 2; /* 较大的行高，更有呼吸感 */
+    font-style: italic; /* 斜体 */
+    margin-bottom: 25px;
+}
+
+.poem-body p {
+    margin-bottom: 10px;
+}
+
+.poem-date {
+    font-size: 0.75rem;
+    color: #bbb;
+    display: block;
+    font-family: monospace;
+}
+
+
+/* ============================
+   3. Life Insights (便签风格)
+   ============================ */
+.insight-grid {
+    /* 瀑布流布局思路 */
+    column-count: 2; /* 默认两列 */
+    column-gap: 30px;
+}
+
+.insight-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 25px;
+    margin-bottom: 30px; /* 卡片上下间距 */
+    break-inside: avoid; /* 防止卡片被拆分到两列 */
+    box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+    border: 1px solid rgba(0,0,0,0.03);
+    transition: transform 0.3s ease;
+}
+
+.insight-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.06);
+}
+
+.insight-text {
+    font-size: 1rem;
+    color: #333;
+    line-height: 1.7;
+    margin-bottom: 15px;
+    font-weight: 400;
+}
+
+.insight-footer {
+    border-top: 1px solid #f5f5f5;
+    padding-top: 15px;
+    font-size: 0.8rem;
+    color: #0066cc;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+    .insight-grid {
+        column-count: 1; /* 手机上一列 */
+    }
+}
+
+
+
+/* --- 深夜模式容器 --- */
+.night-search-section {
+    background-color: #0f0f12; /* 深邃的夜空黑 */
+    padding: 100px 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.night-container {
+    width: 100%;
+    max-width: 600px;
+    text-align: center;
+    position: relative;
+    z-index: 2;
+}
+
+/* --- 时间角标 --- */
+.time-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    color: #a1a1aa;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-family: monospace;
+    margin-bottom: 30px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.moon-icon {
+    font-size: 1rem;
+}
+
+/* --- 搜索框 (核心) --- */
+.search-bar-wrapper {
+    background: rgba(255, 255, 255, 0.08); /* 半透明玻璃 */
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 50px; /* 胶囊形状 */
+    padding: 18px 30px;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.5); /* 柔光投影 */
+    transition: all 0.3s ease;
+}
+
+/* 悬停微发光 */
+.search-bar-wrapper:hover {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.3);
+    box-shadow: 0 0 60px rgba(78, 201, 176, 0.1); /* 微微的青色光晕 */
+}
+
+.search-icon {
+    color: #888;
+    font-size: 1.2rem;
+    margin-right: 15px;
+}
+
+/* --- 打字文字 --- */
+.typewriter-text {
+    color: #e2e2e2; /* 亮白色文字 */
+    font-family: 'Inter', -apple-system, sans-serif;
+    font-size: 1.2rem;
+    font-weight: 400;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+/* --- 光标闪烁 --- */
+.cursor {
+    color: #007aff; /* 你的主题蓝 */
+    font-size: 1.2rem;
+    font-weight: 300;
+    margin-left: 2px;
+    animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+}
+
+/* --- 底部文案 --- */
+.search-caption {
+    margin-top: 30px;
+    color: #666;
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+
+/* --- 容器样式 --- */
+.shelf-container {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    max-width: 900px; /* 不需要太宽，精致一点 */
+}
+
+/* --- 单本书卡片 --- */
+.shelf-item {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 16px;
+    border: 1px solid rgba(0,0,0,0.04);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+    transition: transform 0.2s ease;
+}
+
+.shelf-item:hover {
+    transform: translateX(5px); /* 悬停时轻微右移 */
+    background: #fdfdfd;
+}
+
+/* --- 迷你封面 --- */
+.book-cover-mini {
+    width: 60px;
+    height: 85px;
+    flex-shrink: 0;
+    border-radius: 4px;
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    background: #eee;
+}
+
+.book-cover-mini img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* --- 书籍详情 --- */
+.book-details {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 8px;
+}
+
+.book-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2px;
+}
+
+.book-header h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 0;
+    color: #1d1d1f;
+}
+
+/* --- 状态标签 --- */
+.status-badge {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding: 4px 8px;
+    border-radius: 6px;
+    letter-spacing: 0.05em;
+}
+
+.stalled { background: #fff4e5; color: #ffa94d; } /* 橙色：停滞 */
+.untouched { background: #f1f3f5; color: #adb5bd; } /* 灰色：未动 */
+.giving-up { background: #ffe3e3; color: #ff6b6b; } /* 红色：放弃 */
+
+/* --- 进度条 (惨淡版) --- */
+.progress-wrapper {
+    width: 100%;
+    height: 6px;
+    background: #f1f1f1;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    height: 100%;
+    background: #0066cc; /* 主题蓝 */
+    border-radius: 10px;
+    opacity: 0.6; /* 让颜色淡一点，显得“无力” */
+}
+
+/* --- 底部元数据 (借口) --- */
+.book-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-size: 0.85rem;
+}
+
+.percentage {
+    font-weight: 600;
+    color: #0066cc;
+    min-width: 80px;
+}
+
+.excuse {
+    font-family: 'Georgia', serif; /* 衬线体，更有叙述感 */
+    font-style: italic;
+    color: #888;
+    text-align: right;
+    flex: 1; /* 占据剩余空间 */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 文字太长自动省略 */
+}
+
+/* --- 移动端适配 --- */
+@media (max-width: 600px) {
+    .shelf-item {
+        align-items: flex-start;
+    }
+    .book-meta {
+        flex-direction: column;
+        gap: 5px;
+    }
+    .excuse {
+        text-align: left;
+        white-space: normal; /* 手机上允许换行 */
+    }
+    .book-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+    }
+}
+
+
+/* --- 整体布局：非对称美学 --- */
+.culture-layout {
+    display: grid;
+    /* 左边宽 (65%)，右边窄 (35%)，中间留出呼吸感 (Gap) */
+    grid-template-columns: 1.6fr 1fr;
+    gap: 80px; 
+    align-items: start;
+}
+
+/* --- 左侧：Media Grid (杂志排版) --- */
+.media-grid-modern {
+    display: grid;
+    /* 自动填充，每张卡片最小 140px */
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 30px;
+    row-gap: 40px;
+}
+
+.media-card {
+    text-decoration: none;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    group; /* 用于悬停效果 */
+}
+
+/* 视觉容器 */
+.media-visual {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 2 / 3; /* 统一为竖向海报比例 */
+    border-radius: 8px;
+    overflow: hidden;
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.media-visual img {
+    width: 100%; height: 100%; object-fit: cover;
+}
+
+/* 不同类型的投影 */
+.book-shadow { box-shadow: 5px 5px 15px rgba(0,0,0,0.1); } /* 书：侧边投影 */
+.movie-shadow { box-shadow: 0 10px 20px rgba(0,0,0,0.2); } /* 电影：悬浮感 */
+.music-shadow { box-shadow: 0 5px 15px rgba(0,0,0,0.15); border-radius: 4px; aspect-ratio: 1/1;} /* 音乐：正方形 */
+
+/* 悬停微动 */
+.media-card:hover .media-visual {
+    transform: translateY(-8px) scale(1.02);
+}
+
+.media-detail h4 {
+    font-size: 0.95rem;
+    color: #1d1d1f;
+    margin: 0;
+    line-height: 1.3;
+}
+.media-detail span {
+    font-size: 0.8rem;
+    color: #86868b;
+}
+
+/* --- 右侧：Tsundoku List (极简清单) --- */
+.culture-side {
+    position: sticky;
+    top: 100px; /* 如果左边很长，右边会吸顶跟随 */
+    padding-top: 10px; /* 微调对齐 */
+}
+
+.side-title {
+    font-size: 1.2rem; /* 比左边标题小一点，分出层级 */
+    color: #666;
+    border-bottom: none; /* 去掉下划线，更干净 */
+    margin-bottom: 30px;
+}
+
+.tsundoku-list {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    border-left: 2px solid #f0f0f0; /* 左侧装饰线 */
+    padding-left: 30px;
+}
+
+.tsundoku-item {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.ts-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.ts-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #333;
+}
+
+.ts-excuse {
+    font-family: 'Georgia', serif; /* 衬线体，像手写笔记 */
+    font-style: italic;
+    font-size: 0.85rem;
+    color: #999;
+    margin-top: 2px;
+}
+
+/* 进度条设计 */
+.ts-progress {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 4px;
+}
+
+.bar {
+    flex: 1;
+    height: 4px;
+    background: #f0f0f0;
+    border-radius: 2px;
+    position: relative;
+    overflow: hidden;
+}
+
+/* 进度填充 */
+.bar::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; bottom: 0;
+    width: 100%; /* 这里由 inline-style 控制实际显示宽度 */
+    background: #ccc; /* 灰色，表示“停滞” */
+    border-radius: 2px;
+}
+
+.percent {
+    font-size: 0.75rem;
+    color: #ccc;
+    font-family: monospace;
+    width: 30px;
+    text-align: right;
+}
+
+.ts-note {
+    margin-top: 20px;
+    font-size: 0.7rem;
+    color: #ddd;
+    font-style: italic;
+}
+
+/* --- 🎵 音乐播放动画 (Mini Equalizer) --- */
+.playing-icon {
+    position: absolute;
+    bottom: 10px; left: 10px;
+    display: flex; gap: 2px;
+    height: 12px; align-items: flex-end;
+}
+.playing-icon span {
+    width: 3px; background: #fff;
+    animation: bounce 1s infinite;
+    box-shadow: 0 0 5px rgba(0,0,0,0.5);
+}
+.playing-icon span:nth-child(1) { height: 40%; animation-duration: 0.6s; }
+.playing-icon span:nth-child(2) { height: 80%; animation-duration: 0.8s; }
+.playing-icon span:nth-child(3) { height: 50%; animation-duration: 0.5s; }
+
+/* --- 移动端适配 --- */
+@media (max-width: 800px) {
+    .culture-layout {
+        grid-template-columns: 1fr; /* 变成单列 */
+        gap: 50px;
+    }
+    
+    .tsundoku-list {
+        border-left: none; /* 去掉边框 */
+        padding-left: 0;
+        border-top: 2px solid #f0f0f0; /* 改为顶部分割线 */
+        padding-top: 30px;
+    }
+    
+    .culture-side {
+        position: static; /* 取消吸顶 */
+    }
+}
+
+
+/* =========================================
+   VISION CARDS STYLES (Mission Log)
+   ========================================= */
+
+/* 1. 网格布局容器 */
+.vision-grid {
+    display: grid;
+    /* 自动适应：每张卡片最小宽 260px，空间不够自动换行 */
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 20px;
+    padding: 10px 0; /* 预留一点上下空间给阴影 */
+}
+
+/* 2. 卡片主体设计 */
+.vision-card {
+    position: relative;
+    height: 340px;          /* 竖向长方形，更有电影海报感 */
+    border-radius: 16px;    /* 圆角 */
+    background-size: cover; /* 图片填满 */
+    background-position: center;
+    overflow: hidden;       /* 裁剪溢出内容 */
+    cursor: default;        /* 默认鼠标样式 */
+    
+    /* 初始阴影与动画设置 */
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.4s ease;
+}
+
+/* 悬停交互：上浮 + 投影加深 */
+.vision-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.25);
+    z-index: 5; /* 确保悬停时在最上层 */
+}
+
+/* 3. 黑色渐变遮罩 (关键：保证白字能看清) */
+.vision-overlay {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    /* 从底部向上变黑：底部85%黑 -> 中间30%黑 -> 顶部完全透明 */
+    background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0) 100%);
+    transition: opacity 0.3s;
+}
+
+/* 4. 内容排版 */
+.vision-content {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    padding: 24px;
+    width: 100%;
+    z-index: 2; /* 内容必须在遮罩之上 */
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start; /* 左对齐 */
+}
+
+/* 5. 状态标签 (胶囊样式) */
+.vision-tag {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 5px 10px;
+    border-radius: 30px;
+    margin-bottom: 10px;
+    
+    /* 磨砂玻璃效果 */
+    background: rgba(255, 255, 255, 0.2); 
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* 不同状态的颜色微调 */
+.vision-tag.completed { 
+    background: rgba(52, 199, 89, 0.3); /* 绿色底 */
+    border-color: rgba(52, 199, 89, 0.4); 
+}
+.vision-tag.active { 
+    background: rgba(10, 132, 255, 0.4); /* 蓝色底 */
+    border-color: rgba(10, 132, 255, 0.5); 
+}
+.vision-tag.grinding { 
+    background: rgba(255, 159, 10, 0.4); /* 橙色底 */
+    border-color: rgba(255, 159, 10, 0.5); 
+}
+
+/* 6. 字体样式 */
+.vision-card h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 5px 0;
+    line-height: 1.3;
+    /* 增加文字阴影，防止背景太乱看不清 */
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5); 
+}
+
+.vision-card p {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.8);
+    font-weight: 400;
+    margin: 0;
+    font-family: 'Inter', sans-serif; /* 英文副标题 */
+}
+
+
+/* =========================================
+   TRAJECTORY MAP CARD STYLE
+   ========================================= */
+
+/* 1. 卡片外壳：完全复用 Vision Card 的质感 */
+.trajectory-card-wrapper {
+    width: 100%;
+    /* 保持卡片风格：圆角 + 边框 */
+    border-radius: 16px; 
+    
+
+    
+    /* 内部布局 */
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* 悬停时的微交互，保持一致性 */
+.trajectory-card-wrapper:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+    border-color: #d1d1d6;
+}
+
+/* 2. 地图本体容器 */
+#trajectory-map {
+    width: 100%;
+    height: 600px; /* 固定高度 */
+    border-radius: 12px; /* 内部圆角稍微小一点，形成嵌套感 */
+    background: #fbfbfd; /* 地图底色：极淡的灰蓝，区分于卡片白底 */
+}
+
+/* 移动端适配 */
+@media (max-width: 600px) {
+    #trajectory-map {
+        height: 400px; /* 手机上改矮一点 */
+    }
+}
+
+
+
+
+/* =================================================================
+   SECTION: Thought Log & Digital Human (Final Clean Version)
+   ================================================================= */
+
+/* --- 1. 背景与双栏布局 --- */
+.apple-bg {
+    background-color: #F5F5F7; /* Apple 浅灰背景 */
+    padding-top: 100px;
+    padding-bottom: 100px;
+    position: relative;
+    /* 移除 overflow:hidden，否则 sticky 可能会失效 */
+}
+
+.section-title-light {
+    font-family: var(--font-main);
+    font-size: 1.8rem;
+    font-weight: 400; /* 不加粗 */
+    margin-bottom: 50px;
+    color: #1d1d1f;
+    letter-spacing: -0.02em;
+}
+
+.stream-layout-container {
+    display: flex;
+    gap: 60px; /* 左右间距 */
+    max-width: 1200px;
+    margin: 0 auto;
+    /* [核心] Stretch 确保左右两列等高，创造滑动轨道 */
+    align-items: stretch; 
+    position: relative;
+}
+
+/* 左侧栏：占 60% */
+.stream-left-col {
+    flex: 3;
+}
+
+/* 右侧栏：占 40% (轨道) */
+.stream-right-col {
+    flex: 2;
+    position: relative;
+}
+
+/* --- 2. 右侧数字人悬浮卡片 (Sticky) --- */
+/* 右侧数字人悬浮卡片 */
+.digital-human-card {
+    position: sticky;
+    position: -webkit-sticky;
+    top: 120px;
+    
+    width: 100%;
+    /* 核心修改 1: 取消长宽比锁定，允许自由拉高 */
+    aspect-ratio: unset !important; 
+    
+    /* 核心修改 2: 增加最大高度限制，防止超出一屏 */
+    max-height: 850px; 
+    height: auto; /* 让高度由内容撑开 */
+    
+    /* 视觉样式保持不变 */
+    background: rgba(255, 255, 255, 0.65);
+    backdrop-filter: blur(25px) saturate(120%);
+    -webkit-backdrop-filter: blur(25px) saturate(120%);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    border-radius: 24px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.05);
+    z-index: 10;
+}
+
+/* 数字人画布区域 */
+.dh-canvas-container {
+    width: 100%;
+    
+    /* 核心修改 3: 强制设定一个很大的高度 */
+    height: 500px; /* 这里由 300 改为了 600，你可以改得更大 */
+    min-height: 500px; /* 确保最小高度 */
+    
+    flex-shrink: 0; /* 防止被挤压 */
+    background: #eef0f5;
+    border-radius: 16px;
+    overflow: hidden;
+    position: relative;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.dh-canvas-container img {
+    width: 100%; height: 100%; object-fit: cover;
+    filter: grayscale(10%) contrast(1.05); /* 稍微降低色彩干扰 */
+    transition: transform 0.5s ease;
+}
+
+/* 底部状态栏 */
+.dh-status-bar {
+    display: flex; align-items: center; gap: 10px; padding-left: 5px;
+}
+
+.status-dot-pulse {
+    width: 8px; height: 8px;
+    background-color: #34c759; /* iOS Green */
+    border-radius: 50%;
+    box-shadow: 0 0 0 0 rgba(52, 199, 89, 0.6);
+    animation: status-pulse 2s infinite;
+}
+
+.status-text {
+    font-family: var(--font-main);
+    font-size: 0.8rem;
+    color: #666;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+}
+
+@keyframes status-pulse {
+    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(52, 199, 89, 0.6); }
+    70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(52, 199, 89, 0); }
+    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(52, 199, 89, 0); }
+}
+
+/* --- 3. 左侧时间轴设计 --- */
+.stream-container-clean {
+    position: relative;
+    padding-left: 35px; /* 左侧留白给时间轴 */
+}
+
+/* 贯穿线 */
+.stream-line-clean {
+    position: absolute;
+    top: 10px; left: 10px; bottom: 0;
+    width: 2px;
+    background: #d2d2d7; /* 浅灰实线 */
+    z-index: 0;
+}
+
+/* 条目布局 */
+.stream-item-clean {
+    position: relative;
+    margin-bottom: 40px;
+    display: flex;
+    align-items: flex-start;
+}
+
+/* --- 4. 呼吸圆点 (时间轴动态) --- */
+.stream-marker-breathing {
+    position: absolute;
+    left: -34px; top: 0; /* 对齐左边距 */
+    width: 22px; height: 22px;
+    display: flex; align-items: center; justify-content: center;
+    z-index: 2;
+}
+
+.marker-core {
+    width: 10px; height: 10px;
+    background: #fff;
+    border: 2px solid #86868b;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+@keyframes marker-pulse {
+    0% { box-shadow: 0 0 0 0 rgba(0, 102, 204, 0.4); }
+    70% { box-shadow: 0 0 0 8px rgba(0, 102, 204, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(0, 102, 204, 0); }
+}
+
+/* 激活或悬停时：变蓝 + 呼吸 */
+.stream-item-clean.active .marker-core,
+.stream-item-clean:hover .marker-core {
+    background: #0066cc;
+    border-color: #0066cc;
+    animation: marker-pulse 2s infinite cubic-bezier(0.66, 0, 0, 1);
+}
+
+/* --- 5. 静止毛玻璃卡片 (左侧内容) --- */
+.glass-card-static {
+    flex: 1;
+    position: relative;
+    
+    /* 核心质感：轻盈、透气 */
+    background: linear-gradient(135deg, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0.6) 100%);
+    backdrop-filter: blur(20px) saturate(120%);
+    -webkit-backdrop-filter: blur(20px) saturate(120%);
+    border: 1px solid rgba(255, 255, 255, 1);
+    
+    border-radius: 16px;
+    padding: 25px 30px;
+    /* 干净的投影，无晕染 */
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    
+    /* 不设置浮动动画，保持静止 */
+    transition: all 0.3s ease;
+}
+
+/* 悬停微反馈 (依然保持静止感，只变亮) */
+.stream-item-clean:hover .glass-card-static {
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.08);
+    border-color: #fff;
+}
+
+/* --- 6. 字体排版 (No Bold) --- */
+.card-header-light {
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-bottom: 12px;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+    padding-bottom: 12px;
+}
+
+.card-title-light {
+    font-family: var(--font-main);
+    font-size: 1.1rem;
+    font-weight: 500; /* Medium, not Bold */
+    color: #1d1d1f;
+}
+
+.card-time-light {
+    font-family: var(--font-main);
+    font-size: 0.85rem;
+    color: #86868b;
+    font-weight: 400;
+}
+
+.card-content-light {
+    font-family: var(--font-main);
+    font-size: 1rem;
+    line-height: 1.7;
+    color: #333;
+    font-weight: 400; /* Regular */
+    margin-bottom: 15px;
+}
+
+/* 强调色：只变色不加粗 */
+.highlight-blue { color: #0066cc; font-weight: 400; }
+
+.card-footer-light { padding-top: 5px; }
+.commit-badge {
+    display: inline-block;
+    font-size: 0.75rem;
+    background: rgba(0,0,0,0.05);
+    color: #666;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-weight: 400;
+}
+
+.card-media-clean {
+    margin: 10px 0 20px 0; border-radius: 8px; overflow: hidden;
+    border: 1px solid rgba(0,0,0,0.05);
+}
+.card-media-clean img { width: 100%; height: auto; display: block; }
+
+/* 移动端适配 */
+@media (max-width: 900px) {
+    .stream-layout-container {
+        flex-direction: column;
+        gap: 50px;
+    }
+    .stream-right-col {
+        width: 100%;
+        margin-bottom: 40px;
+    }
+    /* 手机上数字人取消悬浮，变成普通卡片 */
+    .digital-human-card {
+        position: relative;
+        top: 0;
+        width: 100%;
+        max-width: 400px; /* 限制宽度 */
+        margin: 0 auto;
+        aspect-ratio: 16/9; /* 改为横屏比例 */
+    }
+}
+
+
+
+/* --- 数字人画布与 Loading 样式 --- */
+
+/* 确保容器相对定位 */
+#avatar-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); /* 科技感背景 */
+}
+
+/* 画布占满 */
+#avatar-canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+    outline: none;
+}
+
+/* Loading 遮罩 */
+.avatar-loading {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(5px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 20;
+    transition: opacity 0.5s ease;
+}
+
+.avatar-loading.fade-out {
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* 简单的旋转 Spinner */
+.spinner {
+    width: 40px; height: 40px;
+    border: 4px solid #e1e1e1;
+    border-top: 4px solid #0066cc;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 15px;
+}
+
+.avatar-loading span {
+    font-family: var(--font-main);
+    font-size: 0.85rem;
+    color: #666;
+    font-weight: 500;
+}
+
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+/* =================================================================
+   PART: Digital Human & Chat Interface (Final Fixed Version)
+   ================================================================= */
+
+/* --- 1. 数字人卡片容器 (核心悬浮逻辑) --- */
+.digital-human-card {
+    /* [悬浮设置] */
+    position: sticky;
+    position: -webkit-sticky;
+    top: 120px; /* 距离视口顶部的停留距离 */
+    
+    /* [尺寸强制修正] */
+    width: 100%;
+    aspect-ratio: unset !important; /* 关键：取消长宽比锁定 */
+    max-height: 850px; /* 允许卡片变得很高 */
+    height: auto;
+    
+    /* [视觉风格：静止毛玻璃] */
+    background: rgba(255, 255, 255, 0.65);
+    backdrop-filter: blur(25px) saturate(120%);
+    -webkit-backdrop-filter: blur(25px) saturate(120%);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    
+    border-radius: 24px;
+    /* 清除内边距，让画布填满上方 */
+    padding: 0; 
+    
+    /* 内部布局：垂直排列 (画布在上，聊天在下) */
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* 防止圆角溢出 */
+    
+    /* 投影 */
+    box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.05);
+    z-index: 10;
+}
+
+/* --- 2. 3D 画布区域 --- */
+.dh-canvas-container {
+    width: 100%;
+    
+    /* [高度修正] 给予足够的空间展示半身像 */
+    height: 500px; 
+    flex-shrink: 0; /* 防止被挤压 */
+    
+    position: relative;
+    background: linear-gradient(135deg, #eef1f5 0%, #e6e9f0 100%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+#avatar-canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+    outline: none;
+}
+
+/* --- 3. Loading 遮罩层 --- */
+.avatar-loading {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: #f0f2f5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 20;
+    transition: opacity 0.5s ease;
+}
+
+.avatar-loading.fade-out {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.spinner {
+    width: 30px; height: 30px;
+    border: 3px solid #ccc;
+    border-top-color: #007aff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 10px;
+}
+
+.avatar-loading span {
+    font-family: var(--font-main);
+    font-size: 0.85rem;
+    color: #666;
+    font-weight: 500;
+}
+
+@keyframes spin { 
+    to { transform: rotate(360deg); } 
+}
+
+/* --- 4. 聊天交互区域 (Chat Interface) --- */
+.dh-chat-interface {
+    flex: 1; /* 占满剩余空间 */
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.4); /* 微透背景，区别于画布 */
+    min-height: 250px; /* 保证聊天区最小高度 */
+}
+
+/* 消息列表容器 */
+.chat-messages {
+    flex: 1;
+    overflow-y: auto; /* 内容多了可以滚动 */
+    padding-bottom: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-height: 300px; /* 限制列表高度 */
+    
+    /* 隐藏滚动条但保留功能 */
+    scrollbar-width: none; 
+    -ms-overflow-style: none;
+}
+.chat-messages::-webkit-scrollbar { 
+    display: none; 
+}
+
+/* 消息气泡通用样式 */
+.message {
+    display: flex;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    animation: fadeUp 0.3s ease;
+    width: 100%;
+}
+
+.message .bubble {
+    padding: 10px 14px;
+    border-radius: 18px;
+    max-width: 90%;
+    word-wrap: break-word;
+    font-family: var(--font-main);
+    font-weight: 400; /* 全员不加粗 */
+}
+
+/* AI 的消息 (左侧，白底灰字) */
+.ai-msg {
+    justify-content: flex-start;
+}
+.ai-msg .bubble {
+    background: #fff;
+    color: #1d1d1f;
+    border: 1px solid rgba(0,0,0,0.05);
+    border-bottom-left-radius: 4px; /* 气泡尾巴 */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+}
+
+/* 用户的消息 (右侧，蓝底白字) */
+.user-msg {
+    justify-content: flex-end;
+}
+.user-msg .bubble {
+    background: #007aff; /* iOS Blue */
+    color: #fff;
+    border-bottom-right-radius: 4px; /* 气泡尾巴 */
+    box-shadow: 0 4px 10px rgba(0, 122, 255, 0.2);
+}
+
+/* 消息动画 */
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- 5. 底部输入区 --- */
+.chat-input-area {
+    display: flex;
+    gap: 10px;
+    margin-top: auto; /* 强制推到底部 */
+    position: relative;
+    padding-top: 10px;
+}
+
+.chat-input-area input {
+    flex: 1;
+    padding: 10px 15px;
+    border-radius: 20px;
+    border: 1px solid rgba(0,0,0,0.1);
+    background: rgba(255, 255, 255, 0.8);
+    font-size: 0.9rem;
+    font-family: var(--font-main);
+    transition: all 0.3s ease;
+    outline: none;
+    color: #333;
+}
+
+.chat-input-area input::placeholder {
+    color: #999;
+}
+
+.chat-input-area input:focus {
+    background: #fff;
+    border-color: #007aff;
+    box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+}
+
+.chat-input-area button {
+    width: 38px; height: 38px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    border: none;
+    background: #1d1d1f;
+    color: #fff;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.chat-input-area button:hover {
+    transform: scale(1.05);
+    background: #007aff;
+}
+
+/* --- 6. 底部微型状态栏 --- */
+.dh-status-bar-mini {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 12px;
+    padding-left: 5px;
+}
+
+.status-dot-pulse {
+    width: 6px; height: 6px;
+    background-color: #34c759; /* iOS Green */
+    border-radius: 50%;
+    box-shadow: 0 0 0 0 rgba(52, 199, 89, 0.6);
+    animation: status-pulse 2s infinite;
+}
+
+.status-text {
+    font-family: var(--font-main);
+    font-size: 0.75rem;
+    color: #86868b;
+    font-weight: 500;
+}
+
+@keyframes status-pulse {
+    0% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(52, 199, 89, 0.6); }
+    70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(52, 199, 89, 0); }
+    100% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(52, 199, 89, 0); }
+}
+
+/* 移动端适配 */
+@media (max-width: 900px) {
+    .digital-human-card {
+        position: relative;
+        top: 0;
+        width: 100%;
+        max-width: 450px;
+        margin: 0 auto 40px auto;
+        aspect-ratio: auto;
+        max-height: none;
+    }
+    
+    .dh-canvas-container {
+        height: 400px; /* 手机上改矮一点 */
+    }
+}
+
+
+/* --- 模型头顶的气泡样式 --- */
+.model-bubble {
+    position: absolute;
+    top: 20%; /* 大概在狗头上方的位置 */
+    left: 50%;
+    transform: translate(-50%, -20px) scale(0.8); /* 初始状态稍微缩小 */
+    background: white;
+    padding: 12px 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #333;
+    pointer-events: none; /* 让鼠标可以直接穿透气泡点到模型 */
+    opacity: 0; /* 默认隐藏 */
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* 弹性动画 */
+    z-index: 10;
+}
+
+/* 气泡的小尾巴 */
+.model-bubble::after {
+    content: '';
+    position: absolute;
+    bottom: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 6px 6px 0;
+    border-style: solid;
+    border-color: white transparent transparent transparent;
+}
+
+/* 激活状态 */
+.model-bubble.show {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+}

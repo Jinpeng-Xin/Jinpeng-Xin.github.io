@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>JINPENG XIN | Digital Twin</title>
+    <style>
+        body { margin: 0; background-color: #f5f5f7; overflow: hidden; font-family: -apple-system, sans-serif; }
+        #avatar-container { width: 100vw; height: 100vh; position: relative; }
+        
+        /* 加载动画 */
+        #avatar-loading {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: #f5f5f7; display: flex; flex-direction: column; 
+            align-items: center; justify-content: center; z-index: 20; 
+            transition: opacity 0.6s ease-out;
+        }
+        #avatar-loading.fade-out { opacity: 0; pointer-events: none; }
+        
+        .spinner {
+            width: 40px; height: 40px; border: 3px solid rgba(0,122,255,0.1);
+            border-top: 3px solid #007aff; border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+<div id="avatar-container">
+    <div id="avatar-loading">
+        <div class="spinner"></div>
+        <p style="color: #86868b; margin-top: 15px;">Summoning AI...</p>
+    </div>
+    <canvas id="avatar-canvas"></canvas>
+</div>
+
+<script type="module">
+    import * as THREE from 'https://cdn.skypack.dev/three@0.132.2/build/three.module.js';
+    import { GLTFLoader } from 'https://cdn.skypack.dev/three@0.132.2/examples/jsm/loaders/GLTFLoader.js';
+
+    // --- 1. 环境初始化 ---
+    const canvas = document.getElementById('avatar-canvas');
+    const scene = new THREE.Scene();
+    // 背景色设为淡灰色，符合 Apple 审美
+    scene.background = new THREE.Color(0xf5f5f7);
+
+    const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+    // 调整相机位置：z 越大，模型离得越远
+    camera.position.set(0, 0, 5);
+
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.outputEncoding = THREE.sRGBEncoding;
+
+    // 灯光方案：三点发光法，让模型立体感更强
+    scene.add(new THREE.AmbientLight(0xffffff, 0.8)); // 基础环境光
+    const mainLight = new THREE.DirectionalLight(0xffffff, 0.8);
+    mainLight.position.set(5, 5, 5);
+    scene.add(mainLight);
+    const fillLight = new THREE.PointLight(0x007aff, 0.2); // 侧面淡淡的科技蓝
+    fillLight.position.set(-5, 0, 2);
+    scene.add(fillLight);
+
+    // --- 2. 加载模型 ---
+    let avatarModel = null;
+    const mouse = new THREE.Vector2();
+    const loader = new GLTFLoader();
+
+    // 确保 "未命名.glb" 就在当前目录下
+    loader.load('未命名.glb', (gltf) => {
+        avatarModel = gltf.scene;
+        
+        // --- 核心微调 ---
+        // y: 控制模型上下位置 (负值下移)
+        avatarModel.position.y = -1.2; 
+        // scale: 控制模型大小
+        avatarModel.scale.set(2.5, 2.5, 2.5); 
+
+        scene.add(avatarModel);
+        
+        // 隐藏加载画面
+        document.getElementById('avatar-loading').classList.add('fade-out');
+    }, undefined, (error) => {
+        console.error("加载失败。如果是本地双击运行，请使用 Live Server 启动预览。", error);
+    });
+
+    // --- 3. 动画：视差微动逻辑 ---
+    function animate() {
+        requestAnimationFrame(animate);
+        
+        if (avatarModel) {
+            // 计算目标旋转角度 (鼠标移动幅度越大，旋转越明显)
+            const targetRotY = mouse.x * 0.25;
+            const targetRotX = -mouse.y * 0.15;
+
+            // 使用 lerp 实现平滑的阻尼感，防止旋转生硬
+            avatarModel.rotation.y = THREE.MathUtils.lerp(avatarModel.rotation.y, targetRotY, 0.05);
+            avatarModel.rotation.x = THREE.MathUtils.lerp(avatarModel.rotation.x, targetRotX, 0.05);
+        }
+
+        renderer.render(scene, camera);
+    }
+
+    // 获取归一化的鼠标坐标 (-1 到 1)
+    window.addEventListener('mousemove', (e) => {
+        mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+        mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+    });
+
+    // 适配窗口缩放
+    window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    animate();
+</script>
+</body>
+</html>

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact | JINPENG XIN</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="contact.css"> <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+</head>
+<body>
+
+    <nav class="navbar">
+        <a href="index.html" class="nav-logo">
+            <img src="https://jinpeng-assets.oss-cn-beijing.aliyuncs.com/%E4%B8%AA%E4%BA%BA%E4%B8%BB%E9%A1%B5/%E5%9F%BA%E6%9C%AC%E5%9B%BE%E7%89%87/logo3.0.svg" alt="Logo">
+        </a>
+        <div class="nav-links">
+            <a href="index.html#about">About</a>
+            <a href="blog.html">Blog</a>
+            <a href="research.html">Research</a>
+            <a href="contact.html" class="active">Contact</a> </div>
+    </nav>
+
+    <main class="container">
+
+        <header class="contact-header">
+            <h1 class="contact-title">Let's start a Conversation</h1>
+            <p class="contact-intro">
+                无论何事，随时欢迎来信。
+            </p>
+        </header>
+
+        <section class="contact-grid">
+            
+            <div class="info-col">
+                
+                <div class="info-card">
+                    <div class="icon-box bg-blue">
+                        <i class="ri-mail-send-line"></i>
+                    </div>
+                    <div class="info-content">
+                        <h3>Email</h3>
+                        <p>学术/工作邮件请发至：</p>
+                        <a href="mailto:xinjinpeng0905@163.com" class="info-link">xinjinpeng0905@163.com</a>
+                    </div>
+                </div>
+
+                <div class="info-card">
+                    <div class="icon-box bg-orange">
+                        <i class="ri-map-pin-line"></i>
+                    </div>
+                    <div class="info-content">
+                        <h3>Location</h3>
+                        <p>Beijing Jiaotong University</p>
+                        <span class="sub-text">Haidian District, Beijing, China</span>
+                    </div>
+                </div>
+
+                <div class="social-matrix">
+                    <a href="#" class="social-btn" target="_blank" aria-label="GitHub">
+                        <i class="ri-github-line"></i>
+                    </a>
+                    <a href="#" class="social-btn" target="_blank" aria-label="Google Scholar">
+                        <i class="ri-graduation-cap-line"></i>
+                    </a>
+                    <a href="#" class="social-btn" target="_blank" aria-label="LinkedIn">
+                        <i class="ri-linkedin-fill"></i>
+                    </a>
+                    <a href="#" class="social-btn" target="_blank" aria-label="X (Twitter)">
+                        <i class="ri-twitter-x-line"></i>
+                    </a>
+                </div>
+
+            </div>
+
+            <div class="form-col">
+                <form class="contact-form" action="#" method="POST">
+                    <div class="form-header">
+                        <h3>Send a Message</h3>
+                        <p>I usually respond within 24 hours.</p>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="name">Name</label>
+                            <input type="text" id="name" placeholder="John Doe" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <input type="email" id="email" placeholder="john@example.com" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="subject">Subject</label>
+                        <select id="subject">
+                            <option value="research">Research Collaboration</option>
+                            <option value="tech">Technical Discussion</option>
+                            <option value="coffee">Coffee Chat</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="message">Message</label>
+                        <textarea id="message" rows="5" placeholder="Hello Jinpeng, I'd like to discuss..." required></textarea>
+                    </div>
+
+                    <button type="submit" class="submit-btn">
+                        <span>Send Message</span>
+                        <i class="ri-send-plane-fill"></i>
+                    </button>
+                </form>
+            </div>
+
+        </section>
+
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <p>&copy; 2026 Jinpeng Xin. All rights reserved.</p>
+        </div>
+    </footer>
+
+</body>
+</html>

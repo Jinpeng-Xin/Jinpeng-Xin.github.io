@@ -1,0 +1,358 @@
+/* =========================================
+   1. 全局背景 (Apple/Google 风格弥散渐变)
+   ========================================= */
+body {
+    /* 基础底色：纯白 */
+    background-color: #ffffff;
+
+    /* 核心魔法：叠加多个径向渐变 (Radial Gradients) */
+    background-image: 
+        /* 左上角：极淡的冷调蓝紫 (科技感) */
+        radial-gradient(at 0% 0%, rgba(0, 122, 255, 0.2) 0px, transparent 50%),
+        
+        /* 右上角：极淡的暖调橙粉 (温度感) */
+        radial-gradient(at 100% 0%, rgba(255, 150, 100, 0.2) 0px, transparent 50%),
+        
+        /* 中间偏下：极淡的青色 (丰富层次) */
+        radial-gradient(at 50% 60%, rgba(52, 199, 89, 0.2) 0px, transparent 50%);
+
+    /* 背景固定：让渐变像壁纸一样固定，不随滚动条移动 */
+    background-attachment: fixed;
+    background-size: 100% 100%;
+    
+    /* 字体统一 */
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    color: #1d1d1f;
+    line-height: 1.6;
+    padding-top: 80px; /* 避让导航栏 */
+    margin: 0;
+}
+
+/* =========================================
+   2. 博客头部 (Header & Filter)
+   ========================================= */
+.blog-header {
+    text-align: center;
+    padding: 80px 0 50px;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.blog-title {
+    font-size: 3.5rem;
+    font-weight: 400;
+    margin-bottom: 15px;
+    letter-spacing: -0.04em;
+    line-height: 1.3;
+    color: #1d1d1f;
+}
+
+/* 标题中的渐变文字高亮 */
+.highlight-text {
+    background: linear-gradient(120deg, #007aff 0%, #00c6ff 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    display: inline-block;
+}
+
+.blog-subtitle {
+    font-size: 1.2rem;
+    color: #86868b;
+    font-weight: 400;
+    margin-bottom: 40px;
+}
+
+/* --- 筛选器 (Filter Bar) --- */
+.filter-bar {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    
+    /* 毛玻璃质感容器 */
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    
+    padding: 6px;
+    border-radius: 40px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+}
+
+.filter-btn {
+    border: none;
+    background: transparent;
+    padding: 10px 24px;
+    border-radius: 30px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #666;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.filter-btn:hover {
+    color: #000;
+    background-color: rgba(0, 0, 0, 0.03);
+}
+
+/* 选中状态：黑底白字，像 Apple 的 Tag */
+.filter-btn.active {
+    background-color: #1d1d1f;
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transform: scale(1.02);
+}
+
+/* =========================================
+   3. 置顶文章 (Featured Card)
+   ========================================= */
+.featured-section {
+    margin-bottom: 80px;
+    padding: 0 20px;
+}
+
+.featured-card {
+    display: grid;
+    grid-template-columns: 1.3fr 1fr; /* 左侧图片宽一点 */
+    background: #fff;
+    border-radius: 24px;
+    overflow: hidden;
+    
+    /* 极其细腻的阴影 */
+    box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.featured-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.1);
+}
+
+.featured-image {
+    position: relative;
+    overflow: hidden;
+    min-height: 400px;
+}
+
+.featured-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.7s ease; /* 缓慢缩放 */
+}
+
+.featured-card:hover .featured-image img {
+    transform: scale(1.05);
+}
+
+.featured-content {
+    padding: 60px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.featured-content h2 {
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin: 20px 0;
+    line-height: 1.25;
+}
+
+.featured-content h2 a {
+    text-decoration: none;
+    color: #1d1d1f;
+    transition: color 0.2s;
+}
+
+.featured-content h2 a:hover {
+    color: #007aff;
+}
+
+.featured-content p {
+    font-size: 1.1rem;
+    color: #555;
+    margin-bottom: 30px;
+    line-height: 1.6;
+}
+
+.read-more {
+    font-weight: 600;
+    color: #007aff;
+    text-decoration: none;
+    font-size: 1rem;
+    display: inline-flex;
+    align-items: center;
+    transition: opacity 0.2s;
+}
+
+.read-more:hover {
+    opacity: 0.7;
+}
+
+/* =========================================
+   4. 文章网格 (Blog Grid)
+   ========================================= */
+.blog-grid {
+    display: grid;
+    /* 自动响应：最小宽度 340px */
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 40px;
+    padding-bottom: 100px;
+    padding: 0 20px 100px;
+}
+
+.blog-card {
+    background: #fff;
+    border-radius: 20px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    
+    /* 边框和阴影 */
+    border: 1px solid rgba(0, 0, 0, 0.03);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+    
+    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.blog-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
+}
+
+/* 图片区域 */
+.card-cover {
+    height: 220px;
+    overflow: hidden;
+    position: relative;
+}
+
+.card-cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s ease;
+}
+
+.blog-card:hover .card-cover img {
+    transform: scale(1.08);
+}
+
+/* 内容区域 */
+.card-body {
+    padding: 30px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.card-body h3 {
+    font-size: 1.4rem;
+    font-weight: 600;
+    margin: 12px 0;
+    line-height: 1.4;
+}
+
+.card-body h3 a {
+    text-decoration: none;
+    color: #1d1d1f;
+    transition: color 0.2s;
+}
+
+.card-body h3 a:hover {
+    color: #007aff;
+}
+
+.card-body p {
+    font-size: 1rem;
+    color: #666;
+    line-height: 1.6;
+    margin-bottom: 0;
+    
+    /* 限制显示 3 行 */
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* =========================================
+   5. 标签系统 (Tags & Meta)
+   ========================================= */
+.meta-tags {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.8rem;
+}
+
+/* 通用标签样式 */
+.tag {
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 5px 10px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+}
+
+/* 分类专属色 */
+.tag.research { 
+    color: #5856d6; /* 靛蓝 */
+    background: rgba(88, 86, 214, 0.1); 
+}
+
+.tag.coding { 
+    color: #007aff; /* 科技蓝 */
+    background: rgba(0, 122, 255, 0.1); 
+}
+
+.tag.life { 
+    color: #ff9500; /* 暖橙 */
+    background: rgba(255, 149, 0, 0.1); 
+}
+
+.date {
+    color: #999;
+    font-weight: 500;
+}
+
+/* =========================================
+   6. 响应式适配 (Mobile)
+   ========================================= */
+@media (max-width: 800px) {
+    /* 头部调整 */
+    .blog-title {
+        font-size: 2.5rem;
+    }
+    
+    /* 置顶卡片变垂直 */
+    .featured-card {
+        grid-template-columns: 1fr;
+    }
+    .featured-image img {
+        min-height: 250px;
+    }
+    .featured-content {
+        padding: 30px;
+    }
+    .featured-content h2 {
+        font-size: 1.6rem;
+    }
+    
+    /* 网格变单列 */
+    .blog-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    /* 筛选器允许横向滚动 */
+    .filter-bar {
+        overflow-x: auto;
+        max-width: 100%;
+        white-space: nowrap;
+        padding: 10px;
+    }
+}

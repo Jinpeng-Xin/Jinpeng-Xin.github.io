@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>TBM 数字孪生 - 实体地质掘进系统</title>
+    
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+            "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/",
+            "three-mesh-bvh": "https://cdn.jsdelivr.net/npm/three-mesh-bvh@0.7.0/build/index.module.js",
+            "three-bvh-csg": "https://cdn.jsdelivr.net/npm/three-bvh-csg@0.0.16/build/index.module.js"
+        }
+    }
+    </script>
+
+    <style>
+        :root { 
+            --bg: #050505; 
+            --panel-bg: rgba(31, 40, 51, 0.95); 
+            --text-main: #66fcf1;
+            --text-sub: #c5c6c7;
+            --accent: #45a29e; 
+            --border: #1f2833;
+            --highlight: rgba(102, 252, 241, 0.15);
+        }
+
+        body { margin: 0; background: var(--bg); overflow: hidden; font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif; color: var(--text-main); display: flex; }
+        
+        #sidebar { 
+            width: 340px; height: 100vh; background: var(--panel-bg); 
+            border-right: 1px solid var(--accent); display: flex; flex-direction: column; 
+            box-shadow: 5px 0 15px rgba(0,0,0,0.5); z-index: 10;
+        }
+
+        .sidebar-header { padding: 20px; background: rgba(0,0,0,0.2); border-bottom: 1px solid var(--border); }
+        .header-title { margin: 0 0 15px 0; font-size: 20px; font-weight: 700; color: var(--text-main); text-shadow: 0 0 10px rgba(102, 252, 241, 0.3); display: flex; align-items: center; gap: 10px; }
+
+        .control-group { margin-bottom: 15px; padding: 12px; background: rgba(255,255,255,0.05); border-radius: 6px; border: 1px solid rgba(255,255,255,0.05); }
+        .control-label { font-size: 13px; color: var(--text-sub); margin-bottom: 8px; display: flex; justify-content: space-between; }
+        
+        input[type=range] { width: 100%; cursor: pointer; accent-color: var(--accent); }
+
+        .btn-main { 
+            width: 100%; padding: 12px; border: 1px solid var(--accent); background: rgba(69, 162, 158, 0.2); 
+            color: var(--text-main); cursor: pointer; border-radius: 4px; font-weight: bold; font-size: 14px; 
+            transition: all 0.3s; text-transform: uppercase; letter-spacing: 1px; margin-top: 5px;
+        }
+        .btn-main:hover { background: var(--accent); color: #000; box-shadow: 0 0 15px var(--accent); }
+        .btn-main.paused { border-color: #ff4444; color: #ff4444; background: rgba(255, 68, 68, 0.1); }
+        .btn-main.paused:hover { background: #ff4444; color: #fff; }
+
+        #legend { flex: 1; overflow-y: auto; padding: 15px; border-top: 1px solid var(--border); }
+        .legend-item { display: flex; align-items: center; margin-bottom: 8px; font-size: 13px; color: var(--text-sub); }
+        .color-box { width: 12px; height: 12px; margin-right: 10px; border-radius: 2px; }
+
+        #info-panel { 
+            position: fixed; top: 20px; right: 20px; width: 280px; 
+            background: var(--panel-bg); padding: 20px; border-radius: 4px; border: 1px solid var(--accent); 
+            z-index: 20; box-shadow: 0 10px 30px rgba(0,0,0,0.8); backdrop-filter: blur(10px);
+        }
+        .panel-title { margin: 0 0 15px 0; color: var(--text-main); font-size: 16px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+        .info-row { font-size: 12px; color: #ccc; margin-bottom: 8px; display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px dashed #333; }
+        .info-val { font-family: 'Consolas', monospace; color: var(--text-main); }
+
+        #status-bar { 
+            position: fixed; bottom: 20px; left: 360px; color: var(--text-sub); font-size: 14px; 
+            background: rgba(0,0,0,0.8); padding: 8px 15px; border-radius: 4px; pointer-events: none; border-left: 3px solid var(--accent);
+        }
+        
+        #loading { position: fixed; top:0; left:0; width:100%; height:100%; background: #050505; display:flex; flex-direction:column; justify-content:center; align-items:center; z-index:99; transition: opacity 0.5s; }
+        .spinner { width: 40px; height: 40px; border: 4px solid #333; border-top: 4px solid var(--accent); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px;}
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+<div id="loading">
+    <div class="spinner"></div>
+    <div id="loading-text" style="color:#66fcf1">系统初始化中 (生成高精地质)...</div>
+</div>
+
+<div id="sidebar">
+    <div class="sidebar-header">
+        <div class="header-title">🛡️ TBM 掘进总控</div>
+        
+        <div class="control-group">
+            <div class="control-label">
+                <span>掘进速度 (Excavation)</span><span id="speed-val" style="color:var(--text-main)">0.0 m/s</span>
+            </div>
+            <input type="range" id="dig-speed" min="0" max="5" step="0.1" value="0">
+        </div>
+
+        <button class="btn-main paused" id="btn-start" onclick="toggleExcavation()">
+            ▶ 开始掘进
+        </button>
+        <button class="btn-main" onclick="forceDemoMode()" style="margin-top:10px; font-size:12px; border-color:#555; color:#888">
+            ⚠️ 强制切换演示模型
+        </button>
+    </div>
+
+    <div id="legend">
+        <div style="margin-bottom:10px; color:var(--text-main); font-weight:bold;">地质分层 (Stratification)</div>
+        </div>
+</div>
+
+<div id="info-panel">
+    <h4 class="panel-title">实时监测 (Real-time)</h4>
+    <div class="info-row"><span>掘进状态</span><span id="info-status" class="info-val">待机</span></div>
+    <div class="info-row"><span>掘进里程</span><span id="info-dist" class="info-val">0.00 m</span></div>
+    <div class="info-row"><span>刀盘转速</span><span id="info-rpm" class="info-val">0.0 rpm</span></div>
+    <div class="info-row"><span>地层类型</span><span id="info-layer" class="info-val">综合地质</span></div>
+</div>
+
+<div id="status-bar">系统就绪 | CSG 实时运算引擎已挂载</div>
+
+<script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+    import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
+    import { MTLLoader } from 'three/addons/loaders/MTLLoader.js';
+    import { SUBTRACTION, Brush, Evaluator } from 'three-bvh-csg';
+
+    let scene, camera, renderer, controls;
+    let geologyGroup, tbmGroup, tunnelMesh;
+    let cutterHead; // 刀盘引用
+    
+    // 状态
+    let isExcavating = false;
+    let tbmRadius = 45; 
+    let digSpeed = 0;
+    let currentX = 0;
+    let startX = -1000;
+    
+    // CSG 变量
+    let csgEvaluator;
+    let layerBrushes = []; 
+    let cutterBrush;       
+
+    // ★★★ 高精度地层配置 (复刻地质建模系统配色) ★★★
+    const LAYERS = [
+        { name: "基岩 (Bedrock)", color: 0x111111, height: 180 },
+        { name: "深层岩 (Deep Rock)",color: 0x3a3a3a, height: 120 },
+        { name: "含水层 (Aqua)",   color: 0x0055aa, height: 80 }, 
+        { name: "红土层 (Red Clay)",color: 0x883333, height: 70 }, 
+        { name: "砂土层 (Sand)",    color: 0xccaa44, height: 60 }, 
+        { name: "表土 (Topsoil)",   color: 0x336633, height: 40 }
+    ];
+
+    const GEO_WIDTH = 2500;
+    const GEO_DEPTH = 800;
+    // ★★★ 提高网格密度，保证切口平滑 ★★★
+    const SEGMENTS_W = 40; 
+    const SEGMENTS_D = 15;
+
+    init();
+
+    function init() {
+        // 1. 场景
+        scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x050505); 
+        scene.fog = new THREE.FogExp2(0x050505, 0.0015);
+
+        // 2. 渲染器
+        renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth - 340, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        document.body.appendChild(renderer.domElement);
+
+        // 3. 相机
+        camera = new THREE.PerspectiveCamera(45, (window.innerWidth - 340) / window.innerHeight, 1, 10000);
+        camera.position.set(1000, 600, 1500); 
+
+        controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+
+        // 4. 灯光 (适应深色环境)
+        const amb = new THREE.AmbientLight(0xffffff, 0.4);
+        scene.add(amb);
+        const dir = new THREE.DirectionalLight(0xffffff, 1.0);
+        dir.position.set(500, 2000, 1000);
+        dir.castShadow = true;
+        dir.shadow.mapSize.width = 2048;
+        dir.shadow.mapSize.height = 2048;
+        scene.add(dir);
+        // TBM 自发光
+        const point = new THREE.PointLight(0x66fcf1, 1, 800);
+        scene.add(point);
+
+        // 5. 初始化组
+        geologyGroup = new THREE.Group();
+        scene.add(geologyGroup);
+        tbmGroup = new THREE.Group();
+        scene.add(tbmGroup);
+        
+        csgEvaluator = new Evaluator();
+        csgEvaluator.useGroups = true;
+
+        // 6. 加载内容
+        loadTBMModel();
+        
+        // 辅助网格
+        const grid = new THREE.GridHelper(5000, 50, 0x333333, 0x111111);
+        grid.position.y = -300;
+        scene.add(grid);
+
+        // 7. UI 事件绑定 (全局暴露给 HTML onclick 使用)
+        window.toggleExcavation = toggleExcavation;
+        window.forceDemoMode = forceDemo;
+        
+        document.getElementById('dig-speed').addEventListener('input', (e) => {
+            digSpeed = parseFloat(e.target.value);
+            document.getElementById('speed-val').innerText = digSpeed.toFixed(1) + " m/s";
+        });
+
+        // 生成图例
+        const legendDiv = document.getElementById('legend');
+        [...LAYERS].reverse().forEach(l => {
+            legendDiv.innerHTML += `
+                <div class="legend-item">
+                    <div class="color-box" style="background:#${l.color.toString(16).padStart(6,'0')}"></div>
+                    ${l.name}
+                </div>`;
+        });
+
+        window.addEventListener('resize', onResize);
+        animate();
+    }
+
+    // --- 1. TBM 加载与处理 ---
+    function loadTBMModel() {
+        const mtlLoader = new MTLLoader();
+        mtlLoader.setPath('./'); 
+        
+        mtlLoader.load('TBM-3D.mtl', (materials) => {
+            materials.preload();
+            const objLoader = new OBJLoader();
+            objLoader.setMaterials(materials);
+            objLoader.load('TBM-3D.obj', (obj) => {
+                setupTBM(obj);
+            }, undefined, (err) => {
+                console.warn("OBJ 失败，使用演示模型");
+                forceDemo();
+            });
+        }, (err) => {
+            // MTL 失败尝试直接加载 OBJ
+            new OBJLoader().load('TBM-3D.obj', (obj) => setupTBM(obj), undefined, () => forceDemo());
+        });
+    }
+
+    function setupTBM(obj) {
+        while(tbmGroup.children.length > 0) tbmGroup.remove(tbmGroup.children[0]);
+
+        const box = new THREE.Box3().setFromObject(obj);
+        const size = new THREE.Vector3(); box.getSize(size);
+        const center = new THREE.Vector3(); box.getCenter(center);
+        obj.position.sub(center); 
+
+        // ★ 核心修复：确保 TBM 有体积 ★
+        let loadedRadius = Math.max(size.y, size.z) / 2;
+        if(loadedRadius < 5) {
+            const scale = 45 / loadedRadius;
+            obj.scale.set(scale, scale, scale);
+            loadedRadius = 45;
+        }
+        tbmRadius = loadedRadius;
+
+        // 查找刀盘
+        cutterHead = null;
+        obj.traverse(child => {
+            if(child.isMesh) {
+                child.castShadow = true;
+                // 智能识别刀盘
+                if(child.name.toLowerCase().includes('cutter') || child.name.toLowerCase().includes('head')) {
+                    cutterHead = child;
+                    child.material = new THREE.MeshStandardMaterial({color: 0xff3333, metalness:0.8, roughness:0.2});
+                }
+            }
+        });
+        
+        // 如果没找到刀盘，旋转整个组
+        if(!cutterHead) cutterHead = obj;
+
+        tbmGroup.add(obj);
+        startX = -GEO_WIDTH / 2;
+        currentX = startX;
+        tbmGroup.position.x = currentX;
+
+        // TBM 就位后，生成地质
+        initGeologyAndCSG();
+        
+        document.getElementById('loading').style.opacity = 0;
+        setTimeout(() => document.getElementById('loading').remove(), 500);
+    }
+
+    function forceDemo() {
+        tbmRadius = 45;
+        const geo = new THREE.CylinderGeometry(tbmRadius, tbmRadius, 120, 32);
+        geo.rotateZ(Math.PI/2);
+        const mesh = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color: 0x00aaff }));
+        
+        const headGeo = new THREE.CylinderGeometry(tbmRadius, tbmRadius, 10, 32);
+        headGeo.rotateZ(Math.PI/2);
+        const head = new THREE.Mesh(headGeo, new THREE.MeshStandardMaterial({color:0xff0000}));
+        head.position.x = 60;
+        mesh.add(head);
+        
+        setupTBM(mesh);
+    }
+
+    // --- 2. 地质生成 (仿地质建模系统风格) ---
+    function initGeologyAndCSG() {
+        // 生成高度图
+        const heightMaps = [];
+        let currY = -300;
+        heightMaps.push(genHeightMap(currY));
+        LAYERS.forEach(l => {
+            currY += l.height;
+            heightMaps.push(genHeightMap(currY));
+        });
+
+        layerBrushes = [];
+        while(geologyGroup.children.length > 0) geologyGroup.remove(geologyGroup.children[0]);
+
+        LAYERS.forEach((layer, i) => {
+            // ★ 使用 buildLayerGeo 生成不规则实体网格 ★
+            const geo = buildLayerGeo(heightMaps[i], heightMaps[i+1], SEGMENTS_W, SEGMENTS_D, GEO_WIDTH, GEO_DEPTH);
+            
+            // ★ FlatShading = true 带来硬朗的工程感 ★
+            const mat = new THREE.MeshPhongMaterial({
+                color: layer.color,
+                flatShading: true, 
+                shininess: 30,
+                specular: 0x111111
+            });
+
+            const brush = new Brush(geo, mat);
+            brush.updateMatrixWorld();
+            layerBrushes.push(brush);
+
+            const displayMesh = brush.clone();
+            geologyGroup.add(displayMesh);
+
+            // ★ 黑色轮廓线 = 清晰度关键 ★
+            const edges = new THREE.EdgesGeometry(geo, 20); 
+            const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0x000000, opacity: 0.3, transparent: true }));
+            displayMesh.add(line);
+        });
+
+        // 准备切割刀
+        const cutterGeo = new THREE.CylinderGeometry(tbmRadius + 1, tbmRadius + 1, 1, 48);
+        cutterGeo.rotateZ(Math.PI/2);
+        cutterBrush = new Brush(cutterGeo, new THREE.MeshBasicMaterial({ color: 0xff0000 }));
+        
+        createTunnelLining();
+    }
+
+    // --- 3. 隧道管片 ---
+    function createTunnelLining() {
+        if(tunnelMesh) scene.remove(tunnelMesh);
+
+        // 程序化纹理 (混凝土)
+        const canvas = document.createElement('canvas'); canvas.width=512; canvas.height=512;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#999'; ctx.fillRect(0,0,512,512);
+        ctx.strokeStyle='#777'; ctx.lineWidth=4; ctx.strokeRect(0,0,512,128); ctx.strokeRect(0,128,512,128);
+        const tex = new THREE.CanvasTexture(canvas);
+        tex.wrapS = THREE.RepeatWrapping; tex.wrapT = THREE.RepeatWrapping;
+
+        const mat = new THREE.MeshStandardMaterial({
+            map: tex,
+            side: THREE.BackSide, // 关键：只显示内部
+            roughness: 0.9
+        });
+
+        tunnelMesh = new THREE.Mesh(new THREE.BufferGeometry(), mat);
+        scene.add(tunnelMesh);
+    }
+
+    // --- 4. 实时挖洞逻辑 ---
+    function updateDigging() {
+        const dist = currentX - startX;
+        if(dist < 2) return; 
+
+        // A. 切割刀变长
+        const newGeo = new THREE.CylinderGeometry(tbmRadius + 1, tbmRadius + 1, dist, 48);
+        newGeo.rotateZ(Math.PI/2);
+        cutterBrush.geometry.dispose();
+        cutterBrush.geometry = newGeo;
+        cutterBrush.position.set(startX + dist/2, 0, 0);
+        cutterBrush.updateMatrixWorld();
+
+        // B. CSG 运算
+        layerBrushes.forEach((rawBrush, i) => {
+            const result = csgEvaluator.evaluate(rawBrush, cutterBrush, SUBTRACTION);
+            const displayMesh = geologyGroup.children[i];
+            
+            displayMesh.geometry.dispose();
+            displayMesh.geometry = result.geometry;
+
+            // C. 更新轮廓线
+            if(displayMesh.children.length > 0) {
+                displayMesh.children[0].geometry.dispose();
+                displayMesh.children[0].geometry = new THREE.EdgesGeometry(result.geometry, 20);
+            }
+        });
+
+        // D. 管片跟随
+        const tunGeo = new THREE.CylinderGeometry(tbmRadius, tbmRadius, dist, 48, 1, true);
+        tunGeo.rotateZ(Math.PI/2);
+        tunnelMesh.geometry.dispose();
+        tunnelMesh.geometry = tunGeo;
+        tunnelMesh.position.set(startX + dist/2, 0, 0);
+        
+        if(tunnelMesh.material.map) tunnelMesh.material.map.repeat.set(dist / 50, 1);
+    }
+
+    // --- 辅助：几何算法 ---
+    function genHeightMap(baseY) {
+        const map = [];
+        const offset = Math.random() * 100;
+        for (let i = 0; i <= SEGMENTS_W; i++) {
+            const row = [];
+            for (let j = 0; j <= SEGMENTS_D; j++) {
+                const x = i / SEGMENTS_W; const z = j / SEGMENTS_D;
+                const y = baseY + Math.sin(x*6 + offset)*20 + Math.cos(z*4)*15;
+                row.push(y);
+            }
+            map.push(row);
+        }
+        return map;
+    }
+
+    function buildLayerGeo(bot, top, w, d, width, depth) {
+        const verts = []; const idx = [];
+        const gw = width/w; const gd = depth/d;
+        const ox = -width/2; const oz = -depth/2;
+
+        for(let i=0; i<=w; i++){
+            for(let j=0; j<=d; j++){
+                const x = ox + i*gw; const z = oz + j*gd;
+                verts.push(x, top[i][j], z); 
+                verts.push(x, bot[i][j], z);
+            }
+        }
+        
+        const step = (d+1)*2;
+        for(let i=0; i<w; i++){
+            for(let j=0; j<d; j++){
+                const a = i*(d+1)*2 + j*2; const b = a + 1; const c = a + 2; const d_ = a + 3;
+                const nextRow = (i+1)*(d+1)*2 + j*2;
+                const A = nextRow, B = A + 1, C = A + 2, D = A + 3;
+
+                idx.push(a, c, A); idx.push(c, C, A); // Top
+                idx.push(b, B, d_); idx.push(d_, B, D); // Bot
+                if(j==0) { idx.push(a, A, b); idx.push(A, B, b); } // Front
+                if(j==d-1) { idx.push(c, d_, C); idx.push(d_, D, C); } // Back
+            }
+        }
+        // 侧面补全
+        for(let j=0; j<d; j++){
+            const a = j*2, b=a+1, c=a+2, d_=a+3; idx.push(c,b,a); idx.push(d_,b,c); // Left
+            const start = w*(d+1)*2 + j*2;
+            const A=start, B=start+1, C=start+2, D=start+3; idx.push(A,B,C); idx.push(C,B,D); // Right
+        }
+
+        const geo = new THREE.BufferGeometry();
+        geo.setAttribute('position', new THREE.Float32BufferAttribute(verts, 3));
+        geo.setIndex(idx);
+        geo.computeVertexNormals();
+        return geo;
+    }
+
+    // --- UI 控制 ---
+    function toggleExcavation() {
+        isExcavating = !isExcavating;
+        const btn = document.getElementById('btn-start');
+        const status = document.getElementById('info-status');
+        
+        if(isExcavating) {
+            btn.classList.add('paused');
+            btn.innerHTML = '⏸ 暂停掘进';
+            status.innerText = "掘进中";
+            status.style.color = "#66fcf1";
+        } else {
+            btn.classList.remove('paused');
+            btn.innerHTML = '▶ 开始掘进';
+            status.innerText = "已暂停";
+            status.style.color = "#ccc";
+        }
+    }
+
+    function onResize() {
+        camera.aspect = (window.innerWidth - 340) / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth - 340, window.innerHeight);
+    }
+
+    function animate() {
+        requestAnimationFrame(animate);
+
+        // ★★★ 核心：掘进循环 ★★★
+        if (isExcavating && digSpeed > 0) {
+            currentX += digSpeed;
+            tbmGroup.position.x = currentX;
+            
+            // 刀盘强制旋转
+            if(cutterHead) cutterHead.rotation.x -= digSpeed * 0.1;
+            
+            // 光源跟随
+            const pointLight = scene.children.find(c => c.isPointLight);
+            if(pointLight) pointLight.position.copy(tbmGroup.position);
+
+            // 更新面板数据
+            const dist = currentX - startX;
+            document.getElementById('info-dist').innerText = dist.toFixed(2) + " m";
+            document.getElementById('info-rpm').innerText = (digSpeed * 60).toFixed(1) + " rpm";
+
+            // 执行挖洞
+            updateDigging();
+        }
+
+        controls.update();
+        renderer.render(scene, camera);
+    }
+</script>
+</body>
+</html>
