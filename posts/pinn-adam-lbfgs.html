@@ -140,7 +140,7 @@
       <p>顶盖驱动方腔流（Lid-Driven Cavity Flow）是计算流体力学中最经典的基准问题之一。问题设置如下：一个边长为 1 的正方形封闭腔体，顶部边界以匀速 \(u = 1\) 向右滑动，其余三面为无滑移静止壁面（\(u = v = 0\)）。腔内充满不可压缩黏性流体，Reynolds 数 \(\text{Re} = 100\)。</p>
 
       <figure class="fig-block">
-        <img src="https://jinpeng-assets.oss-cn-beijing.aliyuncs.com/POST/Adam%20%E4%B8%8E%20L-BFGS%20%E5%9C%A8%20PINN%20%E4%B8%AD%E7%9A%84%E8%A7%92%E8%89%B2%EF%BC%88I%EF%BC%89/Lid-driven%20Cavity%20Flow.png" alt="顶盖驱动方腔流边界条件示意图">
+        <img src="https://jinpeng-assets.oss-cn-beijing.aliyuncs.com/POST/pinn-adam-lbfgs-i/Lid-driven-Cavity-Flow.png" alt="顶盖驱动方腔流边界条件示意图">
         <figcaption class="fig-caption">图 1：顶盖驱动方腔流边界条件示意。顶部边界以速度 \(u=1\) 向右滑动，其余三面为无滑移壁面（\(u=v=0\)）。</figcaption>
       </figure>
 
@@ -1015,7 +1015,7 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLb(); }
   const ctx = canvas.getContext('2d');
 
   /* Build frame list */
-  const OSS = 'https://jinpeng-assets.oss-cn-beijing.aliyuncs.com/POST/Adam%20%E4%B8%8E%20L-BFGS%20%E5%9C%A8%20PINN%20%E4%B8%AD%E7%9A%84%E8%A7%92%E8%89%B2%EF%BC%88I%EF%BC%89/figures/';
+  const OSS = 'https://jinpeng-assets.oss-cn-beijing.aliyuncs.com/POST/pinn-adam-lbfgs-i/figures/';
   const frames = [];
   for (let i = 1; i <= 30; i++) {
     const s = String(i * 200).padStart(5, '0');

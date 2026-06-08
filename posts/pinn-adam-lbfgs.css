@@ -649,7 +649,7 @@ body {
   position: relative;
   height: 100svh;
   overflow: hidden;
-  background: #000 url('https://jinpeng-assets.oss-cn-beijing.aliyuncs.com/POST/Adam%20%E4%B8%8E%20L-BFGS%20%E5%9C%A8%20PINN%20%E4%B8%AD%E7%9A%84%E8%A7%92%E8%89%B2%EF%BC%88I%EF%BC%89/cover.jpg') center center / cover no-repeat;
+  background: #000 url('https://jinpeng-assets.oss-cn-beijing.aliyuncs.com/POST/pinn-adam-lbfgs-i/cover.jpg') center center / cover no-repeat;
 }
 
 /* vignette — darkens bottom and edges for text readability */
