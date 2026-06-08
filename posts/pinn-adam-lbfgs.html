@@ -1,0 +1,1111 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Adam 与 L-BFGS 在 PINN 中的角色（I）| Jinpeng Xin</title>
+  <link rel="stylesheet" href="./pinn-adam-lbfgs.css">
+
+  <!-- KaTeX (LaTeX rendering, Computer Modern math font) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body,{
+      delimiters:[
+        {left:'\\[',right:'\\]',display:true},
+        {left:'\\(',right:'\\)',display:false}
+      ]
+    })"></script>
+</head>
+<body>
+
+<div class="reading-progress" id="readingProgress"></div>
+
+<!-- ── Cover ─────────────────────────────────────────────── -->
+<section class="cover-section" id="cover">
+  <canvas id="gridTitleCanvas" class="grid-title-canvas"></canvas>
+  <button class="cover-scroll" id="coverScroll" aria-label="向下滚动">
+    <span class="cover-scroll-text">向下</span>
+    <span class="cover-scroll-arrow"></span>
+  </button>
+</section>
+
+<nav class="post-nav" id="postNav">
+  <a href="../index.html" class="post-nav-logo">
+    <img src="https://jinpeng-assets.oss-cn-beijing.aliyuncs.com/%E4%B8%AA%E4%BA%BA%E4%B8%BB%E9%A1%B5/%E5%9F%BA%E6%9C%AC%E5%9B%BE%E7%89%87/logo3.0.svg" alt="Jinpeng Xin">
+  </a>
+  <a href="../blog.html" class="post-nav-back">← 返回博客</a>
+</nav>
+
+<!-- ── Paper header ─────────────────────────────────────── -->
+<header class="paper-header">
+  <h1 class="paper-title">
+    Adam 与 L-BFGS 在物理信息神经网络中各自的角色（I）
+    <span class="subtitle">以顶盖驱动方腔流（Re = 100）为例</span>
+  </h1>
+
+  <div class="paper-meta">
+    <span><strong>作者</strong>&nbsp;Jinpeng Xin</span>
+    <span><strong>日期</strong>&nbsp;2026 年 6 月</span>
+    <span><strong>阅读时长</strong>&nbsp;约 8 分钟</span>
+    <span><strong>关键词</strong>&nbsp;PINN · Adam · L-BFGS · 优化器 · 方腔流</span>
+  </div>
+
+  <div class="abstract-wrapper">
+    <div class="abstract-label">Abstract</div>
+    <div class="abstract-text">
+      物理信息神经网络（PINN）将偏微分方程的残差嵌入损失函数，使神经网络在满足数据的同时遵循物理定律。
+      然而，当边界条件与 PDE 残差的权重相差一到两个数量级时，损失曲面呈现出严重的病态特征：
+      不同方向的有效刚度差异悬殊，给任何固定步长的优化器带来本质困难。
+      本文以顶盖驱动方腔流（Re = 100）为载体，从物理直觉出发，
+      厘清 Adam 与 L-BFGS 在两阶段训练中各自的职责：
+      Adam 凭借自适应各向异性步长，在病态地形中快速抵达"物理可行域"；
+      L-BFGS 则利用准牛顿曲率近似，在该区域内精确收敛至方程的数值解。
+      两者缺一不可——单独使用 Adam 损失将在盆地附近长期振荡，
+      直接使用 L-BFGS 则因 Hessian 近似失效而无法收敛。
+      最终模型在 Ghia et al.（1982）基准上 \(u\) 中线 L2 误差降至 4.2%，
+      较单独使用 Adam 精度提升约 42%。
+    </div>
+  </div>
+</header>
+
+<!-- ── Two-column layout ──────────────────────────────────── -->
+<div class="paper-layout">
+
+  <!-- TOC -->
+  <aside class="toc-panel">
+    <div class="toc-header">Contents</div>
+    <nav class="toc-nav" id="tocNav">
+      <a class="toc-item" href="#s1" data-target="s1">
+        <span class="toc-dot"></span>
+        <span class="toc-num">§ 1</span>
+        <span class="toc-label">引言</span>
+      </a>
+      <a class="toc-item" href="#s2" data-target="s2">
+        <span class="toc-dot"></span>
+        <span class="toc-num">§ 2</span>
+        <span class="toc-label">案例介绍</span>
+      </a>
+      <a class="toc-item" href="#s3" data-target="s3">
+        <span class="toc-dot"></span>
+        <span class="toc-num">§ 3</span>
+        <span class="toc-label">训练过程</span>
+      </a>
+      <a class="toc-item" href="#s4" data-target="s4">
+        <span class="toc-dot"></span>
+        <span class="toc-num">§ 4</span>
+        <span class="toc-label">Adam 与 L-BFGS</span>
+      </a>
+      <a class="toc-item" href="#s5" data-target="s5">
+        <span class="toc-dot"></span>
+        <span class="toc-num">§ 5</span>
+        <span class="toc-label">训练结果</span>
+      </a>
+    </nav>
+  </aside>
+
+  <main class="paper-main">
+
+    <!-- § 1 引言 -->
+    <section class="paper-section" id="s1">
+      <h2 class="section-heading">
+        <span class="section-num">§ 1</span>
+        <span class="section-title">引言</span>
+      </h2>
+
+      <p>在 PINN 的实践文献和代码教程中，有一条几乎普遍存在的训练建议：</p>
+
+      <blockquote class="pull-quote">
+        先用 Adam 训练若干轮，再切换到 L-BFGS 精调。
+      </blockquote>
+
+      <p>这一做法在社区中已近乎惯例，但大多数资料并未给出充分的解释。对于入门者而言，由于 PINN 本身结构复杂，注意力往往集中在损失权重、网络结构等显式可调的环节上，而对优化器的选择缺乏深入考察。然而，优化器是决定 PINN 训练成败的关键所在。</p>
+
+      <p>入门者接触 PINN 的动机通常是兴趣驱动或研究需要，在此过程中往往面临两个层面的认知缺口：一是对神经网络优化的数学原理理解不足；二是对 PINN 将偏微分方程嵌入训练损失这一底层逻辑认识有限。在缺乏原理指导的情况下，反复试验虽然是一条可行的学习路径，却容易在一些本可避免的认识误区上耗费大量精力。本文正是基于这一背景，尝试对 PINN 优化策略背后的原理作一梳理。</p>
+
+      <p>本文的核心问题是：为什么 PINN 训练需要先 Adam、后 L-BFGS？这并非一条纯粹的经验规则，而是由偏微分方程的约束结构与损失函数的内在性质共同决定的结果。</p>
+
+      <p>本文以<strong>顶盖驱动方腔流（Re = 100）</strong>为贯穿案例，围绕优化器的作用机制展开讨论。读完本文，"先 Adam 后 L-BFGS"这条规则仍然成立——但你对它的理解将不再停留于形式，PINN 训练与纠偏也会有迹可循。</p>
+    </section>
+
+    <!-- § 2 案例介绍：顶盖驱动方腔流 -->
+    <section class="paper-section" id="s2">
+      <h2 class="section-heading">
+        <span class="section-num">§ 2</span>
+        <span class="section-title">案例介绍：顶盖驱动方腔流</span>
+      </h2>
+
+      <h3 class="subsection-heading">物理问题</h3>
+
+      <p>顶盖驱动方腔流（Lid-Driven Cavity Flow）是计算流体力学中最经典的基准问题之一。问题设置如下：一个边长为 1 的正方形封闭腔体，顶部边界以匀速 \(u = 1\) 向右滑动，其余三面为无滑移静止壁面（\(u = v = 0\)）。腔内充满不可压缩黏性流体，Reynolds 数 \(\text{Re} = 100\)。</p>
+
+      <figure class="fig-block">
+        <img src="https://jinpeng-assets.oss-cn-beijing.aliyuncs.com/POST/Adam%20%E4%B8%8E%20L-BFGS%20%E5%9C%A8%20PINN%20%E4%B8%AD%E7%9A%84%E8%A7%92%E8%89%B2%EF%BC%88I%EF%BC%89/Lid-driven%20Cavity%20Flow.png" alt="顶盖驱动方腔流边界条件示意图">
+        <figcaption class="fig-caption">图 1：顶盖驱动方腔流边界条件示意。顶部边界以速度 \(u=1\) 向右滑动，其余三面为无滑移壁面（\(u=v=0\)）。</figcaption>
+      </figure>
+
+      <p>稳态流场由不可压缩 Navier–Stokes 方程控制：</p>
+
+      <div class="eq-block">
+\[
+  (\mathbf{u} \cdot \nabla)\mathbf{u} = -\nabla p + \frac{1}{\text{Re}} \nabla^2 \mathbf{u}, \quad \nabla \cdot \mathbf{u} = 0
+\]
+      </div>
+
+      <p>其中各符号含义如下：</p>
+
+      <ul class="symbol-list">
+        <li>\(\mathbf{u} = (u, v)\)：流体速度矢量，\(u\) 为水平分量，\(v\) 为竖直分量</li>
+        <li>\(p\)：压力（已经过密度归一化）</li>
+        <li>\(\text{Re}\)：Reynolds 数，衡量惯性力与黏性力之比，本文取 \(\text{Re} = 100\)</li>
+        <li>\(\nabla\)（Nabla 算子，倒三角）：在二维情形下定义为 \(\nabla = \bigl(\tfrac{\partial}{\partial x},\,\tfrac{\partial}{\partial y}\bigr)\)，根据作用方式不同衍生出三种运算：
+          <ul>
+            <li>\(\nabla p\)（梯度）：对标量 \(p\) 作用，给出压力在各方向的变化率，结果为矢量</li>
+            <li>\(\nabla \cdot \mathbf{u}\)（散度）：对矢量 \(\mathbf{u}\) 作用，描述流体在一点处的净流出量；\(\nabla \cdot \mathbf{u} = 0\) 即不可压缩条件，表示流体既不膨胀也不收缩</li>
+            <li>\(\nabla^2 \mathbf{u}\)（Laplace 算子）：对各分量分别求二阶偏导之和，\(\nabla^2 u = \tfrac{\partial^2 u}{\partial x^2} + \tfrac{\partial^2 u}{\partial y^2}\)，描述速度场的空间扩散（黏性耗散）</li>
+          </ul>
+        </li>
+        <li>\(\mathbf{u} \cdot \nabla\)（对流项）：描述流体自身输运动量</li>
+      </ul>
+
+      <p>第一个方程是动量方程（N-S 方程本体），\(\nabla \cdot \mathbf{u} = 0\) 是质量守恒方程。两者联立构成关于 \((u, v, p)\) 的偏微分方程组，PINN 的任务正是在满足边界条件的前提下，用神经网络求出这三个场量在整个计算域内的分布。在 \(\text{Re} = 100\) 时，流场形成一个主涡和两个角涡，Ghia et al.（1982）提供了高精度参考解，便于定量评估 PINN 的求解精度。</p>
+
+      <h3 class="subsection-heading">为什么选择这个案例</h3>
+
+      <ul class="feature-list">
+        <li><strong>有成熟参考解</strong>：可与 Ghia 数据直接对比，结果可量化</li>
+        <li><strong>物理场变化丰富</strong>：速度和压力在空间上有明显梯度，对优化器要求较高</li>
+        <li><strong>训练失败的症状典型</strong>：用错优化策略时，误差会集中在涡核和边界层附近，易于观察</li>
+      </ul>
+
+      <h3 class="subsection-heading">PINN 建模</h3>
+
+      <p>网络结构：5 层全连接，每层 64 个神经元，激活函数 \(\tanh\)，输入为 \(\mathbf{x} = (x, y)\)，输出为 \(\hat{\mathbf{q}} = (\hat{u}, \hat{v}, \hat{p})\)。</p>
+
+      <p>以下符号约定贯穿全文：</p>
+
+      <table class="results-table">
+        <thead>
+          <tr>
+            <th>符号</th>
+            <th>定义</th>
+            <th>含义</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>\(\mathbf{u} = (u, v)\)</td><td>真实速度场</td><td>\(u\)：水平分量，\(v\)：竖直分量</td></tr>
+          <tr><td>\(\hat{\mathbf{u}} = (\hat{u}, \hat{v})\)</td><td>网络预测速度场</td><td>\(\hat{\mathbf{q}}\) 的前两个分量</td></tr>
+          <tr><td>\(\hat{\mathbf{q}} = (\hat{u}, \hat{v}, \hat{p})\)</td><td>网络完整输出</td><td>速度场与压力场的统一记号</td></tr>
+          <tr><td>\(\mathbf{r}_i = (r_{u,i},\, r_{v,i},\, r_{c,i})\)</td><td>第 \(i\) 点 PDE 残差向量</td><td>三个分量分别对应式 (3)(4)(5)</td></tr>
+          <tr><td>\(\mathbf{x} = (x, y)\)</td><td>输入坐标向量</td><td>网络的空间输入</td></tr>
+          <tr><td>\(\theta\)</td><td>网络全部参数</td><td>权重与偏置，本案例约含 13,000 个标量</td></tr>
+        </tbody>
+      </table>
+
+      <p>损失函数由三项构成：</p>
+
+      <div class="eq-block">
+\[
+  \mathcal{L} = \mathcal{L}_{\text{PDE}} + \lambda_{\text{BC}}\,\mathcal{L}_{\text{BC}} + \lambda_{p}\,\mathcal{L}_{p\text{-ref}} \tag{2}
+\]
+      </div>
+
+      <p>各项的具体计算方式如下。</p>
+
+      <p class="loss-term-label">① PDE 残差项 \(\mathcal{L}_{\text{PDE}}\)</p>
+      <p>在计算域内部随机采样 \(N_f\) 个配点 \(\{\mathbf{x}_i\}\)，输入神经网络得到 \(\hat{\mathbf{q}}_i = (\hat{u}_i, \hat{v}_i, \hat{p}_i)\)，借助自动微分构造 PDE 残差向量 \(\mathbf{r}_i\) 的三个分量：</p>
+
+      <div class="eq-block">
+\[
+  r_u = \hat{u}\,\partial_x\hat{u} + \hat{v}\,\partial_y\hat{u} + \partial_x\hat{p} - \frac{1}{\text{Re}}(\partial_{xx}\hat{u} + \partial_{yy}\hat{u}) \tag{3}
+\]
+      </div>
+      <div class="eq-block">
+\[
+  r_v = \hat{u}\,\partial_x\hat{v} + \hat{v}\,\partial_y\hat{v} + \partial_y\hat{p} - \frac{1}{\text{Re}}(\partial_{xx}\hat{v} + \partial_{yy}\hat{v}) \tag{4}
+\]
+      </div>
+      <div class="eq-block">
+\[
+  r_c = \partial_x\hat{u} + \partial_y\hat{v} \tag{5}
+\]
+      </div>
+
+      <p>三项分别对应 \(x\) 方向动量方程、\(y\) 方向动量方程和连续性方程。PDE 残差损失取均方误差：</p>
+
+      <div class="eq-block">
+\[
+  \mathcal{L}_{\text{PDE}} = \frac{1}{N_f}\sum_{i=1}^{N_f} |\mathbf{r}_i|^2 \tag{6}
+\]
+      </div>
+
+      <p class="loss-term-label">② 边界条件项 \(\mathcal{L}_{\text{BC}}\)</p>
+      <p>在四面边界上采样 \(N_b\) 个点，各边界参考速度 \(\mathbf{u}^{\text{ref}}\) 为：顶盖（ID = 3）\(\mathbf{u}^{\text{ref}} = (1, 0)\)，其余三面 \(\mathbf{u}^{\text{ref}} = (0, 0)\)：</p>
+
+      <div class="eq-block">
+\[
+  \mathcal{L}_{\text{BC}} = \frac{1}{N_b}\sum_{j=1}^{N_b} |\hat{\mathbf{u}}_j - \mathbf{u}_j^{\text{ref}}|^2 \tag{7}
+\]
+      </div>
+
+      <p class="loss-term-label">③ 压力参考项 \(\mathcal{L}_{p\text{-ref}}\)</p>
+      <p>N-S 方程只能确定压力到相差一个常数的程度。为消除这一不确定性，固定左下角参考点压力为零：</p>
+
+      <div class="eq-block">
+\[
+  \mathcal{L}_{p\text{-ref}} = \hat{p}(\mathbf{0})^2 \tag{8}
+\]
+      </div>
+
+      <p>权重设置为 \(\lambda_{\text{BC}} = 100\)，\(\lambda_{p} = 10\)，反映了边界条件对于 PINN 收敛的重要程度远高于内部 PDE 残差。</p>
+    </section>
+
+    <!-- § 3 训练过程 -->
+    <section class="paper-section" id="s3">
+      <h2 class="section-heading">
+        <span class="section-num">§ 3</span>
+        <span class="section-title">训练过程：损失函数与优化器</span>
+      </h2>
+      <h3 class="subsection-heading">损失函数的作用</h3>
+
+      <p>完成建模之后，PINN 的训练本质上是一个<strong>优化问题</strong>：寻找一组网络参数 \(\theta\)，使得损失函数 \(\mathcal{L}(\theta)\) 尽可能小。</p>
+
+      <p>损失函数在这一过程中扮演的角色，是将物理约束转化为可计算的数值信号。每一次前向传播，网络都会给出当前参数下的速度场和压力场预测；损失函数则衡量这个预测在多大程度上违反了 PDE 方程、边界条件和压力参考——三项加权求和，得到一个标量值。这个标量就是训练的"目标"：越小，说明网络的预测越符合物理规律。</p>
+
+      <p>从这个角度看，损失函数的设计直接决定了训练的方向：如果某一项约束的权重过低，优化器便会在整个训练过程中对其"视而不见"。</p>
+
+      <h3 class="subsection-heading">梯度计算与参数更新</h3>
+
+      <p>PINN 的训练目标是求解如下优化问题：</p>
+
+      <div class="eq-block">
+\[
+  \theta^* = \arg\min_{\theta}\,\mathcal{L}(\theta) \tag{9}
+\]
+      </div>
+
+      <p>损失函数关于参数是高度非线性的，无法令 \(\partial\mathcal{L}/\partial\theta = 0\) 直接求解，因此必须借助迭代的梯度下降方法。</p>
+
+      <p><strong>梯度下降</strong></p>
+
+      <p>梯度 \(\nabla_\theta\mathcal{L}\) 是一个与 \(\theta\) 同维度的向量，其第 \(k\) 个分量 \(\partial\mathcal{L}/\partial\theta_k\) 表示：当第 \(k\) 个参数增大一个单位时，损失函数的变化率。梯度的方向是损失函数上升最快的方向；沿梯度反方向移动，则损失下降最快。基于这一性质，梯度下降法每一步将参数向梯度反方向移动一小步：</p>
+
+      <div class="eq-block">
+\[
+  \theta_{t+1} = \theta_t - \eta\,\nabla_\theta\mathcal{L}(\theta_t) \tag{10}
+\]
+      </div>
+
+      <p>其中 \(\eta > 0\) 称为<strong>学习率</strong>，控制每步移动的幅度。\(\eta\) 过大，参数在最优点附近来回振荡；\(\eta\) 过小，收敛极慢。这一矛盾在损失函数形状不规则时尤为突出——PINN 的损失函数恰恰具有高度不规则的结构，这也是为什么标准梯度下降在此表现不佳、需要引入更复杂的优化器的原因。</p>
+
+      <p><strong>梯度的计算：链式法则与自动微分</strong></p>
+
+      <p>神经网络由多层复合函数构成。设网络共 \(L\) 层，第 \(l\) 层的输出为 \(\mathbf{h}^{(l)}\)，前向传播构成一条复合映射：</p>
+
+      <div class="eq-block">
+\[
+  \mathbf{x} \xrightarrow{\theta^{(1)}} \mathbf{h}^{(1)} \xrightarrow{\theta^{(2)}} \mathbf{h}^{(2)} \;\cdots\; \xrightarrow{\theta^{(L)}} \hat{\mathbf{q}}
+\]
+      </div>
+
+      <p>损失 \(\mathcal{L}\) 对第 \(l\) 层参数 \(\theta^{(l)}\) 的梯度，由链式法则从输出层逐层回传：</p>
+
+      <div class="eq-block">
+\[
+  \frac{\partial\mathcal{L}}{\partial\theta^{(l)}} = \underbrace{\frac{\partial\mathcal{L}}{\partial\mathbf{h}^{(L)}} \cdot \frac{\partial\mathbf{h}^{(L)}}{\partial\mathbf{h}^{(L-1)}} \cdots \frac{\partial\mathbf{h}^{(l+1)}}{\partial\mathbf{h}^{(l)}}}_{\text{从输出层回传至第 }l\text{ 层}} \cdot \frac{\partial\mathbf{h}^{(l)}}{\partial\theta^{(l)}} \tag{11}
+\]
+      </div>
+
+      <p>这就是反向传播的本质：梯度信号从损失出发，沿计算图逐层向前传递，每一步应用一次链式法则。</p>
+
+      <p>以下将式 (11) 分别应用于本文的三项损失，说明各项梯度的计算结构及其差异。</p>
+
+      <p class="loss-term-label">① \(\mathcal{L}_{\text{BC}}\) 的梯度（一阶）</p>
+
+      <p>\(\mathcal{L}_{\text{BC}}\) 直接依赖网络预测速度场 \(\hat{\mathbf{u}}\)，依赖链为 \(\theta \to \hat{\mathbf{u}} \to \mathcal{L}_{\text{BC}}\)。对 \(\theta\) 应用链式法则，得：</p>
+
+      <div class="eq-block">
+\[
+  \frac{\partial\mathcal{L}_{\text{BC}}}{\partial\theta} = \frac{\partial\mathcal{L}_{\text{BC}}}{\partial\hat{\mathbf{u}}} \cdot \frac{\partial\hat{\mathbf{u}}}{\partial\theta} \tag{12}
+\]
+      </div>
+
+      <p>其中 \(\partial\hat{\mathbf{u}}/\partial\theta \in \mathbb{R}^{2\times|\theta|}\) 为 Jacobian 矩阵，通过标准反向传播计算，无需二阶微分。展开后的完整表达式为：</p>
+
+      <div class="eq-block">
+\[
+  \nabla_\theta\mathcal{L}_{\text{BC}} = \frac{2}{N_b}\sum_{j}\left(\frac{\partial\hat{\mathbf{u}}_j}{\partial\theta}\right)^{\!\top}(\hat{\mathbf{u}}_j - \mathbf{u}_j^{\text{ref}}) \tag{15}
+\]
+      </div>
+
+      <p>\(\mathcal{L}_{p\text{-ref}}\) 同理（标量输出，退化为普通梯度向量）：</p>
+
+      <div class="eq-block">
+\[
+  \nabla_\theta\mathcal{L}_{p\text{-ref}} = 2\,\hat{p}(\mathbf{0})\,\frac{\partial\hat{p}(\mathbf{0})}{\partial\theta} \tag{16}
+\]
+      </div>
+
+      <p class="loss-term-label">② \(\mathcal{L}_{\text{PDE}}\) 的梯度（二阶）</p>
+
+      <p>\(\mathcal{L}_{\text{PDE}}\) 并不直接依赖 \(\hat{\mathbf{q}}\)，而是依赖其对输入坐标 \(\mathbf{x}\) 的各阶偏导数，再经残差向量 \(\mathbf{r} = (r_u, r_v, r_c)\) 传入损失。完整依赖链为：</p>
+
+      <div class="eq-block">
+\[
+  \theta \;\longrightarrow\; \hat{\mathbf{q}} \;\xrightarrow{\;\partial/\partial\mathbf{x}\;}\; \nabla\hat{\mathbf{u}},\;\nabla^2\hat{\mathbf{u}},\;\nabla\hat{p} \;\longrightarrow\; \mathbf{r} \;\longrightarrow\; \mathcal{L}_{\text{PDE}}
+\]
+      </div>
+
+      <p>对 \(\theta\) 的链式法则展开为：</p>
+
+      <div class="eq-block">
+\[
+  \frac{\partial\mathcal{L}_{\text{PDE}}}{\partial\theta} = \frac{\partial\mathcal{L}_{\text{PDE}}}{\partial\mathbf{r}} \cdot \frac{\partial\mathbf{r}}{\partial\theta} \tag{13}
+\]
+      </div>
+
+      <p>其中 \(\partial\mathbf{r}/\partial\theta \in \mathbb{R}^{3\times|\theta|}\) 为残差向量对参数的 Jacobian。以其第一行（对应 \(r_u\)）为例，按乘积法则展开：</p></p>
+
+      <div class="eq-block">
+\[
+  \frac{\partial r_{u,i}}{\partial\theta} =
+    \underbrace{\partial_x\hat{u}_i\cdot\frac{\partial\hat{u}_i}{\partial\theta} + \hat{u}_i\cdot\frac{\partial(\partial_x\hat{u}_i)}{\partial\theta}}_{\hat{u}\,\partial_x\hat{u}\text{ 项}}
+  + \underbrace{\partial_y\hat{u}_i\cdot\frac{\partial\hat{v}_i}{\partial\theta} + \hat{v}_i\cdot\frac{\partial(\partial_y\hat{u}_i)}{\partial\theta}}_{\hat{v}\,\partial_y\hat{u}\text{ 项}}
+  + \frac{\partial(\partial_x\hat{p}_i)}{\partial\theta}
+  - \frac{1}{\text{Re}}\!\left(\frac{\partial(\partial_{xx}\hat{u}_i)}{\partial\theta} + \frac{\partial(\partial_{yy}\hat{u}_i)}{\partial\theta}\right) \tag{18}
+\]
+      </div>
+
+      <p>式 (18) 中出现了 \(\partial\hat{u}/\partial\theta\)（与式 (12) 同类，一阶）和 \(\partial(\partial_x\hat{u})/\partial\theta\)（新出现，需要二阶 AD）两类项，对应式 (17) 中 Jacobian \(\partial\mathbf{r}_i/\partial\theta\) 第一行的展开。汇总后的完整表达式为：</p>
+
+      <div class="eq-block">
+\[
+  \nabla_\theta\mathcal{L}_{\text{PDE}} = \frac{2}{N_f}\sum_i\left(\frac{\partial\mathbf{r}_i}{\partial\theta}\right)^{\!\top}\mathbf{r}_i \tag{17}
+\]
+      </div>
+
+      <p>将式 (15)(16)(17) 代入总梯度，展开得：</p>
+
+      <div class="eq-block">
+\[
+  \nabla_\theta\mathcal{L} = \nabla_\theta\mathcal{L}_{\text{PDE}} + \lambda_{\text{BC}}\,\nabla_\theta\mathcal{L}_{\text{BC}} + \lambda_p\,\nabla_\theta\mathcal{L}_{p\text{-ref}} \tag{14}
+\]
+\[
+  = \frac{2}{N_f}\sum_{i}\!\left(\frac{\partial\mathbf{r}_i}{\partial\theta}\right)^{\!\top}\!\mathbf{r}_i
+  + \frac{2\lambda_{\text{BC}}}{N_b}\sum_{j}\!\left(\frac{\partial\hat{\mathbf{u}}_j}{\partial\theta}\right)^{\!\top}\!(\hat{\mathbf{u}}_j - \mathbf{u}_j^{\text{ref}})
+  + 2\lambda_p\,\hat{p}(\mathbf{0})\,\frac{\partial\hat{p}(\mathbf{0})}{\partial\theta}
+\]
+      </div>
+
+      <p>式中三项分别对应 PDE 残差、边界条件和压力参考的梯度贡献，权重系数 \(\lambda_{\text{BC}}\) 和 \(\lambda_p\) 直接放大了对应方向上的梯度幅值。</p>
+    </section>
+
+    <!-- § 4 优化器 -->
+    <section class="paper-section" id="s4">
+      <h2 class="section-heading">
+        <span class="section-num">§ 4</span>
+        <span class="section-title">优化器作用的差异：Adam 与 L-BFGS</span>
+      </h2>
+
+      <p>回顾式 (10) 的基本更新规则：</p>
+
+      <div class="eq-block">
+\[
+  \theta_{t+1} = \theta_t - \eta\,\nabla_\theta\mathcal{L}(\theta_t)
+\]
+      </div>
+
+      <p>Adam 和 L-BFGS 都以梯度 \(g_t = \nabla_\theta\mathcal{L}(\theta_t)\) 作为输入，都以更新参数 \(\theta\) 为目标，但两者对梯度信息的利用方式有着本质区别。这一区别，决定了它们各自擅长的阶段。</p>
+
+      <h3 class="subsection-heading">4.1 Adam：一阶自适应方法</h3>
+
+      <p>Adam 是一阶优化器，意味着它只使用梯度 \(g_t\)，不涉及曲率（二阶导数）信息。其核心思想是：为每个参数方向独立维护梯度的统计量，并据此分配自适应的学习率。</p>
+
+      <p>Adam 维护两个量 \(m_t\) 和 \(v_t\)，两者缺一不可：</p>
+
+      <ul class="feature-list">
+        <li><strong>只用 \(m_t\)（动量 SGD）</strong>：所有参数方向共享同一个学习率 \(\alpha\)。本文 PINN 的 13,000 个参数方向上，梯度尺度差可达 \(10^6\) 倍——共享学习率必然导致部分方向振荡、部分方向停滞。</li>
+        <li><strong>只用 \(v_t\)（RMSProp）</strong>：有了逐参数缩放，但没有动量，方向完全跟着单步梯度走。PINN 的 PDE 残差梯度含 \(r_u\hat{u}\) 等非线性耦合项，单步梯度噪声大，纯粹"踩一步算一步"会在参数空间中蛇形前进。</li>
+        <li><strong>\(m_t + v_t\)（Adam）</strong>：\(m_t\) 提供稳定方向（动量平滑噪声），\(v_t\) 提供逐参数缩放（压平尺度差异）。两者互补。</li>
+      </ul>
+
+      <p>具体而言，Adam 在每一步维护两个指数移动平均：</p>
+
+      <div class="eq-block">
+\[
+  m_t = \beta_1 m_{t-1} + (1-\beta_1)\,g_t \qquad \text{（一阶矩：梯度的指数平均）} \tag{20}
+\]
+      </div>
+      <div class="eq-block">
+\[
+  v_t = \beta_2 v_{t-1} + (1-\beta_2)\,g_t^2 \qquad \text{（二阶矩：梯度平方的指数平均）} \tag{21}
+\]
+      </div>
+
+      <p>经过偏差修正（\(\hat{m}_t = m_t/(1-\beta_1^t)\)，\(\hat{v}_t = v_t/(1-\beta_2^t)\)）后，参数更新为：</p>
+
+      <div class="eq-block">
+\[
+  \theta_{t+1} = \theta_t - \frac{\alpha\,\hat{m}_t}{\sqrt{\hat{v}_t} + \varepsilon} \tag{22}
+\]
+      </div>
+
+      <p>其中 \(\alpha\) 为全局学习率，\(\varepsilon\) 为防止除零的小量（通常取 \(10^{-8}\)）。分母 \(\sqrt{\hat{v}_t}\) 估计了该参数方向上梯度幅值的典型大小：若某方向梯度持续较大（如边界条件方向），\(\hat{v}_t\) 增大，等效学习率 \(\alpha/\sqrt{\hat{v}_t}\) 自动缩小；若某方向梯度持续较小（如 PDE 残差方向），等效学习率则自动放大。<strong>这正是 Adam 对抗病态损失函数的机制</strong>——无需事先知道损失的形状，仅凭梯度历史便能为每个方向配置近似均衡的更新幅度。</p>
+
+      <h3 class="subsection-heading">4.2 L-BFGS：拟牛顿方法</h3>
+
+      <p>梯度下降在每个方向上使用相同的学习率，不考虑损失函数的曲率。若能利用曲率信息，便可在每个方向上取最优步长——曲率大的方向步长应小，曲率平坦的方向可以步长更大。</p>
+
+      <p>将 \(\mathcal{L}(\theta)\) 在当前参数 \(\theta_t\) 附近做多元 Taylor 展开：</p>
+
+      <div class="eq-block">
+\[
+  \mathcal{L}(\theta) = \mathcal{L}(\theta_t)
+  + \underbrace{\nabla_\theta\mathcal{L}(\theta_t)^\top}_{g_t^\top}(\theta - \theta_t)
+  + \frac{1}{2}(\theta - \theta_t)^\top\underbrace{\nabla_\theta^2\mathcal{L}(\theta_t)}_{H_t}(\theta - \theta_t)
+  + O\!\left(\|\theta - \theta_t\|^3\right)
+\]
+      </div>
+
+      <p>三项依次为：常数项（当前损失值）、一阶项（沿位移方向的线性变化，系数为梯度）、二阶项（曲率引起的非线性弯曲，系数矩阵为 Hessian）。略去三阶以上余项，得到二次近似：</p>
+
+      <div class="eq-block">
+\[
+  \mathcal{L}(\theta) \approx \mathcal{L}(\theta_t) + g_t^\top(\theta-\theta_t) + \frac{1}{2}(\theta-\theta_t)^\top H_t(\theta-\theta_t) \tag{23}
+\]
+      </div>
+
+      <p>式中沿用 §4 开头的记号：\(g_t = \nabla_\theta\mathcal{L}(\theta_t)\) 为当前梯度向量；\(H_t = \nabla_\theta^2\mathcal{L}(\theta_t) \in \mathbb{R}^{|\theta|\times|\theta|}\) 为 Hessian 矩阵，其第 \((k,l)\) 个元素为：</p>
+
+      <div class="eq-block">
+\[
+  [H_t]_{kl} = \frac{\partial^2\mathcal{L}}{\partial\theta_k\,\partial\theta_l}\bigg|_{\theta=\theta_t}
+\]
+      </div>
+
+      <p>\(H_t\) 描述了损失函数在 \(\theta_t\) 处每一对参数方向上的曲率。计算它的直接做法是：先做一次反向传播得到 \(g_t\)，再对 \(g_t\) 的每个分量分别做一次反向传播，得到 Hessian 的各行，总计 \(|\theta|\) 次完整反向传播，计算和存储代价均为 \(O(|\theta|^2)\)。对 PINN 而言更为复杂：\(\mathcal{L}_{\text{PDE}}\) 的梯度已需要二阶 AD（§3 中的 \(\partial(\partial_x\hat{u})/\partial\theta\) 等项），因此 Hessian 进而需要三阶导数。神经网络参数量从数千到数百万不等，\(O(|\theta|^2)\) 的代价使显式 Hessian 完全不可行。</p>
+
+      <p>尽管 \(H_t\) 无法直接计算，先借助式 (23) 推导其理论意义。令 \(\delta = \theta - \theta_t\)，对式 (23) 右端关于 \(\delta\) 逐项求梯度并令其为零：</p>
+      <ul class="symbol-list">
+        <li>\(\nabla_\delta\,\mathcal{L}(\theta_t) = \mathbf{0}\)（常数项，对 \(\delta\) 无依赖）</li>
+        <li>\(\nabla_\delta\,(g_t^\top\delta) = g_t\)（线性项，系数即为梯度向量）</li>
+        <li>\(\nabla_\delta\!\left(\tfrac{1}{2}\,\delta^\top H_t\,\delta\right) = H_t\,\delta\)（\(H_t\) 对称，\(\tfrac{1}{2}\) 与求导产生的因子 2 抵消）</li>
+      </ul>
+
+      <p>三项之和令其等于零：\(g_t + H_t\,\delta = \mathbf{0}\)，解得 \(\delta = -H_t^{-1}g_t\)。代回 \(\delta = \theta_{t+1} - \theta_t\)，得牛顿步：</p>
+
+      <div class="eq-block">
+\[
+  \theta_{t+1} = \theta_t - H_t^{-1}\,g_t \tag{24}
+\]
+      </div>
+
+      <p>在二次近似精确成立的区域，牛顿步直接跳至极小值点，收敛速率为超线性——误差按平方量级缩小，远快于梯度下降的线性收敛。由于 \(H_t\) 的计算代价已知不可行，问题转化为：能否不构造 \(H_t\)，仍近似得到乘积 \(H_t^{-1}g_t\)？</p>
+
+      <p>每完成一步优化，就自动得到一对向量：</p>
+
+      <div class="eq-block">
+\[
+  s_k = \theta_{k+1} - \theta_k, \qquad y_k = g_{k+1} - g_k \tag{25}
+\]
+      </div>
+
+      <p>在局部二次近似下，\(y_k \approx H_k\,s_k\)——这就是割线条件（secant condition）：参数走了 \(s_k\)，梯度变化了 \(y_k\)，两者之间的关系近似等价于 \(H_k\) 在 \(s_k\) 方向上的作用。等价地写成逆矩阵形式：\(H_k^{-1} y_k \approx s_k\)，即 \(s_k\) 给出了 \(H_k^{-1}\) 在 \(y_k\) 方向上的近似输出。\((s_k, y_k)\) 是每步"免费"得到的，无需额外计算，仅保存相邻两步的梯度和参数即可。</p>
+
+      <p>BFGS 的目标是找到一个新的近似矩阵 \(B_{k+1} \approx H_{k+1}^{-1}\)，满足：割线条件 \(B_{k+1}\,y_k = s_k\)、对称正定（保证 \(d_t = -B_t g_t\) 是下降方向）、以及对 \(B_k\) 的改动尽可能小（保守更新）。当前近似 \(B_k\) 在 \(y_k\) 方向上给出的输出 \(B_k y_k\) 通常不等于 \(s_k\)，即存在割线方向上的残差。要用对称的低秩修正来消除这一残差，最自然的选取是 \(u = s_k\)（目标方向）和 \(v = B_k y_k\)（当前近似给出的错误方向）。</p>
+
+      <p>此处用到矩阵外积：对向量 \(u \in \mathbb{R}^{|\theta|}\)，外积 \(uu^\top\) 是一个 \(|\theta|\times|\theta|\) 的秩-1 对称矩阵，作用于任意向量 \(q\) 时，\((uu^\top)q = (u^\top q)\,u\)——先把 \(q\) 投影到 \(u\) 方向，再沿 \(u\) 返回，实质是"强化矩阵在 \(u\) 方向上的响应"。两个秩-1 项之和是秩-2 修正：令</p>
+
+      <div class="eq-block">
+\[
+  B_{k+1} = B_k + \alpha\,s_k s_k^\top + \gamma\,(B_k y_k)(B_k y_k)^\top
+\]
+      </div>
+
+      <p>代入割线条件 \(B_{k+1}\,y_k = s_k\)：</p>
+
+      <div class="eq-block">
+\[
+  B_k y_k + \alpha\,(s_k^\top y_k)\,s_k + \gamma\,(y_k^\top B_k y_k)\,B_k y_k = s_k
+\]
+      </div>
+
+      <p>令 \(\gamma = -1/(y_k^\top B_k y_k)\)（消去 \(B_k y_k\) 项），\(\alpha = 1/(s_k^\top y_k)\)（令 \(s_k\) 项恢复到 \(s_k\)），得：</p>
+
+      <div class="eq-block">
+\[
+  B_{k+1} = B_k + \frac{s_k s_k^\top}{s_k^\top y_k} - \frac{(B_k y_k)(B_k y_k)^\top}{y_k^\top B_k y_k}
+\]
+      </div>
+
+      <p>这就是 BFGS 更新的核心结构——两个秩-1 项相加（秩-2），一项"添加"目标方向 \(s_k\)，一项"减去"原有的错误方向 \(B_k y_k\)。经代数整理，上式等价于以下紧凑形式：</p>
+
+      <div class="eq-block">
+\[
+  B_{k+1} = \left(I - \rho_k\,s_k y_k^\top\right)B_k\left(I - \rho_k\,y_k s_k^\top\right) + \rho_k\,s_k s_k^\top, \qquad \rho_k = \frac{1}{y_k^\top s_k}
+\]
+      </div>
+
+      <p>\(\rho_k\) 起归一化作用。\(B_{k+1}\) 保持正定要求 \(y_k^\top s_k > 0\)（即 \(\alpha > 0\)），这一条件不能凭空成立，将由线搜索来保障。</p>
+
+      <p>BFGS 仍需显式存储 \(B_k \in \mathbb{R}^{|\theta|\times|\theta|}\)，依然不可行。注意紧凑形式的结构：对任意向量 \(q\)，</p>
+
+      <div class="eq-block">
+\[
+  B_{k+1}\,q = \underbrace{(I - \rho_k s_k y_k^\top)}_{\text{作用于左侧}} B_k \underbrace{(I - \rho_k y_k s_k^\top)\,q}_{\text{先作用于 }q} + \rho_k\,s_k\,(s_k^\top q)
+\]
+      </div>
+
+      <p>计算 \(B_{k+1} q\) 时，可以先对 \(q\) 做一次秩-1 更新（\(O(|\theta|)\)），再递归计算 \(B_k\) 作用于结果，最后再做一次秩-1 更新和向量加法。整个过程是一个对 \((s_k, y_k)\) 对的递推，而不需要存储任何矩阵。</p>
+
+      <p>L-BFGS 只保留最近 \(m\) 对历史记录 \(\{(s_k, y_k)\}_{k=t-m}^{t-1}\)，用两循环递推计算 \(d_t = -B_t g_t\)：</p>
+      <ul class="symbol-list">
+        <li><strong>第一循环</strong>（逆序）：从最新对到最旧对，对当前向量 \(q\) 逐步施加右侧的 \((I - \rho_k y_k s_k^\top)\) 因子，并记录系数 \(\alpha_k = \rho_k\,s_k^\top q\)</li>
+        <li><strong>初始缩放</strong>：对中间结果用 \(y_{t-1}^\top s_{t-1} / y_{t-1}^\top y_{t-1}\) 缩放，近似替代 \(B_0 q\)</li>
+        <li><strong>第二循环</strong>（正序）：从最旧对到最新对，施加左侧的 \((I - \rho_k s_k y_k^\top)\) 因子，并利用第一循环记录的 \(\alpha_k\) 恢复各步修正</li>
+      </ul>
+
+      <p>存储和计算代价均为 \(O(m|\theta|)\)，\(m\) 通常取 \(50\sim100\)。</p>
+
+      <p>L-BFGS 每步给出更新方向 \(d_t\)，步长 \(\alpha_t\) 由线搜索确定。定义沿 \(d_t\) 的单变量函数：</p>
+
+      <div class="eq-block">
+\[
+  \phi(\alpha) = \mathcal{L}(\theta_t + \alpha\,d_t)
+\]
+      </div>
+
+      <p>则 \(\phi(0) = \mathcal{L}(\theta_t)\)，\(\phi'(0) = g_t^\top d_t < 0\)（\(d_t\) 是下降方向，内积为负）。参数更新后的新点为 \(\theta_{t+1} = \theta_t + \alpha_t d_t\)，对应 \(\phi'(\alpha_t) = g_{t+1}^\top d_t\)。Wolfe 条件对 \(\alpha_t\) 施加两个约束：</p>
+
+      <p><strong>充分下降条件（Armijo）</strong></p>
+
+      <div class="eq-block">
+\[
+  \phi(\alpha_t) \leq \phi(0) + c_1\,\alpha_t\,\phi'(0)
+  \quad\Longleftrightarrow\quad
+  \mathcal{L}(\theta_t + \alpha_t d_t) \leq \mathcal{L}(\theta_t) + c_1\,\alpha_t\,g_t^\top d_t
+\]
+      </div>
+
+      <p>右端是以 \(c_1\phi'(0)\)（略小于实际斜率）为斜率的直线。条件要求实际损失必须下降到这条直线以下，即损失下降幅度不低于线性预测的 \(c_1\) 倍（典型值 \(c_1 = 10^{-4}\)）。这防止了步长过大、跨越极小值点的情况。</p>
+
+      <p><strong>曲率条件</strong></p>
+
+      <div class="eq-block">
+\[
+  \phi'(\alpha_t) \geq c_2\,\phi'(0)
+  \quad\Longleftrightarrow\quad
+  g_{t+1}^\top d_t \geq c_2\,g_t^\top d_t
+\]
+      </div>
+
+      <p>\(\phi'(0) < 0\)，\(c_2\phi'(0)\) 更接近零。条件要求新点处沿 \(d_t\) 的方向导数比初始斜率"更平"。若步长 \(\alpha_t\) 极小，新旧梯度几乎相同，即 \(\phi'(\alpha_t) \approx \phi'(0)\)，违反该条件；这防止了步长过短、没有实质位移的情况（典型值 \(c_2 = 0.9\)）。</p>
+
+      <p>曲率条件与 \(y_k^\top s_k > 0\) 之间存在直接的数学联系：</p>
+
+      <div class="eq-block">
+\[
+  y_k^\top s_k = (g_{t+1} - g_t)^\top(\alpha_t d_t) = \alpha_t\,\bigl(\phi'(\alpha_t) - \phi'(0)\bigr)
+\]
+      </div>
+
+      <p>由曲率条件 \(\phi'(\alpha_t) \geq c_2\phi'(0) > \phi'(0)\)（因 \(0 < c_2 < 1\)，\(\phi'(0) < 0\)），得 \(\phi'(\alpha_t) - \phi'(0) > 0\)，从而 \(y_k^\top s_k > 0\)。因此，只要线搜索满足 Wolfe 条件，\(B_{k+1}\) 的正定性便自动得到保障。</p>
+
+      <p>对 PINN 而言，线搜索尤为关键：PDE 残差的强非线性使 Hessian 近似在局部仍有偏差，线搜索保证即便方向不完全准确，每步也能有效下降，避免发散。</p>
+    </section>
+
+    <!-- § 5 训练结果 -->
+    <section class="paper-section" id="s5">
+      <h2 class="section-heading">
+        <span class="section-num">§ 5</span>
+        <span class="section-title">训练结果</span>
+      </h2>
+
+      <!-- 流场动画 -->
+      <p>以顶盖驱动方腔流为例，两阶段训练策略的效果可以通过流场演化直观呈现。下图展示不同训练阶段 PINN 预测的流场（速度幅值云图与流线）与 Ghia et al.（1982）参考解的对比情况。</p>
+      <div class="anim-player">
+        <canvas id="snapCanvas"></canvas>
+        <div class="anim-controls">
+          <button class="anim-btn" id="snapPlayBtn" aria-label="播放/暂停">▶</button>
+          <div class="anim-track">
+            <div class="anim-phase-row">
+              <span class="anim-phase-adam">Adam 阶段</span>
+              <span class="anim-phase-lbfgs">L-BFGS 阶段</span>
+            </div>
+            <input class="anim-scrubber" type="range" id="snapScrubber" min="0" max="61" value="0">
+          </div>
+          <span class="anim-step" id="snapStepLabel">Adam · Step 200</span>
+        </div>
+      </div>
+
+      <p>两个优化器在此案例中的行为，印证了 §4 中分析的机制。对于 PINN 这类损失曲面高度病态的问题，Adam 的价值在于方向而非精度：自适应的逐参数学习率使其能够在梯度尺度差异悬殊的参数空间中快速推进，将网络从随机初始化带至一个物理上可行的区域。进入该区域后，Adam 的有效学习率因 \(\hat{v}_t\) 的持续积累而趋于饱和，精确收敛的能力受到结构性限制。L-BFGS 所擅长的，恰恰是 Adam 力所不及的部分：在已建立的局部结构上，割线近似提供了梯度曲率的低成本估计，使每一步更新都能沿损失下降最陡的二阶方向推进，以超线性速率压缩残余误差。两者的接续不是偶然的经验之谈，而是由各自的数学性质决定的。</p>
+    </section>
+
+  </main>
+</div>
+
+<footer class="paper-footer">
+  <div class="footer-sig">
+    <div class="footer-avatar"></div>
+    <div>
+      <div class="footer-name">Jinpeng Xin</div>
+    </div>
+  </div>
+  <a href="../blog.html" class="footer-back">← 返回博客</a>
+</footer>
+
+<!-- Lightbox -->
+<div class="lightbox-overlay" id="lightboxOverlay">
+  <button class="lightbox-close" id="lightboxClose">✕</button>
+  <img id="lightboxImg" src="" alt="">
+</div>
+
+<!-- ══════════════ JavaScript ══════════════ -->
+<script>
+
+/* ── Nav transparency over cover ─────────────── */
+(function () {
+  const nav    = document.getElementById('postNav');
+  const cover  = document.getElementById('cover');
+  function update() {
+    const past = window.scrollY > (cover ? cover.offsetHeight - 60 : 0);
+    nav.classList.toggle('over-cover', !past);
+  }
+  update();
+  window.addEventListener('scroll', update, { passive: true });
+})();
+
+/* ── Cover scroll button ──────────────────────── */
+document.getElementById('coverScroll')?.addEventListener('click', () => {
+  document.querySelector('.paper-header')?.scrollIntoView({ behavior: 'smooth' });
+});
+
+/* ── Progress bar ─────────────────────────────── */
+const bar = document.getElementById('readingProgress');
+window.addEventListener('scroll', () => {
+  const d = document.documentElement;
+  bar.style.width = Math.min(
+    d.scrollTop / (d.scrollHeight - d.clientHeight) * 100, 100
+  ) + '%';
+}, { passive: true });
+
+/* abstract: always expanded, no JS needed */
+
+/* ── TOC tracking ─────────────────────────────── */
+const sections = document.querySelectorAll('.paper-section');
+const tocItems = document.querySelectorAll('.toc-item');
+const readSet  = new Set();
+
+new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    const id = e.target.id;
+    if (!e.isIntersecting) return;
+    tocItems.forEach(item => {
+      const t = item.dataset.target;
+      item.classList.toggle('active', t === id);
+      if (readSet.has(t) && t !== id) item.classList.add('read');
+    });
+    readSet.add(id);
+  });
+}, { rootMargin: '-18% 0px -72% 0px' }).observe
+? sections.forEach(s =>
+    new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        const id = e.target.id;
+        if (!e.isIntersecting) return;
+        tocItems.forEach(item => {
+          const t = item.dataset.target;
+          item.classList.toggle('active', t === id);
+          if (readSet.has(t) && t !== id) item.classList.add('read');
+        });
+        readSet.add(id);
+      });
+    }, { rootMargin: '-18% 0px -72% 0px' }).observe(s)
+  )
+: null;
+
+/* ── Section heading sweep ────────────────────── */
+const sweepObs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (!e.isIntersecting) return;
+    const h = e.target.querySelector('.section-heading');
+    if (h && !h.classList.contains('swept'))
+      setTimeout(() => h.classList.add('swept'), 60);
+  });
+}, { threshold: 0.12 });
+sections.forEach(s => sweepObs.observe(s));
+
+/* ── Loss curve canvas ────────────────────────── */
+(function () {
+  const canvas = document.getElementById('lossCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  let done = false;
+
+  function dpr() { return window.devicePixelRatio || 1; }
+
+  function resize() {
+    const w = canvas.offsetWidth, h = canvas.offsetHeight;
+    canvas.width  = w * dpr();
+    canvas.height = h * dpr();
+    ctx.setTransform(dpr(), 0, 0, dpr(), 0, 0);
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  const N_A = 6000, N_L = 300, N = N_A + N_L;
+
+  function lossAt(i) {
+    if (i <= N_A) {
+      const t = i / N_A;
+      const base = 72 * Math.exp(-5.2 * t);
+      const jitter = t > .55 ? .25 * Math.sin(i * .28) * Math.exp(-1.8 * (t - .55)) : 0;
+      return Math.max(base + jitter, .42);
+    }
+    const t = (i - N_A) / N_L;
+    return .42 * Math.exp(-3.6 * t) + .009;
+  }
+
+  const PAD = { l: 44, r: 14, t: 14, b: 26 };
+
+  function toX(i, W) { return PAD.l + (i / N) * (W - PAD.l - PAD.r); }
+  function toY(v, H) {
+    const lo = Math.log10(.007), hi = Math.log10(80);
+    return (H - PAD.b) - ((Math.log10(v) - lo) / (hi - lo)) * (H - PAD.b - PAD.t);
+  }
+
+  function drawFrame(progress) {
+    const W = canvas.offsetWidth, H = canvas.offsetHeight;
+    ctx.clearRect(0, 0, W, H);
+
+    /* grid */
+    ctx.strokeStyle = '#eef0f4';
+    ctx.lineWidth = 1;
+    [80, 10, 1, .1, .01].forEach(v => {
+      const y = toY(v, H);
+      ctx.beginPath(); ctx.moveTo(PAD.l, y); ctx.lineTo(W - PAD.r, y); ctx.stroke();
+    });
+
+    /* axes */
+    ctx.strokeStyle = '#d6d3d1';
+    ctx.beginPath();
+    ctx.moveTo(PAD.l, PAD.t); ctx.lineTo(PAD.l, H - PAD.b);
+    ctx.lineTo(W - PAD.r, H - PAD.b);
+    ctx.stroke();
+
+    /* y labels */
+    ctx.fillStyle = '#9ca3af';
+    ctx.font = '9.5px Inter, sans-serif';
+    ctx.textAlign = 'right';
+    [80, 10, 1, .1, .01].forEach(v => {
+      ctx.fillText(v >= 1 ? v : v.toExponential(0), PAD.l - 5, toY(v, H) + 3.5);
+    });
+
+    /* x labels */
+    ctx.textAlign = 'center';
+    [0, 2000, 4000, 6000, 6300].forEach(v => {
+      ctx.fillText(v, toX(v, W), H - PAD.b + 15);
+    });
+
+    /* divider */
+    const dx = toX(N_A, W);
+    ctx.setLineDash([3, 3]);
+    ctx.strokeStyle = '#d6d3d1';
+    ctx.beginPath(); ctx.moveTo(dx, PAD.t); ctx.lineTo(dx, H - PAD.b); ctx.stroke();
+    ctx.setLineDash([]);
+
+    /* Adam curve */
+    const adamEnd = Math.min(Math.floor(progress * N), N_A);
+    if (adamEnd > 0) {
+      ctx.beginPath();
+      ctx.strokeStyle = '#78350f';
+      ctx.lineWidth = 1.75;
+      ctx.lineJoin = 'round';
+      for (let i = 0; i <= adamEnd; i++) {
+        const x = toX(i, W), y = toY(lossAt(i), H);
+        i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+    }
+
+    /* L-BFGS curve */
+    const lbEnd = Math.max(0, Math.floor(progress * N) - N_A);
+    if (lbEnd > 0) {
+      ctx.beginPath();
+      ctx.strokeStyle = '#9ca3af';
+      ctx.lineWidth = 1.75;
+      for (let i = 0; i <= lbEnd; i++) {
+        const x = toX(N_A + i, W), y = toY(lossAt(N_A + i), H);
+        i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+    }
+  }
+
+  let startTs = null;
+  const DUR = 2600;
+
+  function tick(ts) {
+    if (!startTs) startTs = ts;
+    const p = Math.min((ts - startTs) / DUR, 1);
+    drawFrame(p);
+    if (p < 1) requestAnimationFrame(tick);
+  }
+
+  new IntersectionObserver(entries => {
+    if (entries[0].isIntersecting && !done) {
+      done = true;
+      requestAnimationFrame(tick);
+    }
+  }, { threshold: 0.25 }).observe(canvas);
+})();
+
+/* ── Lightbox ─────────────────────────────────── */
+const overlay = document.getElementById('lightboxOverlay');
+const lbImg   = document.getElementById('lightboxImg');
+
+document.querySelectorAll('.fig-wrapper[data-lightbox]').forEach(w => {
+  w.addEventListener('click', () => {
+    const img = w.querySelector('img');
+    if (!img?.src) return;
+    lbImg.src = img.src;
+    overlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  });
+});
+
+function closeLb() { overlay.classList.remove('open'); document.body.style.overflow = ''; }
+document.getElementById('lightboxClose').addEventListener('click', closeLb);
+overlay.addEventListener('click', e => { if (e.target === overlay) closeLb(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLb(); });
+
+/* ── Comparison slider ────────────────────────── */
+(function () {
+  const slider  = document.getElementById('compSlider');
+  const after   = document.getElementById('csAfter');
+  const handle  = document.getElementById('csHandle');
+  const imgAftr = document.getElementById('csImgAfter');
+  if (!slider) return;
+  let dragging = false;
+
+  function set(p) {
+    p = Math.min(Math.max(p, 4), 96);
+    after.style.width = p + '%';
+    handle.style.left = p + '%';
+    if (imgAftr) imgAftr.style.width = (100 / (p / 100)) + '%';
+  }
+  set(50);
+
+  function relX(e) {
+    const t = e.touches ? e.touches[0] : e;
+    return (t.clientX - slider.getBoundingClientRect().left)
+           / slider.getBoundingClientRect().width * 100;
+  }
+
+  handle.addEventListener('mousedown',  e => { dragging = true; e.preventDefault(); });
+  handle.addEventListener('touchstart', () => { dragging = true; }, { passive: true });
+  window.addEventListener('mousemove',  e => { if (dragging) set(relX(e)); });
+  window.addEventListener('touchmove',  e => { if (dragging) set(relX(e)); }, { passive: true });
+  window.addEventListener('mouseup',    () => { dragging = false; });
+  window.addEventListener('touchend',   () => { dragging = false; });
+})();
+
+/* ── Grid title canvas ────────────────────────── */
+(function () {
+  const canvas = document.getElementById('gridTitleCanvas');
+  if (!canvas) return;
+  const ctx   = canvas.getContext('2d');
+  const cover = document.getElementById('cover');
+
+  const TEXT = 'Adam 与 L-BFGS 在 PINN 中的角色（I）';
+  const CELL = 1.5; // grid cell size in logical px
+  const PAD  = 2;   // extra grid rows above/below text
+
+  function dpr() { return window.devicePixelRatio || 1; }
+
+  function render() {
+    /* read the canvas's own rendered size — guaranteed to match what user sees */
+    const rect = canvas.getBoundingClientRect();
+    const W = Math.round(rect.width)  || window.innerWidth;
+    const H = Math.round(rect.height) || window.innerHeight;
+    canvas.width  = W * dpr();
+    canvas.height = H * dpr();
+    ctx.setTransform(dpr(), 0, 0, dpr(), 0, 0);
+    ctx.clearRect(0, 0, W, H);
+
+    const fs = Math.min(Math.max(30, W * 0.045), 58);
+
+    /* render text to offscreen canvas for pixel sampling */
+    const off = document.createElement('canvas');
+    off.width = W; off.height = H;
+    const oc = off.getContext('2d');
+    oc.font          = `600 ${fs}px Inter, 'PingFang SC', system-ui, sans-serif`;
+    oc.textAlign     = 'center';
+    oc.textBaseline  = 'middle';
+    oc.fillStyle     = '#fff';
+    oc.fillText(TEXT, W / 2, H / 2);
+
+    const data = oc.getImageData(0, 0, W, H).data;
+
+    /* find vertical text bounds */
+    let minY = H, maxY = 0;
+    for (let y = 0; y < H; y++)
+      for (let x = 0; x < W; x++)
+        if (data[(y * W + x) * 4 + 3] > 30) {
+          if (y < minY) minY = y;
+          if (y > maxY) maxY = y;
+        }
+    if (minY > maxY) return;
+
+    const rowStart = Math.floor(minY / CELL) - PAD;
+    const rowEnd   = Math.ceil(maxY  / CELL) + PAD;
+    const cols     = Math.ceil(W / CELL);
+
+    for (let row = rowStart; row <= rowEnd; row++) {
+      /* integer pixel boundaries for this row — no vertical overlap */
+      const gy0 = Math.round(row * CELL);
+      const gy1 = Math.round((row + 1) * CELL);
+      const ch  = gy1 - gy0;
+      if (ch <= 0) continue;
+
+      for (let col = 0; col < cols; col++) {
+        /* integer pixel boundaries for this column — no horizontal overlap */
+        const gx0 = Math.round(col * CELL);
+        const gx1 = Math.round((col + 1) * CELL);
+        const cw  = gx1 - gx0;
+        if (cw <= 0) continue;
+
+        /* measure text coverage using exact integer pixel region */
+        let filled = 0;
+        for (let dy = 0; dy < ch; dy++)
+          for (let dx = 0; dx < cw; dx++) {
+            const px = gx0 + dx, py = gy0 + dy;
+            if (px < W && py < H && data[(py * W + px) * 4 + 3] > 60)
+              filled++;
+          }
+
+        const ratio = filled / (cw * ch);
+        const gap   = Math.min(0.4, Math.min(cw, ch) * 0.15);
+
+        if (ratio > 0.08) {
+          ctx.fillStyle = `rgba(255,220,50,${(0.55 + ratio * 0.42).toFixed(2)})`;
+          ctx.fillRect(gx0 + gap, gy0 + gap, cw - gap * 2, ch - gap * 2);
+        } else {
+          ctx.strokeStyle = 'rgba(255,255,255,0.13)';
+          ctx.lineWidth   = 0.5;
+          ctx.strokeRect(gx0 + gap / 2, gy0 + gap / 2, cw - gap, ch - gap);
+        }
+      }
+    }
+  }
+
+  /* wait for fonts AND layout before first render */
+  document.fonts.ready.then(() => requestAnimationFrame(render));
+  let rTimer;
+  window.addEventListener('resize', () => { clearTimeout(rTimer); rTimer = setTimeout(render, 150); });
+})();
+
+/* ── Snap animation player ────────────────────── */
+(function () {
+  const canvas = document.getElementById('snapCanvas');
+  const playBtn = document.getElementById('snapPlayBtn');
+  const scrubber = document.getElementById('snapScrubber');
+  const stepLabel = document.getElementById('snapStepLabel');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+
+  /* Build frame list */
+  const OSS = 'https://jinpeng-assets.oss-cn-beijing.aliyuncs.com/POST/Adam%20%E4%B8%8E%20L-BFGS%20%E5%9C%A8%20PINN%20%E4%B8%AD%E7%9A%84%E8%A7%92%E8%89%B2%EF%BC%88I%EF%BC%89/figures/';
+  const frames = [];
+  for (let i = 1; i <= 30; i++) {
+    const s = String(i * 200).padStart(5, '0');
+    frames.push({ src: `${OSS}snap_adam_${s}.png`, label: `Adam · Step ${(i*200).toLocaleString()}` });
+  }
+  for (let i = 1; i <= 31; i++) {
+    const s = String(i * 200).padStart(5, '0');
+    frames.push({ src: `${OSS}snap_lbfgs_${s}.png`, label: `L-BFGS · Step ${(i*200).toLocaleString()}` });
+  }
+  frames.push({ src: `${OSS}snap_lbfgs_final_06372.png`, label: 'L-BFGS · Final (6 372)' });
+
+  /* Preload all */
+  const imgs = frames.map(f => { const img = new Image(); img.src = f.src; return img; });
+
+  let cur = 0, playing = false, timer = null;
+  const FPS = 4;
+
+  function drawFrame(idx) {
+    const img = imgs[idx];
+    if (!img.complete || !img.naturalWidth) return;
+    const dpr = window.devicePixelRatio || 1;
+    const W = canvas.offsetWidth;
+    const H = Math.round(img.naturalHeight / img.naturalWidth * W);
+    if (canvas.width !== W * dpr || canvas.height !== H * dpr) {
+      canvas.width = W * dpr; canvas.height = H * dpr;
+      canvas.style.height = H + 'px';
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    ctx.drawImage(img, 0, 0, W, H);
+  }
+
+  function setFrame(idx) {
+    cur = Math.max(0, Math.min(idx, frames.length - 1));
+    scrubber.value = cur;
+    stepLabel.textContent = frames[cur].label;
+    /* colour the phase label */
+    stepLabel.style.color = cur < 30 ? 'var(--accent)' : '#1e3a5f';
+    drawFrame(cur);
+  }
+
+  function advance() {
+    setFrame(cur < frames.length - 1 ? cur + 1 : 0);
+  }
+
+  function play() {
+    playing = true; playBtn.textContent = '⏸';
+    timer = setInterval(advance, 1000 / FPS);
+  }
+  function pause() {
+    playing = false; playBtn.textContent = '▶';
+    clearInterval(timer);
+  }
+
+  playBtn.addEventListener('click', () => playing ? pause() : play());
+  scrubber.addEventListener('input', () => { pause(); setFrame(+scrubber.value); });
+
+  /* First frame once loaded */
+  function tryFirst() { if (imgs[0].complete) setFrame(0); else imgs[0].onload = () => setFrame(0); }
+  tryFirst();
+
+  /* Resize */
+  window.addEventListener('resize', () => {
+    canvas.width = 0; /* force size recalc */
+    drawFrame(cur);
+  });
+
+  /* Autoplay on scroll in, pause on scroll out */
+  new IntersectionObserver(entries => {
+    if (entries[0].isIntersecting) { if (!playing) play(); }
+    else pause();
+  }, { threshold: 0.4 }).observe(canvas);
+})();
+
+/* ── TOC observer (clean version) ────────────── */
+(function () {
+  const obs = new IntersectionObserver(cb, { rootMargin: '-18% 0px -72% 0px' });
+  function cb(entries) {
+    entries.forEach(e => {
+      if (!e.isIntersecting) return;
+      const id = e.target.id;
+      document.querySelectorAll('.toc-item').forEach(item => {
+        const t = item.dataset.target;
+        item.classList.toggle('active', t === id);
+        if (t !== id && readSet.has(t)) item.classList.add('read');
+      });
+      readSet.add(id);
+    });
+  }
+  document.querySelectorAll('.paper-section').forEach(s => obs.observe(s));
+})();
+</script>
+</body>
+</html>
