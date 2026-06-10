@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的书单 · Reading List | JINPENG XIN</title>
+    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="../blog.css">
+    <style>
+        /* ===== 书单时间线 ===== */
+        .reading-wrap {
+            max-width: 760px;
+            margin: 0 auto;
+            padding: 40px 20px 120px;
+        }
+
+        /* 顶部说明 */
+        .reading-intro {
+            max-width: 680px;
+            margin: 0 auto 30px;
+            text-align: center;
+        }
+        .reading-intro h2 {
+            font-size: 2rem;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            color: #1d1d1f;
+            margin: 0 0 18px;
+        }
+        .reading-intro p {
+            font-size: 1.02rem;
+            line-height: 1.85;
+            color: #555;
+            margin: 0;
+        }
+
+        .reading-meta {
+            text-align: center;
+            color: #b0b0b5;
+            font-size: 0.88rem;
+            margin: 0 0 45px;
+        }
+
+        /* 年份分组 */
+        .year-group { margin-bottom: 10px; }
+
+        .year-label {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #1d1d1f;
+            letter-spacing: -0.02em;
+            margin: 40px 0 20px;
+            padding-left: 4px;
+        }
+        .year-label span {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #b0b0b5;
+            margin-left: 10px;
+        }
+
+        /* 时间线主体 */
+        .timeline {
+            position: relative;
+            padding-left: 26px;
+            border-left: 2px solid rgba(0, 0, 0, 0.07);
+        }
+
+        .book {
+            position: relative;
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 13px 18px;
+            margin-bottom: 8px;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.55);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(0, 0, 0, 0.03);
+            transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+        }
+        .book:hover {
+            transform: translateX(4px);
+            background: #fff;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+        }
+
+        /* 时间线圆点 */
+        .book::before {
+            content: "";
+            position: absolute;
+            left: -35px;
+            top: 20px;
+            width: 11px;
+            height: 11px;
+            border-radius: 50%;
+            background: #fff;
+            border: 2.5px solid #c5c5cc;
+            transition: border-color 0.25s ease;
+        }
+        .book:hover::before { border-color: #007aff; }
+
+        .book-main { flex: 1; min-width: 0; }
+
+        /* 书名链接（→ 豆瓣搜索） */
+        .book-title {
+            font-size: 1.05rem;
+            font-weight: 500;
+            color: #1d1d1f;
+            line-height: 1.45;
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+        .book-title:hover { color: #007aff; }
+        .book-title .ext {
+            font-size: 0.75rem;
+            color: #c0c0c8;
+            margin-left: 6px;
+            transition: color 0.2s ease;
+        }
+        .book-title:hover .ext { color: #007aff; }
+
+        .book-sub {
+            font-size: 0.8rem;
+            color: #a0a0a8;
+            margin-top: 2px;
+        }
+
+        .book-date {
+            flex-shrink: 0;
+            font-size: 0.85rem;
+            color: #999;
+            font-variant-numeric: tabular-nums;
+            white-space: nowrap;
+        }
+
+        @media (max-width: 600px) {
+            .book { flex-direction: column; gap: 6px; }
+            .book-date { align-self: flex-start; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <a href="../index.html" class="nav-logo">
+            <img src="https://jinpeng-assets.oss-cn-beijing.aliyuncs.com/%E4%B8%AA%E4%BA%BA%E4%B8%BB%E9%A1%B5/%E5%9F%BA%E6%9C%AC%E5%9B%BE%E7%89%87/logo3.0.svg" alt="Jinpeng Xin Logo">
+        </a>
+        <div class="nav-links">
+            <a href="../index.html#about">About</a>
+            <a href="../blog.html" class="active">Blog</a>
+            <a href="../research.html">Research</a>
+            <a href="../index.html#contact">Contact</a>
+        </div>
+    </nav>
+
+    <main class="container">
+
+        <div class="reading-wrap">
+            <div class="reading-intro">
+                <h2>读书记录</h2>
+                <p>这是我本科在北京交通大学的图书馆借阅清单<br>
+                从 2023 年秋天第一次借书，图书馆系统一直记到现在<br>
+                借阅清单里，专业书和闲书混在一起<br>
+                既有力学分析、桥梁设计，也有鲁迅、余华、卡夫卡等<br>
+                把它们按借阅时间排成一条线，回头再看，大概能看出每个阶段心里都在想些什么<br>
+                曾有人对我说：“如果你想真正了解一个人，就去看看他书桌上摆着哪些书。”<br>
+                这大概就是我的大学书桌…</p>
+            </div>
+            <p class="reading-meta">共 63 册</p>
+
+            <div id="reading-list"></div>
+        </div>
+
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <p>&copy; 2026 Jinpeng Xin. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        /* ── 书单数据（按借阅日期，新→旧）── */
+        const books = [
+            { t: "非连续变形分析（上）：研究与应用", d: "2026-04-23" },
+            { t: "非连续变形分析（下）：研究与应用", d: "2026-04-23" },
+            { t: "ABAQUS 有限元分析从入门到精通", s: "第2版", d: "2026-04-14" },
+            { t: "岩土弹塑性力学", s: "第2版", d: "2026-03-06" },
+            { t: "ABAQUS 有限元分析从入门到精通", s: "第2版", d: "2026-03-02" },
+            { t: "钱理群新编鲁迅作品选读", d: "2026-03-02" },
+            { t: "钱理群讲鲁迅", d: "2026-03-02" },
+            { t: "贾樟柯的世界", d: "2025-12-23" },
+            { t: "候场", d: "2025-11-17" },
+            { t: "贾樟柯的世界", d: "2025-11-17" },
+            { t: "酒鬼人生", d: "2025-11-17" },
+            { t: "弹性力学", d: "2025-10-11" },
+            { t: "四书通识", d: "2025-09-22" },
+            { t: "闲来笔潭", d: "2025-09-22" },
+            { t: "非连续变形分析（上）：研究与应用", d: "2025-04-01" },
+            { t: "全国周培源大学生力学竞赛赛题详解及点评", d: "2025-01-05" },
+            { t: "弹性力学（上册）", s: "第5版", d: "2024-12-19" },
+            { t: "土力学及地基基础", d: "2024-12-06" },
+            { t: "公路桥梁现浇施工钢支架技术指南", d: "2024-09-25" },
+            { t: "公路小桥涵勘测设计", s: "第5版", d: "2024-09-25" },
+            { t: "城市桥梁设计创新与实践", d: "2024-09-25" },
+            { t: "拱桥施工技术", d: "2024-09-25" },
+            { t: "桥梁 BIM 建模基础教程", s: "第2版", d: "2024-09-25" },
+            { t: "建造属于自己的世界", d: "2024-07-23" },
+            { t: "当代桥梁美学", d: "2024-07-23" },
+            { t: "贝聿铭建筑十讲", d: "2024-07-23" },
+            { t: "全球史", d: "2024-06-09" },
+            { t: "建造属于自己的世界", d: "2024-06-09" },
+            { t: "贝聿铭建筑十讲", d: "2024-06-09" },
+            { t: "近代中国人物论", d: "2024-06-09" },
+            { t: "SAP2000 中文版技术指南及工程应用", d: "2024-05-27" },
+            { t: "无限接近自然：武重义的建筑设计美学", d: "2024-05-27" },
+            { t: "楚国墓葬建筑考：中国汉代楚（彭城）国墓葬", d: "2024-05-27" },
+            { t: "小武", d: "2024-05-10" },
+            { t: "正在写诗的年轻人", d: "2024-05-10" },
+            { t: "温家宝地质笔记", d: "2024-03-09" },
+            { t: "花开叶落中文系", s: "增订版", d: "2024-03-05" },
+            { t: "现实一种", d: "2024-03-01" },
+            { t: "变形记：卡夫卡小说选", d: "2024-03-01" },
+            { t: "妻妾成群", d: "2024-03-01" },
+            { t: "山音", d: "2024-03-01" },
+            { t: "明通鉴", d: "2024-02-22" },
+            { t: "西夏史", d: "2024-02-22" },
+            { t: "陆犯焉识", d: "2024-02-22" },
+            { t: "深度学习与 Python 实现及应用", d: "2024-02-22" },
+            { t: "明隆庆六年初刻版传习录", s: "第2版", d: "2024-01-11" },
+            { t: "温家宝地质笔记", d: "2024-01-11" },
+            { t: "经史百家杂钞（六·传志）", d: "2024-01-11" },
+            { t: "伤逝", s: "第2版", d: "2024-01-09" },
+            { t: "唐诗三百首", d: "2024-01-09" },
+            { t: "余华散文", d: "2023-11-26" },
+            { t: "惹尘埃", d: "2023-11-26" },
+            { t: "基本美", d: "2023-10-22" },
+            { t: "船越走越慢：法力", d: "2023-10-22" },
+            { t: "名字游戏", d: "2023-09-30" },
+            { t: "山本", d: "2023-09-30" },
+            { t: "现实一种", d: "2023-09-30" },
+            { t: "阅读有益身心健康", d: "2023-09-20" },
+            { t: "黄雀记", d: "2023-09-20" },
+            { t: "夹边沟记事", d: "2023-09-17" },
+            { t: "我没有自己的名字", d: "2023-09-17" },
+            { t: "我只要写作，就是回家", d: "2023-09-14" },
+            { t: "曹雪芹文物研究", d: "2023-09-14" },
+        ];
+
+        /* 生成豆瓣搜索链接（标题去掉括注与版次，命中更准） */
+        function doubanUrl(title) {
+            const q = title.replace(/（[^）]*）/g, '').trim();
+            return 'https://search.douban.com/book/subject_search?search_text=' + encodeURIComponent(q);
+        }
+
+        /* ── 按年份分组渲染 ── */
+        function render() {
+            const container = document.getElementById('reading-list');
+            const groups = {};
+            books.forEach(b => {
+                const year = b.d.slice(0, 4);
+                (groups[year] = groups[year] || []).push(b);
+            });
+
+            const years = Object.keys(groups).sort((a, b) => b - a);
+            container.innerHTML = years.map(year => {
+                const items = groups[year].map(b => {
+                    const md = b.d.slice(5).replace('-', '.');
+                    const sub = b.s ? `<div class="book-sub">${b.s}</div>` : '';
+                    return `
+                    <div class="book">
+                        <div class="book-main">
+                            <a class="book-title" href="${doubanUrl(b.t)}" target="_blank" rel="noopener">${b.t}</a>${sub}
+                        </div>
+                        <div class="book-date">${md}</div>
+                    </div>`;
+                }).join('');
+                return `
+                <div class="year-group" data-year="${year}">
+                    <div class="year-label">${year}<span>${groups[year].length} 册</span></div>
+                    <div class="timeline">${items}</div>
+                </div>`;
+            }).join('');
+        }
+        render();
+    </script>
+</body>
+</html>
