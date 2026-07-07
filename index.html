@@ -289,12 +289,12 @@
                         fontFamily: 'Inter'
                     });
 
-                    // 读取本地 world.json
-                    fetch('./world.json')
+                    // 读取中国地图 GeoJSON（阿里云 DataV，国内访问稳定）
+                    fetch('https://geo.datav.aliyun.com/areas_v3/bound/100000_full.json')
                         .then(response => response.json())
                         .then(geoJson => {
                             myChart.hideLoading();
-                            echarts.registerMap('world', geoJson);
+                            echarts.registerMap('china', geoJson);
 
                             // 坐标配置
                             var geoCoordMap = {
@@ -354,18 +354,12 @@
                             var option = {
                                 backgroundColor: 'transparent',
                                 geo: {
-                                    map: 'world',
+                                    map: 'china',
                                     roam: true, // 允许用户缩放移动
-                                    
-                                    // --- 核心修改部分 START ---
-                                    // 之前的 zoom: 1.2 是世界视图
-                                    // 现在的 zoom: 4.0 是聚焦中国视图
-                                    zoom: 4.0, 
-                                    
-                                    // 之前的 center: [105, 35] 稍微有点偏
-                                    // 计算后的几何中心 [108, 34] 能更好地兼顾 拉萨(西) 和 湛江(南)
-                                    center: [108.5, 34.5], 
-                                    // --- 核心修改部分 END ---
+                                    zoom: 1.2,
+
+                                    // 几何中心，兼顾 拉萨(西) 和 湛江(南)
+                                    center: [108.5, 34.5],
 
                                     label: { show: false },
                                     itemStyle: {
@@ -423,6 +417,11 @@
                             };
                             myChart.setOption(option);
                             window.addEventListener('resize', function() { myChart.resize(); });
+                        })
+                        .catch(function(err) {
+                            myChart.hideLoading();
+                            console.error('Trajectory map failed to load:', err);
+                            chartDom.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#86868b;font-family:Inter;font-size:14px;">Map data unavailable, please refresh.</div>';
                         });
                 });
             </script>
@@ -937,10 +936,24 @@
     // ==========================================
     // PART 0: 全局配置 (只保留 Supabase)
     // ==========================================
-    const SUPABASE_URL = 'https://sssaaiedcedcatjxpfpd.supabase.co'; 
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNzc2FhaWVkY2VkY2F0anhwZnBkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk1Nzg0MTAsImV4cCI6MjA4NTE1NDQxMH0.txYhDIcm3kFFh5hu4nQ5H20wFhpX0I8d_PrUFlFYUpY'; 
-    
+    const SUPABASE_URL = 'https://sssaaiedcedcatjxpfpd.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNzc2FhaWVkY2VkY2F0anhwZnBkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk1Nzg0MTAsImV4cCI6MjA4NTE1NDQxMH0.txYhDIcm3kFFh5hu4nQ5H20wFhpX0I8d_PrUFlFYUpY';
+
     const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    // GG Bear 对话现在由阿里云函数计算 (FC) 驱动，而不是失效的 Supabase Edge Function。
+    // 部署完 aliyun-fc-chat/index.py 后，把下面换成 FC 的 HTTP 触发器地址。
+    const CHAT_ENDPOINT = 'https://ggbear-chat-coewpmprhs.cn-hangzhou.fcapp.run';
+
+    async function callChatBackend(messages) {
+        const res = await fetch(CHAT_ENDPOINT, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ messages })
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+    }
 
     // ==========================================
     // PART 0.5: GG Bear 人设
@@ -1108,11 +1121,7 @@
         ];
 
         try {
-            // 调用同一个 Supabase edge function
-            const { data, error } = await supabase.functions.invoke('chat', {
-                body: { messages: barkMessages }
-            });
-            if (error) throw error;
+            const data = await callChatBackend(barkMessages);
             return data.choices[0].message.content;
         } catch (error) {
             console.error("Bark API Error:", error);
@@ -1233,12 +1242,8 @@
             // 将用户消息加入历史
             conversationHistory.push({ role: "user", content: text });
 
-            // 🔥 调用 Supabase 后端 'chat' 函数
-            const { data, error } = await supabase.functions.invoke('chat', {
-                body: { messages: conversationHistory }
-            });
-
-            if (error) throw error;
+            // 🔥 调用阿里云函数计算 (FC) 后端
+            const data = await callChatBackend(conversationHistory);
 
             // 获取 AI 回复
             const aiContent = data.choices[0].message.content;
