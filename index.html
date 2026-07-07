@@ -922,8 +922,7 @@
   {
     "imports": {
       "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
-      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/",
-      "@supabase/supabase-js": "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm"
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
     }
   }
 </script>
@@ -931,18 +930,11 @@
 <script type="module">
     import * as THREE from 'three';
     import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-    import { createClient } from '@supabase/supabase-js';
 
     // ==========================================
-    // PART 0: 全局配置 (只保留 Supabase)
+    // PART 0: 全局配置
     // ==========================================
-    const SUPABASE_URL = 'https://sssaaiedcedcatjxpfpd.supabase.co';
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNzc2FhaWVkY2VkY2F0anhwZnBkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk1Nzg0MTAsImV4cCI6MjA4NTE1NDQxMH0.txYhDIcm3kFFh5hu4nQ5H20wFhpX0I8d_PrUFlFYUpY';
-
-    const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
-
-    // GG Bear 对话现在由阿里云函数计算 (FC) 驱动，而不是失效的 Supabase Edge Function。
-    // 部署完 aliyun-fc-chat/index.py 后，把下面换成 FC 的 HTTP 触发器地址。
+    // GG Bear 对话由阿里云函数计算 (FC) 驱动；聊天记录也在同一个函数里写入 OSS。
     const CHAT_ENDPOINT = 'https://ggbear-chat-coewpmprhs.cn-hangzhou.fcapp.run';
 
     async function callChatBackend(messages) {
@@ -1214,22 +1206,13 @@
         { role: "system", content: SYSTEM_PROMPT }
     ];
 
-    // 保存聊天记录到 Supabase (可选)
-    async function saveToCloud(role, content) {
-        const { error } = await supabase
-            .from('chat_logs')
-            .insert([{ role: role, content: content }]);
-        if (error) console.error("Cloud Save Error:", error.message);
-    }
-
     async function handleSend() {
         const text = inputField.value.trim();
         if (!text) return;
 
         // 1. 界面更新：用户消息上屏
         addMessage(text, true);
-        saveToCloud('User', text);
-        
+
         inputField.value = '';
         inputField.disabled = true;
 
@@ -1251,7 +1234,6 @@
 
             // 2. 界面更新：AI 回复上屏
             addMessage(aiContent, false);
-            saveToCloud('GG Bear', aiContent);
 
             // ❌ 注意：这里已经删除了 speak(aiContent)
 
