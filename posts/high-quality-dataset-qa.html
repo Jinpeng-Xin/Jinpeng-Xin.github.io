@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>高质量数据集 Agent | JINPENG XIN</title>
+    <link rel="stylesheet" href="../style.css">
+    <style>
+        :root {
+            /* 主题色:深酒红,替代原来偏廉价的系统蓝 */
+            --accent: #7a3042;
+            --accent-dark: #5c2431;
+            --accent-soft: rgba(122,48,66,0.85);
+        }
+
+        /* 这一页做成沉浸式App,不走博客文章的滚动方式,也不用站点导航栏 */
+        html, body {
+            height: 100%;
+            overflow: hidden;
+            padding-top: 0 !important;
+            background: #f5f6f8;
+        }
+        .navbar { display: none !important; }
+
+        .app-shell {
+            position: fixed;
+            inset: 0;
+            display: flex;
+            background: #f5f6f8;
+        }
+
+        /* ===== 主聊天区(左) ===== */
+        .app-main {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        /* ===== 左侧栏:logo + 收起/返回 + 切换胶囊 + 新对话/更多,磨砂玻璃质感,可收缩 ===== */
+        .app-sidebar {
+            width: 224px;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            padding: 16px 14px;
+            background: rgba(255,255,255,0.45);
+            backdrop-filter: blur(28px) saturate(180%);
+            -webkit-backdrop-filter: blur(28px) saturate(180%);
+            border-right: 1px solid rgba(255,255,255,0.5);
+            box-shadow: 1px 0 0 rgba(0,0,0,0.03), 4px 0 24px rgba(31,38,135,0.04);
+            transition: width 0.25s cubic-bezier(0.4,0,0.2,1), padding 0.25s ease;
+        }
+        .app-sidebar.collapsed {
+            width: 72px;
+            padding: 16px 10px;
+        }
+
+        .sidebar-topline {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 4px;
+        }
+        .app-sidebar.collapsed .sidebar-topline { justify-content: center; }
+        .sidebar-logo {
+            width: 18px; height: 18px;
+            flex-shrink: 0;
+            margin-left: 8px;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 8px;
+            transition: opacity 0.15s ease;
+        }
+        .sidebar-logo:hover { opacity: 0.75; }
+        .sidebar-logo img { width: 100%; height: 100%; object-fit: contain; }
+        .app-sidebar.collapsed .sidebar-logo { display: none; }
+
+        .sidebar-topline-actions { display: flex; align-items: center; gap: 2px; flex-shrink: 0; }
+        .sidebar-icon-btn {
+            width: 28px; height: 28px;
+            flex-shrink: 0;
+            border: none;
+            border-radius: 8px;
+            background: transparent;
+            color: #8a8a92;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            transition: background 0.15s ease, color 0.15s ease;
+        }
+        .sidebar-icon-btn:hover { background: rgba(0,0,0,0.06); color: #1d1d1f; }
+        .sidebar-icon-btn svg { width: 15px; height: 15px; }
+        .app-sidebar.collapsed .back-to-blog-btn { display: none; }
+        .app-sidebar.collapsed .sidebar-topline-actions { width: 100%; justify-content: center; margin-left: -9px; }
+
+        .mode-switch {
+            display: inline-flex;
+            background: rgba(0,0,0,0.05);
+            border-radius: 999px;
+            padding: 3px;
+        }
+        .mode-switch-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            border: none;
+            background: transparent;
+            color: #86868b;
+            font-size: 0.86rem;
+            font-weight: 500;
+            padding: 7px 16px;
+            border-radius: 999px;
+            cursor: pointer;
+            transition: background 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
+            white-space: nowrap;
+        }
+        .mode-switch-btn .icon svg { width: 15px; height: 15px; fill: currentColor; }
+        .mode-switch-btn:hover { color: #3a3a3e; }
+        .mode-switch-btn.active {
+            background: #fff;
+            color: #1d1d1f;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.05);
+        }
+        .app-sidebar.collapsed .mode-switch {
+            flex-direction: column;
+            background: transparent;
+            padding: 0;
+            gap: 6px;
+        }
+        .app-sidebar.collapsed .mode-switch-btn { padding: 9px; justify-content: center; gap: 0; border-radius: 12px; }
+        .app-sidebar.collapsed .mode-switch-btn .label { display: none; }
+        .app-sidebar.collapsed .mode-switch-btn.active { background: var(--accent-soft); color: #fff; box-shadow: none; }
+
+        /* 新对话 / 更多功能:全宽列表项 */
+        .sidebar-action-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            border: none;
+            background: transparent;
+            text-align: left;
+            padding: 9px 10px;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            color: #3a3a3e;
+            cursor: pointer;
+            transition: background 0.15s ease;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+        .app-sidebar.collapsed .sidebar-action-btn { justify-content: center; gap: 0; padding: 9px 0; }
+        .sidebar-action-btn:hover { background: rgba(0,0,0,0.05); }
+        .sidebar-action-btn .icon { display: flex; flex-shrink: 0; }
+        .sidebar-action-btn .icon svg { width: 16px; height: 16px; }
+        .app-sidebar.collapsed .sidebar-action-btn .label,
+        .app-sidebar.collapsed .sidebar-action-btn .badge { display: none; }
+        .sidebar-action-btn.soon {
+            color: #b5b5bb;
+            cursor: default;
+            pointer-events: none;
+        }
+        .sidebar-action-btn .badge {
+            margin-left: auto;
+            font-size: 0.66rem;
+            background: rgba(0,0,0,0.06);
+            padding: 2px 7px;
+            border-radius: 20px;
+            flex-shrink: 0;
+        }
+
+        .chat-thread {
+            flex: 1;
+            display: none;
+            flex-direction: column;
+            min-height: 0;
+        }
+        .chat-thread.active { display: flex; }
+
+        .chat-scroll {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px 18px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        /* 空状态 */
+        .chat-empty {
+            margin: auto;
+            text-align: center;
+            max-width: 420px;
+            padding: 20px;
+        }
+        .chat-empty .empty-icon {
+            width: 56px; height: 56px;
+            margin: 0 auto 16px;
+            border-radius: 18px;
+            background: linear-gradient(135deg, var(--accent-dark), var(--accent) 60%, #b0707c);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .chat-empty .empty-icon svg { width: 26px; height: 26px; fill: #fff; }
+        .chat-empty .empty-title {
+            font-size: 1.15rem;
+            font-weight: 600;
+            color: #1d1d1f;
+            margin-bottom: 8px;
+        }
+        .chat-empty .empty-sub {
+            font-size: 0.9rem;
+            color: #8e8e93;
+            line-height: 1.6;
+        }
+        .chat-empty .empty-action {
+            margin-top: 18px;
+        }
+
+        /* 消息行 —— AI回复不做对话气泡,像Claude一样以正文形式呈现 */
+        .msg-row {
+            display: flex;
+            max-width: 680px;
+            width: 100%;
+            margin: 0 auto;
+            align-items: flex-start;
+        }
+
+        /* 用户消息:保留一个轻量气泡,靠右 */
+        .msg-row.user { justify-content: flex-end; }
+        .msg-row.user .msg-body { max-width: 80%; }
+        .msg-row.user .msg-bubble {
+            display: inline-block;
+            padding: 10px 15px;
+            border-radius: 16px;
+            background: rgba(0,0,0,0.06);
+            color: #1d1d1f;
+            font-size: 0.95rem;
+            line-height: 1.65;
+        }
+
+        /* AI回复:不用气泡,正文样式直接铺开 */
+        .msg-row.bot { display: block; max-width: 680px; }
+        .msg-row.bot .msg-body { max-width: 100%; }
+        .msg-row.bot .msg-bubble {
+            padding: 2px 0;
+            font-size: 0.98rem;
+            line-height: 1.8;
+            color: #232326;
+            background: transparent;
+            box-shadow: none;
+        }
+
+        .msg-bubble p { margin: 0 0 12px; }
+        .msg-bubble p:last-child { margin-bottom: 0; }
+        .msg-bubble ul { margin: 4px 0 12px; padding-left: 22px; }
+        .msg-bubble li { margin-bottom: 6px; }
+        .msg-bubble strong { font-weight: 700; }
+
+        /* 题目/点评的标记 —— 小号标签,不再用色块气泡 */
+        .quiz-label {
+            display: block;
+            font-size: 0.74rem;
+            font-weight: 700;
+            color: var(--accent);
+            letter-spacing: 0.03em;
+            margin-bottom: 8px;
+        }
+        .msg-bubble.quiz-feedback .quiz-label { color: #9c7a2e; }
+
+        /* 来源chips */
+        .msg-sources {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin: 2px 0 4px;
+            max-width: 100%;
+        }
+        .msg-source-chip {
+            font-size: 0.72rem;
+            color: #8e8e93;
+            background: rgba(0,0,0,0.04);
+            padding: 3px 9px;
+            border-radius: 20px;
+            white-space: nowrap;
+        }
+
+        /* 打字动画 */
+        .typing-dots { display: inline-flex; gap: 4px; padding: 6px 2px; }
+        .typing-dots span {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: #b5b5bb;
+            animation: typingBounce 1.2s infinite ease-in-out;
+        }
+        .typing-dots span:nth-child(2) { animation-delay: 0.15s; }
+        .typing-dots span:nth-child(3) { animation-delay: 0.3s; }
+        @keyframes typingBounce {
+            0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
+            30% { transform: translateY(-5px); opacity: 1; }
+        }
+
+        @keyframes msgIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .msg-row, .quiz-action-row { animation: msgIn 0.25s ease; }
+
+        /* 底部输入栏 */
+        .chat-inputbar {
+            border-top: 1px solid rgba(0,0,0,0.06);
+            background: rgba(255,255,255,0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            padding: 12px 18px calc(12px + env(safe-area-inset-bottom));
+        }
+        .chat-inputbar-inner {
+            max-width: 680px;
+            margin: 0 auto;
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+        }
+        .chat-inputbar textarea {
+            flex: 1;
+            resize: none;
+            border-radius: 16px;
+            border: 1px solid rgba(0,0,0,0.1);
+            padding: 11px 15px;
+            font-size: 0.95rem;
+            font-family: inherit;
+            min-height: 22px;
+            max-height: 140px;
+            outline: none;
+            background: #fff;
+            transition: border-color 0.2s ease;
+            overflow-y: auto;
+            scrollbar-width: none; /* Firefox:隐藏滚动条,不要那根上下拉条 */
+        }
+        .chat-inputbar textarea::-webkit-scrollbar { display: none; } /* WebKit:同上 */
+        .chat-inputbar textarea:focus { border-color: var(--accent); }
+        .chat-send-btn {
+            width: 38px; height: 38px;
+            border-radius: 50%;
+            border: none;
+            background: var(--accent);
+            color: #fff;
+            cursor: pointer;
+            flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+            transition: opacity 0.2s ease, transform 0.15s ease, background 0.15s ease;
+        }
+        .chat-send-btn svg { width: 20px; height: 20px; fill: #fff; }
+        .chat-send-btn:hover { background: var(--accent-dark); }
+        .chat-send-btn:active { transform: scale(0.93); }
+        .chat-send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        /* 自测:无待答问题时,输入栏换成一个居中按钮 */
+        .quiz-action-bar {
+            display: flex;
+            justify-content: center;
+            padding: 14px 18px calc(14px + env(safe-area-inset-bottom));
+        }
+        .quiz-action-btn {
+            border: none;
+            border-radius: 22px;
+            padding: 11px 26px;
+            background: var(--accent);
+            color: #fff;
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.15s ease, transform 0.15s ease;
+        }
+        .quiz-action-btn:hover { background: var(--accent-dark); }
+        .quiz-action-btn:active { transform: scale(0.96); }
+        .quiz-action-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .quiz-action-row {
+            display: flex;
+            justify-content: center;
+            max-width: 680px;
+            margin: 0 auto;
+        }
+        .quiz-action-row .quiz-action-btn { padding: 9px 20px; font-size: 0.88rem; }
+
+        /* ===== 移动端:侧边栏强制收窄成图标条(等同 collapsed 效果) ===== */
+        @media (max-width: 640px) {
+            .app-sidebar { width: 60px !important; padding: 14px 8px !important; }
+            .app-sidebar .sidebar-logo,
+            .app-sidebar .sidebar-collapse-btn { display: none; }
+            .app-sidebar .sidebar-topline { justify-content: center; }
+            .app-sidebar .mode-switch {
+                flex-direction: column;
+                background: transparent;
+                padding: 0;
+                gap: 6px;
+            }
+            .app-sidebar .mode-switch-btn { padding: 9px; justify-content: center; border-radius: 12px; }
+            .app-sidebar .mode-switch-btn .label,
+            .app-sidebar .sidebar-action-btn .label,
+            .app-sidebar .sidebar-action-btn .badge { display: none; }
+            .app-sidebar .mode-switch-btn.active { background: var(--accent-soft); color: #fff; box-shadow: none; }
+            .app-sidebar .sidebar-action-btn { justify-content: center; padding: 9px 0; }
+            .chat-scroll { padding: 16px 12px 10px; }
+            .msg-body { max-width: 88%; }
+            .chat-inputbar { padding: 10px 12px calc(10px + env(safe-area-inset-bottom)); }
+        }
+    </style>
+</head>
+<body>
+
+    <svg style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true">
+        <defs>
+            <symbol id="icon-ask" viewBox="0 0 1024 1024">
+                <path d="M512 85.333333c235.637333 0 426.666667 191.029333 426.666667 426.666667S747.637333 938.666667 512 938.666667a424.778667 424.778667 0 0 1-219.125333-60.501334 2786.56 2786.56 0 0 0-20.053334-11.765333l-104.405333 28.48c-23.893333 6.506667-45.802667-15.413333-39.285333-39.296l28.437333-104.288c-11.008-18.688-18.218667-31.221333-21.802667-37.909333A424.885333 424.885333 0 0 1 85.333333 512C85.333333 276.362667 276.362667 85.333333 512 85.333333z m0 586.666667a32 32 0 1 0 0 64 32 32 0 0 0 0-64z m-2.517333-373.333333c-48.416 0-92.746667 24.16-118.613334 63.413333a137.088 137.088 0 0 0-15.978666 33.237333 32 32 0 0 0 60.906666 19.690667c2.016-6.24 4.885333-12.202667 8.522667-17.717333C458.4 375.914667 482.709333 362.666667 509.482667 362.666667 552.277333 362.666667 586.666667 396.266667 586.666667 437.333333s-34.4 74.666667-77.194667 74.666667a32 32 0 0 0-32 32v64a32 32 0 0 0 64 0v-35.584C603.946667 558.197333 650.666667 503.232 650.666667 437.333333c0-76.757333-63.381333-138.666667-141.194667-138.666666z"/>
+            </symbol>
+            <symbol id="icon-quiz" viewBox="0 0 1024 1024">
+                <path d="M538.46016 714.0352h215.79776c18.88256 0 35.06688 16.18432 35.06688 35.06688s-16.18432 37.77024-35.06688 37.77024h-215.79776c-18.88256 0-35.06688-16.18432-35.06688-35.06688 0-18.8928 16.1792-37.77024 35.06688-37.77024zM548.09088 418.47296h215.79776c18.88256 0 35.072 16.18432 35.072 35.06688s-16.18944 35.072-35.072 35.072h-215.79776c-18.88256 0-35.06176-16.18944-35.06176-35.072s16.1792-35.06688 35.06176-35.06688zM237.88032 423.86944c5.39648-5.39648 16.18432-5.39648 24.27904 0l59.34592 59.34592 129.47968-129.47968c8.0896-8.09472 21.57568-8.09472 26.97728 0 8.0896 8.09472 8.0896 18.88256 0 26.97216l-140.26752 140.26752c-5.39648 2.70336-10.78784 5.39648-16.18432 5.39648s-8.09472-2.688-10.78784-5.39648l-70.144-70.12864c-10.78784-10.79296-10.78784-21.58592-2.69824-26.97728zM434.79552 806.90688c-8.0896 8.09984-21.57568 8.09984-26.97728 0l-56.64256-56.64256-56.64768 56.64256c-8.09472 8.09984-21.5808 8.09984-26.97728 0-8.0896-8.0896-8.0896-21.57568 0-26.97216l56.64768-56.64768-56.64768-56.64256c-8.0896-8.0896-8.0896-21.57568 0-26.97216 8.09472-8.09472 18.88256-8.09472 26.97728 0l56.64768 56.64256 56.64256-56.64256c8.09472-8.09472 21.5808-8.09472 26.97728 0 8.09472 8.0896 8.09472 18.88256 0 26.97216l-56.64256 56.64256 56.64256 56.64768c8.09472 5.39648 8.09472 18.88256 0 26.97216z"/>
+                <path d="M833.24928 148.52608H767.6928a106.4448 106.4448 0 0 1 2.11968 20.89472v32.9472h63.4368c17.81248 0 32.3072 14.4896 32.3072 32.30208v671.98976c0 17.81248-14.4896 32.3072-32.3072 32.3072H204.25728a32.34304 32.34304 0 0 1-32.3072-32.3072V234.66496a32.33792 32.33792 0 0 1 32.3072-32.30208h63.4368V169.4208c0-7.15776 0.77824-14.12608 2.1248-20.89472H204.25728c-47.58016 0-86.13888 38.56896-86.13888 86.13888v671.98976c0 47.58016 38.55872 86.13888 86.13888 86.13888h628.99712c47.56992 0 86.13888-38.55872 86.13888-86.13888V234.66496c-0.00512-47.56992-38.57408-86.13888-86.144-86.13888z"/>
+                <path d="M663.0656 134.35392h-37.76c0-59.3408-48.55808-107.89888-107.89888-107.89888-59.34592 0-107.89376 48.55296-107.89376 107.89888h-35.072c-18.88256 0-35.072 16.18944-35.072 35.06688v37.76512l358.76352-2.69824V169.4208c0-18.88256-16.18944-35.06688-35.06688-35.06688z m-78.72 30.0288l-133.87264 1.00352V134.3488c0-36.91008 30.02368-66.93888 66.93376-66.93888s66.93888 30.0288 66.93888 66.93888v30.03392z"/>
+            </symbol>
+            <symbol id="icon-more" viewBox="0 0 1024 1024">
+                <path d="M64.2 123.9z m324.7 64c15 0 27.8 5.2 38.5 15.6 10.7 10.4 16 23.1 16 38.1V458c0 15-5.3 27.8-16 38.5s-23.5 16-38.5 16H172.4c-15 0-27.7-5.3-38.1-16S118.8 473 118.8 458V241.6c0-15 5.2-27.7 15.6-38.1 10.4-10.4 23.1-15.6 38.1-15.6-0.1 0.1 216.4 0 216.4 0z m0 432.9c15 0 27.8 5.2 38.5 15.6 10.7 10.4 16 23.1 16 38.1v217.3c0 15-5.3 27.7-16 38.1-10.7 10.4-23.5 15.6-38.5 15.6H172.4c-15 0-27.7-5.2-38.1-15.6-10.4-10.4-15.6-23.1-15.6-38.1V674.4c0-15 5.2-27.7 15.6-38.1 10.4-10.4 23.1-15.6 38.1-15.6h216.5z m433.7 0c15 0 27.7 5.2 38.1 15.6 10.4 10.4 15.6 23.1 15.6 38.1v217.3c0 15-5.2 27.7-15.6 38.1-10.4 10.4-23.1 15.6-38.1 15.6H606.1c-15 0-27.8-5.2-38.5-15.6-10.7-10.4-16-23.1-16-38.1V674.4c0-15 5.3-27.7 16-38.1 10.7-10.4 23.5-15.6 38.5-15.6h216.5z m120.3-337.7c11.5 11.5 17.3 25.1 17.3 40.7s-5.8 28.8-17.3 39.8L781.8 524.7c-11.5 11.5-25 17.3-40.3 17.3-15.3 0-28.7-5.8-40.3-17.3l-160.9-161c-11-11-16.5-24.2-16.5-39.8s5.5-29.2 16.5-40.7l161.1-161.1c11.5-11 25-16.5 40.3-16.5 15.3 0 28.7 5.5 40.3 16.5l160.9 161z"/>
+            </symbol>
+            <symbol id="icon-send" viewBox="0 0 1024 1024">
+                <path d="M341.333333 277.333333l115.2-115.2c8.533333-8.533333 17.066667-12.8 29.866667-17.066666v473.6c0 17.066667 12.8 29.866667 25.6 29.866666s25.6-12.8 25.6-29.866666V140.8c8.533333 4.266667 21.333333 8.533333 29.866667 17.066667L682.666667 277.333333c4.266667 4.266667 12.8 8.533333 21.333333 8.533334s12.8-4.266667 21.333333-8.533334c12.8-12.8 12.8-29.866667 0-38.4l-115.2-115.2C554.666667 68.266667 469.333333 68.266667 418.133333 119.466667L302.933333 234.666667c-12.8 12.8-12.8 29.866667 0 38.4s25.6 12.8 38.4 4.266666z"/>
+                <path d="M738.133333 435.2h-72.533333c-17.066667 0-29.866667 12.8-29.866667 25.6s12.8 25.6 29.866667 25.6h72.533333c42.666667 0 76.8 34.133333 76.8 76.8V810.666667c0 42.666667-34.133333 76.8-76.8 76.8H285.866667c-42.666667 0-76.8-34.133333-76.8-76.8v-243.2c0-42.666667 34.133333-76.8 76.8-76.8h72.533333c17.066667 0 25.6-12.8 25.6-25.6s-12.8-25.6-25.6-25.6H285.866667c-72.533333 0-132.266667 59.733333-132.266667 132.266666V810.666667c0 72.533333 59.733333 132.266667 132.266667 132.266666h456.533333c72.533333 0 132.266667-59.733333 132.266667-132.266666v-243.2c0-72.533333-59.733333-132.266667-136.533334-132.266667z"/>
+            </symbol>
+        </defs>
+    </svg>
+
+    <div class="app-shell">
+        <aside class="app-sidebar" id="app-sidebar">
+            <div class="sidebar-topline">
+                <a href="../index.html#about" class="sidebar-logo" title="Jinpeng Xin">
+                    <img src="https://jinpeng-assets.oss-cn-beijing.aliyuncs.com/%E4%B8%AA%E4%BA%BA%E4%B8%BB%E9%A1%B5/%E5%9F%BA%E6%9C%AC%E5%9B%BE%E7%89%87/logo3.0.svg" alt="Jinpeng Xin Logo">
+                </a>
+                <div class="sidebar-topline-actions">
+                    <a href="../blog.html" class="sidebar-icon-btn back-to-blog-btn" title="返回 Blog 列表" aria-label="返回 Blog 列表">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                    </a>
+                    <button class="sidebar-icon-btn sidebar-collapse-btn" id="sidebar-collapse-btn" title="收起/展开侧边栏" aria-label="收起/展开侧边栏">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="3"/><line x1="12" y1="4" x2="12" y2="20"/></svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="mode-switch" role="tablist">
+                <button class="mode-switch-btn active" data-mode="ask" role="tab"><span class="icon"><svg><use href="#icon-ask"></use></svg></span><span class="label">问答</span></button>
+                <button class="mode-switch-btn" data-mode="quiz" role="tab"><span class="icon"><svg><use href="#icon-quiz"></use></svg></span><span class="label">自测</span></button>
+            </div>
+
+            <button class="sidebar-action-btn" id="new-chat-btn">
+                <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span>
+                <span class="label">新对话</span>
+            </button>
+            <div class="sidebar-action-btn soon">
+                <span class="icon"><svg style="fill:currentColor"><use href="#icon-more"></use></svg></span>
+                <span class="label">更多功能</span>
+                <span class="badge">开发中</span>
+            </div>
+        </aside>
+
+        <div class="app-main">
+            <!-- 问答线程 -->
+            <div class="chat-thread active" data-mode="ask">
+                <div class="chat-scroll" id="ask-scroll">
+                    <div class="chat-empty" id="ask-empty">
+                        <div class="empty-icon"><svg><use href="#icon-ask"></use></svg></div>
+                        <div class="empty-title">问答模式</div>
+                        <div class="empty-sub">问点什么，比如「质量评测规范的三个维度是什么」</div>
+                    </div>
+                </div>
+                <div class="chat-inputbar">
+                    <div class="chat-inputbar-inner">
+                        <textarea id="ask-input" placeholder="发消息…" rows="1"></textarea>
+                        <button class="chat-send-btn" id="ask-send"><svg><use href="#icon-send"></use></svg></button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 自测线程 -->
+            <div class="chat-thread" data-mode="quiz">
+                <div class="chat-scroll" id="quiz-scroll">
+                    <div class="chat-empty" id="quiz-empty">
+                        <div class="empty-icon"><svg><use href="#icon-quiz"></use></svg></div>
+                        <div class="empty-title">自测模式</div>
+                        <div class="empty-sub">随机抽一段内容出题考你，答完给你点评和参考答案</div>
+                        <div class="empty-action">
+                            <button class="quiz-action-btn" id="quiz-start-empty">出一道题</button>
+                        </div>
+                    </div>
+                </div>
+                <div id="quiz-bottom">
+                    <div class="quiz-action-bar" id="quiz-action-bar" style="display:none;">
+                        <button class="quiz-action-btn" id="quiz-start-bar">出一道题</button>
+                    </div>
+                    <div class="chat-inputbar" id="quiz-inputbar" style="display:none;">
+                        <div class="chat-inputbar-inner">
+                            <textarea id="quiz-input" placeholder="在这里作答…" rows="1"></textarea>
+                            <button class="chat-send-btn" id="quiz-send"><svg><use href="#icon-send"></use></svg></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const CHAT_ENDPOINT = 'https://hq-dataset-qa-rbcocnorur.cn-hangzhou.fcapp.run';
+
+        async function callBackend(payload) {
+            const res = await fetch(CHAT_ENDPOINT, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            return res.json();
+        }
+
+        /* ---------- 侧边栏收缩/展开(记忆状态) ---------- */
+        const appSidebar = document.getElementById('app-sidebar');
+        const sidebarCollapseBtn = document.getElementById('sidebar-collapse-btn');
+        if (localStorage.getItem('hqds-sidebar-collapsed') === '1') {
+            appSidebar.classList.add('collapsed');
+        }
+        sidebarCollapseBtn.addEventListener('click', () => {
+            const collapsed = appSidebar.classList.toggle('collapsed');
+            localStorage.setItem('hqds-sidebar-collapsed', collapsed ? '1' : '0');
+        });
+
+        /* ---------- 轻量 Markdown 渲染 ---------- */
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+        function inlineFormat(s) {
+            return s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+        }
+        function renderMarkdown(text) {
+            const lines = escapeHtml(text).split('\n');
+            let html = '';
+            let inList = false;
+            for (const raw of lines) {
+                const line = raw.trim();
+                const bullet = line.match(/^[-*]\s+(.*)/);
+                if (bullet) {
+                    if (!inList) { html += '<ul>'; inList = true; }
+                    html += `<li>${inlineFormat(bullet[1])}</li>`;
+                } else {
+                    if (inList) { html += '</ul>'; inList = false; }
+                    if (line) html += `<p>${inlineFormat(line)}</p>`;
+                }
+            }
+            if (inList) html += '</ul>';
+            return html || '&nbsp;';
+        }
+
+        /* ---------- 模式切换 ---------- */
+        function switchMode(mode) {
+            document.querySelectorAll('.mode-switch-btn[data-mode]').forEach(b => {
+                b.classList.toggle('active', b.dataset.mode === mode);
+            });
+            document.querySelectorAll('.chat-thread').forEach(t => {
+                t.classList.toggle('active', t.dataset.mode === mode);
+            });
+            if (mode === 'ask') {
+                setTimeout(() => document.getElementById('ask-input').focus(), 50);
+            }
+        }
+        document.querySelectorAll('.mode-switch-btn[data-mode]').forEach(btn => {
+            btn.addEventListener('click', () => switchMode(btn.dataset.mode));
+        });
+
+        function autoGrow(el) {
+            el.addEventListener('input', () => {
+                el.style.height = 'auto';
+                el.style.height = Math.min(el.scrollHeight, 140) + 'px';
+            });
+        }
+
+        /* ---------- 通用:插入一条消息 ---------- */
+        function appendMessage(scrollEl, role, opts) {
+            const emptyState = scrollEl.querySelector('.chat-empty');
+            if (emptyState) emptyState.remove();
+
+            const row = document.createElement('div');
+            row.className = `msg-row ${role}`;
+
+            const bubbleClass = ['msg-bubble', opts.bubbleClass].filter(Boolean).join(' ');
+            const label = opts.label ? `<span class="quiz-label">${opts.label}</span>` : '';
+
+            row.innerHTML = `
+                <div class="msg-body">
+                    <div class="${bubbleClass}">${label}${opts.html}</div>
+                </div>
+            `;
+            scrollEl.appendChild(row);
+            scrollEl.scrollTop = scrollEl.scrollHeight;
+            return row;
+        }
+
+        function appendSources(scrollEl, sources) {
+            if (!sources || !sources.length) return;
+            const wrap = document.createElement('div');
+            wrap.className = 'msg-sources';
+            wrap.innerHTML = sources.map(s => `<span class="msg-source-chip">${escapeHtml(s.source)} · 第${s.page}页</span>`).join('');
+            scrollEl.appendChild(wrap);
+            scrollEl.scrollTop = scrollEl.scrollHeight;
+        }
+
+        function appendTyping(scrollEl) {
+            return appendMessage(scrollEl, 'bot', {
+                html: `<span class="typing-dots"><span></span><span></span><span></span></span>`
+            });
+        }
+
+        /* ---------- 问答模式 ---------- */
+        const askScroll = document.getElementById('ask-scroll');
+        const askScrollPristineHTML = askScroll.innerHTML;
+        const askInput = document.getElementById('ask-input');
+        const askSend = document.getElementById('ask-send');
+        autoGrow(askInput);
+
+        async function sendAsk() {
+            const q = askInput.value.trim();
+            if (!q) return;
+            askInput.value = '';
+            askInput.style.height = 'auto';
+            askSend.disabled = true;
+
+            appendMessage(askScroll, 'user', { html: escapeHtml(q) });
+            const loadingRow = appendTyping(askScroll);
+
+            try {
+                const data = await callBackend({ mode: 'ask', question: q });
+                if (data.error) throw new Error(data.error);
+                loadingRow.querySelector('.msg-bubble').innerHTML = renderMarkdown(data.answer);
+                appendSources(askScroll, data.sources);
+            } catch (e) {
+                loadingRow.querySelector('.msg-bubble').textContent = '出错了：' + e.message;
+            } finally {
+                askSend.disabled = false;
+                askInput.focus();
+            }
+        }
+        askSend.addEventListener('click', sendAsk);
+        askInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendAsk(); }
+        });
+
+        /* ---------- 自测模式 ---------- */
+        const quizScroll = document.getElementById('quiz-scroll');
+        const quizScrollPristineHTML = quizScroll.innerHTML;
+        const quizInput = document.getElementById('quiz-input');
+        const quizSend = document.getElementById('quiz-send');
+        const quizInputbar = document.getElementById('quiz-inputbar');
+        const quizActionBar = document.getElementById('quiz-action-bar');
+        const quizStartBar = document.getElementById('quiz-start-bar');
+        const quizStartEmpty = document.getElementById('quiz-start-empty');
+        autoGrow(quizInput);
+
+        let quizPending = null; // { question, context }
+
+        function showQuizInput() {
+            quizInputbar.style.display = 'block';
+            quizActionBar.style.display = 'none';
+            setTimeout(() => quizInput.focus(), 50);
+        }
+        function showQuizAction(label) {
+            quizInputbar.style.display = 'none';
+            quizActionBar.style.display = 'flex';
+            quizStartBar.textContent = label;
+        }
+
+        async function startQuiz(triggerBtn) {
+            triggerBtn.disabled = true;
+            const original = triggerBtn.textContent;
+            triggerBtn.textContent = '出题中…';
+
+            const loadingRow = appendTyping(quizScroll);
+            try {
+                const data = await callBackend({ mode: 'quiz_start' });
+                if (data.error) throw new Error(data.error);
+                quizPending = { question: data.question, context: data.context };
+                loadingRow.querySelector('.msg-bubble').classList.add('quiz-question');
+                loadingRow.querySelector('.msg-bubble').innerHTML =
+                    `<span class="quiz-label">题目</span><br>${renderMarkdown(data.question)}`;
+                showQuizInput();
+            } catch (e) {
+                loadingRow.querySelector('.msg-bubble').textContent = '出题失败：' + e.message;
+                showQuizAction('重试');
+            } finally {
+                triggerBtn.disabled = false;
+                triggerBtn.textContent = original === '出题中…' ? '出一道题' : original;
+            }
+        }
+
+        quizStartEmpty.addEventListener('click', () => startQuiz(quizStartEmpty));
+        quizStartBar.addEventListener('click', () => startQuiz(quizStartBar));
+
+        async function submitQuizAnswer() {
+            const answer = quizInput.value.trim();
+            if (!answer || !quizPending) return;
+            quizInput.value = '';
+            quizInput.style.height = 'auto';
+            quizSend.disabled = true;
+
+            appendMessage(quizScroll, 'user', { html: escapeHtml(answer) });
+            const loadingRow = appendTyping(quizScroll);
+
+            try {
+                const data = await callBackend({
+                    mode: 'quiz_grade',
+                    question: quizPending.question,
+                    context: quizPending.context,
+                    answer: answer
+                });
+                if (data.error) throw new Error(data.error);
+                loadingRow.querySelector('.msg-bubble').classList.add('quiz-feedback');
+                loadingRow.querySelector('.msg-bubble').innerHTML =
+                    `<span class="quiz-label">点评</span><br>${renderMarkdown(data.feedback)}`;
+            } catch (e) {
+                loadingRow.querySelector('.msg-bubble').textContent = '批改失败：' + e.message;
+            } finally {
+                quizPending = null;
+                quizSend.disabled = false;
+                showQuizAction('再来一题');
+            }
+        }
+        quizSend.addEventListener('click', submitQuizAnswer);
+        quizInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submitQuizAnswer(); }
+        });
+
+        /* ---------- 新对话:清空当前所在模式的会话,回到初始状态 ---------- */
+        document.getElementById('new-chat-btn').addEventListener('click', () => {
+            const mode = document.querySelector('.chat-thread.active').dataset.mode;
+            if (mode === 'ask') {
+                askScroll.innerHTML = askScrollPristineHTML;
+                askInput.value = '';
+                askInput.style.height = 'auto';
+                askInput.focus();
+            } else {
+                quizScroll.innerHTML = quizScrollPristineHTML;
+                quizPending = null;
+                quizInput.value = '';
+                quizInput.style.height = 'auto';
+                quizInputbar.style.display = 'none';
+                quizActionBar.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
