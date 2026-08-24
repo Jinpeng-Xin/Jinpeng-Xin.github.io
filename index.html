@@ -273,7 +273,7 @@
                 <div id="trajectory-map"></div>
             </div>
 
-            <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+            <script src="echarts.min.js"></script>
 
             <script type="text/javascript">
                 document.addEventListener('DOMContentLoaded', function() {
@@ -290,50 +290,22 @@
                         fontFamily: 'Inter'
                     });
 
-                    // 读取中国地图 GeoJSON（阿里云 DataV，国内访问稳定）
-                    fetch('https://geo.datav.aliyun.com/areas_v3/bound/100000_full.json')
-                        .then(response => response.json())
-                        .then(geoJson => {
+                    // 地图数据本地化：中国地图 GeoJSON + 航线坐标/路线数据均已抽成本地文件，不再依赖外部 CDN
+                    Promise.all([
+                        fetch('china-geojson.json').then(response => response.json()),
+                        fetch('trajectory-data.json').then(response => response.json())
+                    ])
+                        .then(function(results) {
+                            var geoJson = results[0];
+                            var trajectoryData = results[1];
                             myChart.hideLoading();
                             echarts.registerMap('china', geoJson);
 
-                            // 坐标配置
-                            var geoCoordMap = {
-                                'Beijing': [116.40, 39.90],
-                                'Shanghai': [121.47, 31.23],
-                                'Shenzhen': [114.05, 22.54],
-                                'Datong': [113.30, 40.07],
-                                'Dalian': [121.61, 38.91],
-                                'Linfen': [111.51, 36.08],
-                                'Taiyuan': [112.53, 37.87],
-                                'Changzhi': [113.11, 36.19],
-                                'Zhengding': [114.57, 38.14],
-                                'Qinhuangdao': [119.60, 39.93],
-                                'Jinan': [117.00, 36.65],
-                                'Zhanjiang': [110.36, 21.27],
-                                'Lanzhou': [103.73, 36.03],
-                                'wuwei': [102.64, 37.93],
-                                'Lhasa': [91.11, 29.65] 
-                            };
+                            // 坐标配置（来自 trajectory-data.json）
+                            var geoCoordMap = trajectoryData.geoCoordMap;
 
-                            // 航线数据
-                            var BJData = [
-                                [{name: 'Beijing'}, {name: 'Shanghai'}],
-                                [{name: 'Beijing'}, {name: 'Shenzhen'}],
-                                [{name: 'Beijing'}, {name: 'Datong'}],
-                                [{name: 'Beijing'}, {name: 'Dalian'}],
-                                [{name: 'Beijing'}, {name: 'Linfen'}],
-                                [{name: 'Beijing'}, {name: 'Taiyuan'}],
-                                [{name: 'Beijing'}, {name: 'Changzhi'}],
-                                [{name: 'Beijing'}, {name: 'Zhengding'}],
-                                [{name: 'Beijing'}, {name: 'Qinhuangdao'}],
-                                [{name: 'Beijing'}, {name: 'Jinan'}],
-                                [{name: 'Beijing'}, {name: 'Zhanjiang'}],
-                                [{name: 'Beijing'}, {name: 'Lhasa'}],
-                                [{name: 'Beijing'}, {name: 'Shanghai'}],
-                                [{name: 'Beijing'}, {name: 'wuwei'}],
-                                [{name: 'Beijing'}, {name: 'Lanzhou'}]
-                            ];
+                            // 航线数据（来自 trajectory-data.json）
+                            var BJData = trajectoryData.routes;
 
                             var convertData = function (data) {
                                 var res = [];

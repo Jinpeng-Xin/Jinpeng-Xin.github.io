@@ -26,7 +26,11 @@
             position: fixed;
             inset: 0;
             display: flex;
-            background: #f5f6f8;
+            /* 两块极淡的色斑,专门给侧栏的毛玻璃"磨"——纯色背景磨砂效果是看不出来的 */
+            background:
+                radial-gradient(720px 480px at 6% 0%, rgba(120,140,210,0.10), transparent 60%),
+                radial-gradient(760px 520px at 100% 100%, rgba(210,160,130,0.08), transparent 60%),
+                #f5f6f8;
         }
 
         /* ===== 主聊天区(左) ===== */
@@ -38,7 +42,7 @@
             height: 100%;
         }
 
-        /* ===== 左侧栏:logo + 收起/返回 + 切换胶囊 + 新对话/更多,磨砂玻璃质感,可收缩 ===== */
+        /* ===== 左侧栏:logo + 收起/返回 + 切换胶囊 + 新对话/更多,悬浮玻璃卡片,可收缩 ===== */
         .app-sidebar {
             width: 224px;
             flex-shrink: 0;
@@ -46,11 +50,13 @@
             flex-direction: column;
             gap: 14px;
             padding: 16px 14px;
-            background: rgba(255,255,255,0.45);
+            margin: 12px;
+            border-radius: 20px;
+            background: rgba(255,255,255,0.32);
             backdrop-filter: blur(28px) saturate(180%);
             -webkit-backdrop-filter: blur(28px) saturate(180%);
-            border-right: 1px solid rgba(255,255,255,0.5);
-            box-shadow: 1px 0 0 rgba(0,0,0,0.03), 4px 0 24px rgba(31,38,135,0.04);
+            border: 1px solid rgba(255,255,255,0.6);
+            box-shadow: 0 8px 32px rgba(31,38,135,0.10), inset 0 1px 0 rgba(255,255,255,0.5);
             transition: width 0.25s cubic-bezier(0.4,0,0.2,1), padding 0.25s ease;
         }
         .app-sidebar.collapsed {
@@ -249,6 +255,30 @@
             margin-top: 18px;
         }
 
+        /* 空状态下的示例问题快捷芯片:点了直接填进输入框并发送,降低"不知道问什么"的门槛 */
+        .empty-suggestions {
+            margin-top: 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .suggestion-chip {
+            display: block;
+            width: 100%;
+            text-align: left;
+            background: rgba(0,0,0,0.03);
+            border: 1px solid rgba(0,0,0,0.06);
+            border-radius: 10px;
+            padding: 10px 14px;
+            font-size: 0.86rem;
+            font-family: inherit;
+            color: #3a3a3e;
+            cursor: pointer;
+            transition: background 0.15s ease, border-color 0.15s ease;
+        }
+        .suggestion-chip:hover { background: rgba(0,0,0,0.055); border-color: rgba(0,0,0,0.1); }
+        .suggestion-chip:active { transform: scale(0.99); }
+
         /* 消息行 —— AI回复不做对话气泡,像Claude一样以正文形式呈现 */
         .msg-row {
             display: flex;
@@ -288,6 +318,24 @@
         .msg-bubble ul { margin: 4px 0 12px; padding-left: 22px; }
         .msg-bubble li { margin-bottom: 6px; }
         .msg-bubble strong { font-weight: 700; }
+
+        /* AI回复下的复制按钮:常驻但很轻,不用hover才出现(移动端没有hover) */
+        .msg-copy-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 26px; height: 26px;
+            margin-top: 4px;
+            border: none;
+            background: transparent;
+            color: #c4c4c9;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: color 0.15s ease, background 0.15s ease;
+        }
+        .msg-copy-btn:hover { color: var(--accent-dark); background: rgba(0,0,0,0.05); }
+        .msg-copy-btn svg { width: 14px; height: 14px; }
+        .msg-copy-btn.copied { color: #2e7d32; }
 
         /* 题目/点评的标记 —— 小号标签,不再用色块气泡 */
         .quiz-label {
@@ -339,11 +387,7 @@
 
         /* 底部输入栏 */
         .chat-inputbar {
-            border-top: 1px solid rgba(0,0,0,0.06);
-            background: rgba(255,255,255,0.85);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            padding: 12px 18px calc(12px + env(safe-area-inset-bottom));
+            padding: 12px 18px calc(28px + env(safe-area-inset-bottom));
         }
         .chat-inputbar-inner {
             max-width: 680px;
@@ -353,7 +397,9 @@
             align-items: flex-end;
         }
         .chat-inputbar textarea {
-            flex: 1;
+            display: block;
+            width: 100%;
+            box-sizing: border-box;
             resize: none;
             border-radius: 16px;
             border: 1px solid rgba(0,0,0,0.1);
@@ -364,12 +410,62 @@
             max-height: 140px;
             outline: none;
             background: #fff;
-            transition: border-color 0.2s ease;
+            position: relative;
+            box-shadow: 0 8px 32px rgba(31,38,135,0.10);
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
             overflow-y: auto;
             scrollbar-width: none; /* Firefox:隐藏滚动条,不要那根上下拉条 */
         }
         .chat-inputbar textarea::-webkit-scrollbar { display: none; } /* WebKit:同上 */
-        .chat-inputbar textarea:focus { border-color: var(--accent); }
+
+        /* 输入框聚焦时不再是"四周变黑",换成一圈会转的炫彩渐变环——用一个包裹div的伪元素做,
+           textarea这类表单控件本身不支持::before/::after,所以套一层.chat-input-wrap。
+           手法:伪元素比外框大一圈、留2px的padding,再用双重mask异或裁掉中间,只剩下这一圈"环"可见。
+           转的是conic-gradient的起始角度(靠@property让浏览器能平滑过渡这个自定义属性),
+           而不是整个元素transform:rotate——输入框是个很扁的长条,整体旋转会甩出一条老远的对角线,很难看。 */
+        @property --chat-ring-angle {
+            syntax: '<angle>';
+            inherits: false;
+            initial-value: 0deg;
+        }
+        .chat-input-wrap { position: relative; flex: 1; }
+        .chat-input-wrap::before {
+            content: '';
+            position: absolute;
+            inset: -1px;
+            border-radius: 18px;
+            padding: 1px;
+            background: conic-gradient(from var(--chat-ring-angle), #ff5f6d, #ffc371, #4fd1a5, #4f9cff, #b06ce8, #ff5f6d);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease; /* 只管失焦时的淡出,出现时交给下面的keyframes */
+        }
+        .chat-input-wrap:focus-within::before {
+            opacity: 1; /* 减弱动效模式下.chat-input-wrap:focus-within::before{animation:none}会盖掉下面的animation,
+                           这条静态兜底保证环至少还在,只是不转 */
+            /* 出现的这0.6s本身就是转一整圈把环"转出来",转完无缝接上后面一直转的那个循环——
+               两段动画错开时间(chatRingSpin延迟0.6s起步),不是同时抢同一个属性 */
+            animation: chatRingIn 0.6s ease-out forwards,
+                       chatRingSpin 3s linear 0.6s infinite;
+        }
+        @keyframes chatRingIn {
+            from { opacity: 0; --chat-ring-angle: 0deg; }
+            to   { opacity: 1; --chat-ring-angle: 360deg; }
+        }
+        @keyframes chatRingSpin {
+            from { --chat-ring-angle: 0deg; }
+            to   { --chat-ring-angle: 360deg; }
+        }
+        /* 一开始打字就定住,不用一直转分散注意力——:not(:placeholder-shown)就是"有内容"的意思 */
+        .chat-input-wrap:has(textarea:not(:placeholder-shown))::before {
+            animation-play-state: paused;
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .chat-input-wrap:focus-within::before { animation: none; }
+        }
         .chat-send-btn {
             width: 38px; height: 38px;
             border-radius: 50%;
@@ -417,7 +513,7 @@
 
         /* ===== 移动端:侧边栏强制收窄成图标条(等同 collapsed 效果) ===== */
         @media (max-width: 640px) {
-            .app-sidebar { width: 60px !important; padding: 14px 8px !important; }
+            .app-sidebar { width: 60px !important; padding: 14px 8px !important; margin: 8px !important; border-radius: 16px !important; }
             .app-sidebar .sidebar-logo,
             .app-sidebar .sidebar-collapse-btn { display: none; }
             .app-sidebar .sidebar-topline { justify-content: center; }
@@ -449,8 +545,12 @@
         }
         .ppt-dialog {
             width: 640px; max-width: 92vw; max-height: 86vh; overflow-y: auto;
-            background: #fff; border-radius: 20px; padding: 24px 26px;
-            box-shadow: 0 24px 64px rgba(0,0,0,0.28);
+            background: rgba(255,255,255,0.78);
+            backdrop-filter: blur(28px) saturate(180%);
+            -webkit-backdrop-filter: blur(28px) saturate(180%);
+            border: 1px solid rgba(255,255,255,0.6);
+            border-radius: 20px; padding: 24px 26px;
+            box-shadow: 0 24px 64px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.5);
             color: #1d1d1f; animation: pptPop 0.24s cubic-bezier(.2,.8,.2,1);
         }
         .ppt-head { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
@@ -538,11 +638,21 @@
            打开时靠撑开width把.app-main挤扁,不是盖在上面的浮层 */
         .ppt-canvas {
             width: 0; flex-shrink: 0; overflow: hidden;
-            background: #fff; border-left: 1px solid transparent;
+            margin: 0;
+            border-radius: 20px;
+            background: rgba(255,255,255,0.55);
+            backdrop-filter: blur(28px) saturate(180%);
+            -webkit-backdrop-filter: blur(28px) saturate(180%);
+            border: 1px solid transparent;
             display: flex; flex-direction: column;
-            transition: width 0.28s cubic-bezier(.2,.8,.2,1), border-color 0.28s ease;
+            transition: width 0.28s cubic-bezier(.2,.8,.2,1), margin 0.28s cubic-bezier(.2,.8,.2,1), border-color 0.28s ease, box-shadow 0.28s ease;
         }
-        .ppt-canvas.open { width: 460px; border-left-color: #ececef; box-shadow: -14px 0 36px rgba(0,0,0,0.06); }
+        .ppt-canvas.open {
+            width: 460px;
+            margin: 12px 12px 12px 0;
+            border-color: rgba(255,255,255,0.6);
+            box-shadow: 0 8px 32px rgba(31,38,135,0.10), inset 0 1px 0 rgba(255,255,255,0.5);
+        }
         .ppt-canvas-head, .ppt-canvas-body, .ppt-canvas-foot { width: 460px; } /* 收起过程中内容不跟着width一起压扁换行 */
         /* 窄屏放不下"压缩布局",退回原来盖在上面的浮层模式 */
         @media (max-width: 900px) {
@@ -555,10 +665,10 @@
         }
         .ppt-canvas-head { display: flex; align-items: center; gap: 10px; padding: 16px 18px; border-bottom: 1px solid #ececef; flex-shrink: 0; }
         .ppt-canvas-head-icon {
-            width: 30px; height: 30px; flex-shrink: 0; border-radius: 9px; display: flex; align-items: center; justify-content: center;
-            color: #fff; background: linear-gradient(135deg, var(--accent-dark), var(--accent) 60%, #6b6b70);
+            width: 30px; height: 30px; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+            color: var(--accent-dark);
         }
-        .ppt-canvas-head-icon svg { width: 16px; height: 16px; }
+        .ppt-canvas-head-icon svg { width: 18px; height: 18px; }
         .ppt-canvas-title { font-size: 0.92rem; font-weight: 600; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .ppt-canvas-close { flex-shrink: 0; width: 28px; height: 28px; border: none; border-radius: 8px; background: transparent; color: #8a8a90; cursor: pointer; font-size: 14px; }
         .ppt-canvas-close:hover { background: rgba(0,0,0,0.06); }
@@ -569,6 +679,9 @@
         .ppt-canvas-logo-btn:hover { background: rgba(0,0,0,0.04); }
         .ppt-canvas-logo-btn.set { border-color: var(--accent); color: var(--accent-dark); background: color-mix(in srgb, var(--accent) 8%, transparent); }
         .ws-logo { object-fit: contain; }
+        .ws-slide-image { object-fit: contain; border-radius: 6px; }
+        /* 插图占了右边一块,要点文字收窄到左边45%,留出中间的间距,数值要跟JS里PPT_SLIDE_IMG_W算出来的box对得上 */
+        .wysiwyg-slide.has-image .ws-bullets { width: 45%; }
         .ppt-canvas-body { flex: 1; overflow-y: auto; padding: 18px; display: flex; flex-direction: column; gap: 16px; }
         .ppt-canvas-foot { padding: 14px 18px; border-top: 1px solid #ececef; flex-shrink: 0; }
 
@@ -690,11 +803,11 @@
             </div>
 
             <div class="sidebar-group">
-                <button class="sidebar-action-btn sidebar-group-toggle" id="history-group-btn">
+                <button class="sidebar-action-btn" id="history-group-btn" style="cursor:default;">
                     <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></span>
                     <span class="label">历史对话</span>
                 </button>
-                <div id="history-body" style="display:none;">
+                <div id="history-body">
                     <div class="sidebar-history-empty" id="history-empty">登录后可以查看过往的对话记录</div>
                     <div class="sidebar-history-list" id="history-list"></div>
                 </div>
@@ -780,7 +893,7 @@
                     <option value="12">12 页</option>
                 </select>
                 <label class="ppt-checkbox-row">
-                    <input type="checkbox" id="ppt-grounded-checkbox" checked>
+                    <input type="checkbox" id="ppt-grounded-checkbox">
                     <span>限定在本页"高质量数据集"资料范围内(取消勾选可以做任意主题)</span>
                 </label>
                 <div class="ppt-row">
@@ -800,11 +913,16 @@
                         <div class="empty-icon"><svg><use href="#icon-ask"></use></svg></div>
                         <div class="empty-title">新对话</div>
                         <div class="empty-sub">问我任何问题</div>
+                        <div class="empty-suggestions">
+                            <button class="suggestion-chip" type="button">用大白话讲讲 Transformer 里的 Attention 机制</button>
+                            <button class="suggestion-chip" type="button">帮我列一份隧道工程毕业论文的写作提纲</button>
+                            <button class="suggestion-chip" type="button">DeepSeek 和 GPT 系列的技术路线有什么区别</button>
+                        </div>
                     </div>
                 </div>
                 <div class="chat-inputbar">
                     <div class="chat-inputbar-inner">
-                        <textarea id="chat-input" placeholder="发消息…" rows="1"></textarea>
+                        <div class="chat-input-wrap"><textarea id="chat-input" placeholder="发消息…" rows="1"></textarea></div>
                         <button class="chat-send-btn" id="chat-send"><svg><use href="#icon-send"></use></svg></button>
                     </div>
                 </div>
@@ -817,11 +935,16 @@
                         <div class="empty-icon"><svg><use href="#icon-ask"></use></svg></div>
                         <div class="empty-title">问答模式</div>
                         <div class="empty-sub">问点什么，比如「质量评测规范的三个维度是什么」</div>
+                        <div class="empty-suggestions">
+                            <button class="suggestion-chip" type="button">高质量数据集常见的评测维度有哪些？</button>
+                            <button class="suggestion-chip" type="button">数据去重和数据清洗分别解决什么问题？</button>
+                            <button class="suggestion-chip" type="button">这份资料里提到了哪些代表性的数据集？</button>
+                        </div>
                     </div>
                 </div>
                 <div class="chat-inputbar">
                     <div class="chat-inputbar-inner">
-                        <textarea id="ask-input" placeholder="发消息…" rows="1"></textarea>
+                        <div class="chat-input-wrap"><textarea id="ask-input" placeholder="发消息…" rows="1"></textarea></div>
                         <button class="chat-send-btn" id="ask-send"><svg><use href="#icon-send"></use></svg></button>
                     </div>
                 </div>
@@ -845,7 +968,7 @@
                     </div>
                     <div class="chat-inputbar" id="quiz-inputbar" style="display:none;">
                         <div class="chat-inputbar-inner">
-                            <textarea id="quiz-input" placeholder="在这里作答…" rows="1"></textarea>
+                            <div class="chat-input-wrap"><textarea id="quiz-input" placeholder="在这里作答…" rows="1"></textarea></div>
                             <button class="chat-send-btn" id="quiz-send"><svg><use href="#icon-send"></use></svg></button>
                         </div>
                     </div>
@@ -870,7 +993,7 @@
                         <button id="ppt-focus-chip-clear" aria-label="退出单页修改" title="退出单页修改">✕</button>
                     </div>
                     <div class="chat-inputbar-inner">
-                        <textarea id="ppt-edit-input" placeholder="说说怎么改,比如「第3页精简成3条要点」…" rows="1"></textarea>
+                        <div class="chat-input-wrap"><textarea id="ppt-edit-input" placeholder="说说怎么改,比如「第3页精简成3条要点」…" rows="1"></textarea></div>
                         <button class="chat-send-btn" id="ppt-edit-send"><svg><use href="#icon-send"></use></svg></button>
                     </div>
                 </div>
@@ -1046,12 +1169,7 @@
         const historyListEl = document.getElementById('history-list');
         const historyEmptyEl = document.getElementById('history-empty');
 
-        historyGroupBtn.addEventListener('click', () => {
-            const open = historyBody.style.display === 'none';
-            historyBody.style.display = open ? 'block' : 'none';
-            historyGroupBtn.classList.toggle('active', open);
-            if (open && AUTH_EMAIL) refreshHistoryList();
-        });
+        // 历史对话现在是常驻显示的一个区块,不再靠点击展开——数据本来就已经在登录后/页面加载时自动拉取了(见下方 refreshHistoryList 调用处)
 
         function formatRelTime(ts) {
             const diff = Date.now() / 1000 - ts;
@@ -1280,10 +1398,14 @@
 
             const bubbleClass = ['msg-bubble', opts.bubbleClass].filter(Boolean).join(' ');
             const label = opts.label ? `<span class="quiz-label">${opts.label}</span>` : '';
+            const copyBtn = role === 'bot'
+                ? `<button class="msg-copy-btn" type="button" title="复制"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></button>`
+                : '';
 
             row.innerHTML = `
                 <div class="msg-body">
                     <div class="${bubbleClass}">${label}${opts.html}</div>
+                    ${copyBtn}
                 </div>
             `;
             scrollEl.appendChild(row);
@@ -1305,6 +1427,22 @@
                 html: `<span class="typing-dots"><span></span><span></span><span></span></span>`
             });
         }
+
+        /* 复制按钮:事件委托,任何 .msg-copy-btn 点了就复制同一个 .msg-body 里的正文 */
+        const COPY_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>`;
+        const CHECK_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>`;
+        document.addEventListener('click', (e) => {
+            const btn = e.target.closest('.msg-copy-btn');
+            if (!btn) return;
+            const bubble = btn.closest('.msg-body')?.querySelector('.msg-bubble');
+            const text = bubble?.innerText.trim();
+            if (!text) return; // 还在打字动画时(内容是空的三个点)点了不做任何事
+            navigator.clipboard.writeText(text).then(() => {
+                btn.classList.add('copied');
+                btn.innerHTML = CHECK_ICON;
+                setTimeout(() => { btn.classList.remove('copied'); btn.innerHTML = COPY_ICON; }, 1200);
+            }).catch(() => {});
+        });
 
         /* ---------- 通用问答("新对话"进的就是这里):不检索、不限定语料,DeepSeek直接回答,支持多轮上下文 ---------- */
         const chatScroll = document.getElementById('chat-scroll');
@@ -1380,6 +1518,20 @@
         askSend.addEventListener('click', sendAsk);
         askInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendAsk(); }
+        });
+
+        /* 空状态里的示例问题芯片:点了直接填进对应输入框并发送 */
+        document.querySelectorAll('#chat-empty .suggestion-chip').forEach((btn) => {
+            btn.addEventListener('click', () => {
+                chatInput.value = btn.textContent.trim();
+                sendChat();
+            });
+        });
+        document.querySelectorAll('#ask-empty .suggestion-chip').forEach((btn) => {
+            btn.addEventListener('click', () => {
+                askInput.value = btn.textContent.trim();
+                sendAsk();
+            });
         });
 
         /* ---------- 自测模式 ---------- */
@@ -1535,6 +1687,12 @@
         let pptLogoCorner = 'bottom-right'; // top-left|top-right|bottom-left|bottom-right|center
         let pptLogoScale = 1; // 相对基准宽度(0.7in)的倍数
 
+        /* 单页插图:跟Logo共用一个按钮和文件选择框,靠"有没有聚焦某一内容页"区分用途——
+           没聚焦/聚焦封面 = 传的是Logo(套所有页);聚焦某一内容页 = 传的是插到那一页里的图。
+           同样是纯本地处理,base64存着,预览摆<img>,导出时pptxgenjs.addImage()吃同一个data URL。 */
+        const pptSlideImages = {}; // { [num]: { dataUrl, aspect } },num=内容页页码(1..N,不含封面)
+        const PPT_SLIDE_IMG_W = 3.4; // 插图固定宽度(in),高度按原图比例算,不会被拉伸
+
         function pptLogoCornerLabel(corner) {
             return { 'top-left': '左上角', 'top-right': '右上角', 'bottom-left': '左下角', 'bottom-right': '右下角', 'center': '居中' }[corner] || corner;
         }
@@ -1577,26 +1735,70 @@
             return `<img class="ws-el ws-logo" src="${pptLogoDataUrl}" style="${style}">`;
         }
 
+        /* 插图的位置算法跟Logo同一套思路:固定宽度+按原图比例算高度,摆在body占位符(x0.55 y1.35 w8.9 h3.9)的右侧,
+           左边留给收窄后的要点文字(见下面 .wysiwyg-slide.has-image .ws-bullets),垂直居中对齐。 */
+        function pptSlideImageBoxIn(num) {
+            const img = pptSlideImages[num];
+            if (!img) return null;
+            const bodyBox = { x: 0.55, y: 1.35, w: 8.9, h: 3.9 };
+            const w = PPT_SLIDE_IMG_W;
+            const h = Math.min(w / img.aspect, bodyBox.h);
+            return { x: bodyBox.x + bodyBox.w - w, y: bodyBox.y + (bodyBox.h - h) / 2, w, h };
+        }
+        function pptSlideImageHTML(num) {
+            const box = pptSlideImageBoxIn(num);
+            if (!box) return '';
+            const style = `left:${box.x / PPT_CANVAS_W_IN * 100}%;top:${box.y / PPT_CANVAS_H_IN * 100}%;`
+                + `width:${box.w / PPT_CANVAS_W_IN * 100}%;height:${box.h / PPT_CANVAS_H_IN * 100}%;`;
+            return `<img class="ws-el ws-slide-image" src="${pptSlideImages[num].dataUrl}" style="${style}">`;
+        }
+
         const pptLogoBtn = document.getElementById('ppt-logo-btn');
         const pptLogoInput = document.getElementById('ppt-logo-input');
+
+        /* 按钮的文字/状态跟着"有没有聚焦某一内容页"切换,点之前就知道现在传的是Logo还是插图 */
+        function updatePptUploadBtn() {
+            const targetNum = (pptFocusNum !== null && pptFocusNum !== 0) ? pptFocusNum : null;
+            if (targetNum !== null) {
+                const has = !!pptSlideImages[targetNum];
+                pptLogoBtn.textContent = has ? '插图 ✓' : '插图';
+                pptLogoBtn.classList.toggle('set', has);
+                pptLogoBtn.title = has
+                    ? `第${targetNum}页已插图(点击更换,本地处理,不上传)`
+                    : `给第${targetNum}页插入一张图(本地处理,不上传)`;
+            } else {
+                pptLogoBtn.textContent = pptLogoDataUrl ? 'Logo ✓' : 'Logo';
+                pptLogoBtn.classList.toggle('set', !!pptLogoDataUrl);
+                pptLogoBtn.title = pptLogoDataUrl
+                    ? '已设置Logo(点击更换,本地处理,不上传)'
+                    : '每页加个Logo(只在本地处理,不会上传)';
+            }
+        }
+
         pptLogoBtn.addEventListener('click', () => pptLogoInput.click());
         pptLogoInput.addEventListener('change', () => {
             const file = pptLogoInput.files && pptLogoInput.files[0];
             if (!file) return;
+            // 点按钮那一刻是什么状态,就决定这张图传给谁——跟按钮当时显示的文字是同一个判断
+            const targetNum = (pptFocusNum !== null && pptFocusNum !== 0) ? pptFocusNum : null;
             const reader = new FileReader();
             reader.onload = () => {
                 const img = new Image();
                 img.onload = () => {
-                    pptLogoAspect = img.naturalWidth / img.naturalHeight || 1;
-                    pptLogoDataUrl = reader.result;
-                    pptLogoBtn.textContent = 'Logo ✓';
-                    pptLogoBtn.classList.add('set');
-                    pptLogoBtn.title = '已设置:' + file.name + '(点击更换,本地处理,不上传)';
-                    if (pptAllSlides.length) renderPptPage(); // 已经有预览的话,立刻在每页补上logo
+                    const aspect = img.naturalWidth / img.naturalHeight || 1;
+                    if (targetNum === null) {
+                        pptLogoAspect = aspect;
+                        pptLogoDataUrl = reader.result;
+                    } else {
+                        pptSlideImages[targetNum] = { dataUrl: reader.result, aspect };
+                    }
+                    updatePptUploadBtn();
+                    if (pptAllSlides.length) renderPptPage(); // 已经有预览的话,立刻补上
                 };
                 img.src = reader.result;
             };
             reader.readAsDataURL(file);
+            pptLogoInput.value = ''; // 允许连续选同一个文件也能再次触发change
         });
 
         /* 按 downloadPptx() 实际导出坐标换算的WYSIWYG单页标记,和真实pptx一一对应,不是随便排的卡片 */
@@ -1612,11 +1814,13 @@
                         ${pptLogoHTML()}
                     </div>`;
             }
+            const hasImageCls = pptSlideImages[slide.num] ? ' has-image' : '';
             return `
-                <div class="wysiwyg-slide${focusedCls}" data-num="${slide.num}">
+                <div class="wysiwyg-slide${focusedCls}${hasImageCls}" data-num="${slide.num}">
                     <div class="ws-el ws-title">${escapeHtml(slide.title)}</div>
                     <div class="ws-el ws-bar"></div>
                     <div class="ws-el ws-bullets"><ul>${slide.bullets.map(b => `<li>${escapeHtml(b)}</li>`).join('')}</ul></div>
+                    ${pptSlideImageHTML(slide.num)}
                     ${pptLogoHTML()}
                     <div class="ws-slide-index">${slide.num}</div>
                 </div>`;
@@ -1642,6 +1846,7 @@
                 pptFocusChipLabel.textContent = pptFocusLabel(num);
                 pptEditInput.placeholder = `只针对${pptFocusLabel(num)}说说怎么改…`;
             }
+            updatePptUploadBtn();
         }
 
         pptCanvasBody.addEventListener('click', (e) => {
@@ -1874,10 +2079,15 @@
                 for (const s of data.slides) {
                     const slide = pptx.addSlide({ masterName: 'MASTER_CONTENT' });
                     slide.addText(s.title, { placeholder: 'title' });
-                    slide.addText(
-                        s.bullets.map(b => ({ text: b, options: { bullet: { code: '25AA' }, breakLine: true, paraSpaceAfter: 10 } })),
-                        { placeholder: 'body' }
-                    );
+                    const bulletRuns = s.bullets.map(b => ({ text: b, options: { bullet: { code: '25AA' }, breakLine: true, paraSpaceAfter: 10 } }));
+                    const slideImg = pptSlideImages[s.num];
+                    if (slideImg) {
+                        // 这一页有插图:不用母版的body占位符(那是全宽的),改成显式坐标,文字收窄给插图让出右边位置
+                        slide.addText(bulletRuns, { x: 0.55, y: 1.35, w: 4.5, h: 3.9, fontSize: 15, color: '333333', fontFace: 'Microsoft YaHei', valign: 'top' });
+                        slide.addImage({ data: slideImg.dataUrl, ...pptSlideImageBoxIn(s.num) });
+                    } else {
+                        slide.addText(bulletRuns, { placeholder: 'body' });
+                    }
                 }
 
                 const fileName = (data.title || 'presentation').replace(/[\\/:*?"<>|]/g, '') + '.pptx';
