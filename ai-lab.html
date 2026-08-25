@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>高质量数据集 Agent | JINPENG XIN</title>
+    <title>AI-Lab | JINPENG XIN</title>
+    <link rel="icon" type="image/svg+xml" href="https://jinpeng-assets.oss-cn-beijing.aliyuncs.com/%E4%B8%AA%E4%BA%BA%E4%B8%BB%E9%A1%B5/%E5%9F%BA%E6%9C%AC%E5%9B%BE%E7%89%87/logo3.0.svg">
     <link rel="stylesheet" href="style.css">
     <style>
         :root {
@@ -781,6 +782,199 @@
         }
         @keyframes pptSpin { to { transform: rotate(360deg) } }
         @media (prefers-reduced-motion: reduce) { .ppt-backdrop, .ppt-dialog, .ppt-spin { animation: none; } }
+
+        /* =========================================================================
+           深色模式 —— 先只跟系统偏好走(prefers-color-scheme),手动切换开关是下一步。
+           思路:不新建一套变量系统去改所有引用点,而是对每个用到硬编码颜色的选择器
+           直接在这里覆写一遍深色版本的值,原来的规则一个字不用动,风险最小。
+           .wysiwyg-slide / .ws-* (PPT幻灯片预览内容) 故意不在这里面——那是"文档内容"
+           不是"网站界面",不管网站是明是暗,幻灯片该长什么样就长什么样,导出的pptx更是完全独立的。 */
+        @media (prefers-color-scheme: dark) {
+            html:not([data-theme="light"]), html:not([data-theme="light"]) body { background: #1a1a1d; }
+            html:not([data-theme="light"]) .app-shell {
+                background-color: #1a1a1d;
+                background-image:
+                    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300' viewBox='0 0 300 300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.05 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
+                    radial-gradient(1100px 750px at 12% 0%, rgba(255,255,255,0.05), transparent 60%),
+                    radial-gradient(1000px 700px at 100% 100%, rgba(255,255,255,0.04), transparent 55%);
+            }
+
+            /* 侧栏玻璃卡片 */
+            html:not([data-theme="light"]) .app-sidebar { background: rgba(32,32,36,0.55); box-shadow: 0 8px 32px rgba(0,0,0,0.45); }
+            html:not([data-theme="light"]) .sidebar-logo img { filter: invert(1); }
+            html:not([data-theme="light"]) .sidebar-icon-btn { color: #9a9aa2; }
+            html:not([data-theme="light"]) .sidebar-icon-btn:hover { background: rgba(255,255,255,0.08); color: #f2f2f4; }
+            html:not([data-theme="light"]) .mode-switch { background: rgba(255,255,255,0.06); }
+            html:not([data-theme="light"]) .mode-switch-btn { color: #9a9aa2; }
+            html:not([data-theme="light"]) .mode-switch-btn:hover { color: #d4d4d8; }
+            html:not([data-theme="light"]) .mode-switch-btn.active { background: #3a3a3e; color: #f2f2f4; box-shadow: 0 1px 3px rgba(0,0,0,0.5); }
+            html:not([data-theme="light"]) .app-sidebar.collapsed .mode-switch-btn.active { background: #55555c; }
+            html:not([data-theme="light"]) .sidebar-group-toggle.active, html:not([data-theme="light"]) #new-chat-btn.active { background: rgba(255,255,255,0.08); }
+            html:not([data-theme="light"]) .sidebar-action-btn { color: #d4d4d8; }
+            html:not([data-theme="light"]) .sidebar-action-btn:hover { background: rgba(255,255,255,0.07); }
+            html:not([data-theme="light"]) .sidebar-action-btn.soon { color: #5a5a60; }
+            html:not([data-theme="light"]) .sidebar-action-btn .badge { background: rgba(255,255,255,0.09); }
+            html:not([data-theme="light"]) .sidebar-footer { border-top-color: rgba(255,255,255,0.1); }
+            html:not([data-theme="light"]) .sidebar-user-btn:hover { background: rgba(255,255,255,0.07); }
+            html:not([data-theme="light"]) .sidebar-user-name { color: #e8e8ec; }
+            html:not([data-theme="light"]) .sidebar-user-sub { color: #8a8a90; }
+            html:not([data-theme="light"]) .sidebar-user-chevron { color: #6b6b70; }
+            html:not([data-theme="light"]) .sidebar-history-item { color: #d4d4d8; }
+            html:not([data-theme="light"]) .sidebar-history-item:hover { background: rgba(255,255,255,0.07); }
+            html:not([data-theme="light"]) .sidebar-history-item.active { background: rgba(255,255,255,0.12); }
+            html:not([data-theme="light"]) .sidebar-history-item-time, html:not([data-theme="light"]) .sidebar-history-empty { color: #8a8a90; }
+            html:not([data-theme="light"]) .sidebar-history-item-del { color: #6b6b70; }
+
+            /* 图标类:原来跟 --accent-dark 走的那几处,这个变量本身不跟主题变(PPT品牌色不该被网站主题带偏),
+               所以这几处单独覆写成浅色,而不是去改 --accent-dark 本身 */
+            html:not([data-theme="light"]) .chat-empty .empty-icon svg, html:not([data-theme="light"]) .ppt-head-icon, html:not([data-theme="light"]) .ppt-canvas-head-icon, html:not([data-theme="light"]) .ppt-close, html:not([data-theme="light"]) .ppt-canvas-close, html:not([data-theme="light"]) .ppt-canvas-title, html:not([data-theme="light"]) .chat-send-btn { color: #f2f2f4; fill: #f2f2f4; }
+            html:not([data-theme="light"]) .ppt-close:hover, html:not([data-theme="light"]) .ppt-canvas-close:hover { background: rgba(255,255,255,0.1); }
+            html:not([data-theme="light"]) .chat-send-btn:hover { color: #ffffff; }
+            html:not([data-theme="light"]) .msg-copy-btn:hover { color: #f2f2f4; background: rgba(255,255,255,0.08); }
+            html:not([data-theme="light"]) .quiz-label { color: #b8b8c0; }
+
+            /* 空状态 + 示例问题芯片 */
+            html:not([data-theme="light"]) .chat-empty .empty-title { color: #f2f2f4; }
+            html:not([data-theme="light"]) .chat-empty .empty-sub { color: #9a9aa2; }
+            html:not([data-theme="light"]) .suggestion-chip { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: #d4d4d8; }
+            html:not([data-theme="light"]) .suggestion-chip:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.16); }
+
+            /* 消息 */
+            html:not([data-theme="light"]) .msg-row.user .msg-bubble { background: rgba(255,255,255,0.1); color: #f2f2f4; }
+            html:not([data-theme="light"]) .msg-row.bot .msg-bubble { color: #dcdce0; }
+            html:not([data-theme="light"]) .msg-copy-btn { color: #5a5a60; }
+            html:not([data-theme="light"]) .msg-source-chip { color: #9a9aa2; background: rgba(255,255,255,0.07); }
+            html:not([data-theme="light"]) .typing-dots span { background: #6b6b70; }
+
+            /* 输入框 */
+            html:not([data-theme="light"]) .chat-inputbar textarea {
+                background: #2a2a2e; border-color: rgba(255,255,255,0.14); color: #f2f2f4;
+                box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+            }
+            html:not([data-theme="light"]) .chat-inputbar textarea::placeholder { color: #6b6b70; }
+
+            /* 两个弹窗(AI4PPT / 登录,共用.ppt-backdrop/.ppt-dialog) */
+            html:not([data-theme="light"]) .ppt-backdrop { background: rgba(0,0,0,0.6); }
+            html:not([data-theme="light"]) .ppt-dialog { background: rgba(30,30,34,0.85); color: #f2f2f4; box-shadow: 0 24px 64px rgba(0,0,0,0.55); }
+            html:not([data-theme="light"]) .ppt-label, html:not([data-theme="light"]) .ppt-checkbox-row, html:not([data-theme="light"]) .ppt-pager-label { color: #9a9aa2; }
+            html:not([data-theme="light"]) .ppt-input, html:not([data-theme="light"]) .ppt-select {
+                background: #232326; border-color: rgba(255,255,255,0.14); color: #f2f2f4;
+            }
+            html:not([data-theme="light"]) .ppt-input::placeholder { color: #6b6b70; }
+            html:not([data-theme="light"]) .ppt-btn-ghost { color: #d4d4d8; border-color: rgba(255,255,255,0.16); }
+            html:not([data-theme="light"]) .ppt-btn-ghost:hover { background: rgba(255,255,255,0.08); }
+            html:not([data-theme="light"]) .ppt-status-err { background: rgba(255,90,90,0.15); color: #ff9b9b; }
+            html:not([data-theme="light"]) .ppt-status-info { background: rgba(255,255,255,0.07); color: #9a9aa2; }
+            html:not([data-theme="light"]) #auth-login-view p { color: #f2f2f4 !important; }
+            html:not([data-theme="light"]) #auth-github-login-btn { color: #f2f2f4 !important; border-color: rgba(255,255,255,0.16) !important; }
+            html:not([data-theme="light"]) .auth-account-email { color: #f2f2f4; }
+            html:not([data-theme="light"]) .auth-account-sub { color: #8a8a90; }
+
+            /* PPT预览面板(界面外壳部分,幻灯片本身不在此列) */
+            html:not([data-theme="light"]) .ppt-canvas { background: rgba(30,30,34,0.6); }
+            html:not([data-theme="light"]) .ppt-canvas.open { box-shadow: 0 8px 32px rgba(0,0,0,0.4); }
+            html:not([data-theme="light"]) .ppt-canvas-head { border-bottom-color: rgba(255,255,255,0.1); }
+            html:not([data-theme="light"]) .ppt-canvas-foot { border-top-color: rgba(255,255,255,0.1); }
+            html:not([data-theme="light"]) .ppt-canvas-logo-btn { background: #2a2a2e; border-color: rgba(255,255,255,0.14); color: #d4d4d8; }
+            html:not([data-theme="light"]) .ppt-canvas-logo-btn:hover { background: rgba(255,255,255,0.08); }
+            html:not([data-theme="light"]) .ppt-canvas-empty { color: #8a8a90; }
+            html:not([data-theme="light"]) .ppt-pager-btn { background: #2a2a2e; border-color: rgba(255,255,255,0.14); color: #d4d4d8; }
+            html:not([data-theme="light"]) .ppt-pager-btn:hover:not(:disabled) { background: rgba(255,255,255,0.08); }
+        }
+
+        /* 手动切换到深色模式(data-theme="dark"):跟上面 media query 同一套值,
+           保证系统是浅色但用户手动选了深色时也生效;上面的 media query 额外加了
+           :not([data-theme="light"]),让用户手动选浅色时能盖过系统深色 */
+            html[data-theme="dark"], html[data-theme="dark"] body { background: #1a1a1d; }
+            html[data-theme="dark"] .app-shell {
+                background-color: #1a1a1d;
+                background-image:
+                    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300' viewBox='0 0 300 300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.05 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
+                    radial-gradient(1100px 750px at 12% 0%, rgba(255,255,255,0.05), transparent 60%),
+                    radial-gradient(1000px 700px at 100% 100%, rgba(255,255,255,0.04), transparent 55%);
+            }
+
+            /* 侧栏玻璃卡片 */
+            html[data-theme="dark"] .app-sidebar { background: rgba(32,32,36,0.55); box-shadow: 0 8px 32px rgba(0,0,0,0.45); }
+            html[data-theme="dark"] .sidebar-logo img { filter: invert(1); }
+            html[data-theme="dark"] .sidebar-icon-btn { color: #9a9aa2; }
+            html[data-theme="dark"] .sidebar-icon-btn:hover { background: rgba(255,255,255,0.08); color: #f2f2f4; }
+            html[data-theme="dark"] .mode-switch { background: rgba(255,255,255,0.06); }
+            html[data-theme="dark"] .mode-switch-btn { color: #9a9aa2; }
+            html[data-theme="dark"] .mode-switch-btn:hover { color: #d4d4d8; }
+            html[data-theme="dark"] .mode-switch-btn.active { background: #3a3a3e; color: #f2f2f4; box-shadow: 0 1px 3px rgba(0,0,0,0.5); }
+            html[data-theme="dark"] .app-sidebar.collapsed .mode-switch-btn.active { background: #55555c; }
+            html[data-theme="dark"] .sidebar-group-toggle.active, html[data-theme="dark"] #new-chat-btn.active { background: rgba(255,255,255,0.08); }
+            html[data-theme="dark"] .sidebar-action-btn { color: #d4d4d8; }
+            html[data-theme="dark"] .sidebar-action-btn:hover { background: rgba(255,255,255,0.07); }
+            html[data-theme="dark"] .sidebar-action-btn.soon { color: #5a5a60; }
+            html[data-theme="dark"] .sidebar-action-btn .badge { background: rgba(255,255,255,0.09); }
+            html[data-theme="dark"] .sidebar-footer { border-top-color: rgba(255,255,255,0.1); }
+            html[data-theme="dark"] .sidebar-user-btn:hover { background: rgba(255,255,255,0.07); }
+            html[data-theme="dark"] .sidebar-user-name { color: #e8e8ec; }
+            html[data-theme="dark"] .sidebar-user-sub { color: #8a8a90; }
+            html[data-theme="dark"] .sidebar-user-chevron { color: #6b6b70; }
+            html[data-theme="dark"] .sidebar-history-item { color: #d4d4d8; }
+            html[data-theme="dark"] .sidebar-history-item:hover { background: rgba(255,255,255,0.07); }
+            html[data-theme="dark"] .sidebar-history-item.active { background: rgba(255,255,255,0.12); }
+            html[data-theme="dark"] .sidebar-history-item-time, html[data-theme="dark"] .sidebar-history-empty { color: #8a8a90; }
+            html[data-theme="dark"] .sidebar-history-item-del { color: #6b6b70; }
+
+            /* 图标类:原来跟 --accent-dark 走的那几处,这个变量本身不跟主题变(PPT品牌色不该被网站主题带偏),
+               所以这几处单独覆写成浅色,而不是去改 --accent-dark 本身 */
+            html[data-theme="dark"] .chat-empty .empty-icon svg, html[data-theme="dark"] .ppt-head-icon, html[data-theme="dark"] .ppt-canvas-head-icon, html[data-theme="dark"] .ppt-close, html[data-theme="dark"] .ppt-canvas-close, html[data-theme="dark"] .ppt-canvas-title, html[data-theme="dark"] .chat-send-btn { color: #f2f2f4; fill: #f2f2f4; }
+            html[data-theme="dark"] .ppt-close:hover, html[data-theme="dark"] .ppt-canvas-close:hover { background: rgba(255,255,255,0.1); }
+            html[data-theme="dark"] .chat-send-btn:hover { color: #ffffff; }
+            html[data-theme="dark"] .msg-copy-btn:hover { color: #f2f2f4; background: rgba(255,255,255,0.08); }
+            html[data-theme="dark"] .quiz-label { color: #b8b8c0; }
+
+            /* 空状态 + 示例问题芯片 */
+            html[data-theme="dark"] .chat-empty .empty-title { color: #f2f2f4; }
+            html[data-theme="dark"] .chat-empty .empty-sub { color: #9a9aa2; }
+            html[data-theme="dark"] .suggestion-chip { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: #d4d4d8; }
+            html[data-theme="dark"] .suggestion-chip:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.16); }
+
+            /* 消息 */
+            html[data-theme="dark"] .msg-row.user .msg-bubble { background: rgba(255,255,255,0.1); color: #f2f2f4; }
+            html[data-theme="dark"] .msg-row.bot .msg-bubble { color: #dcdce0; }
+            html[data-theme="dark"] .msg-copy-btn { color: #5a5a60; }
+            html[data-theme="dark"] .msg-source-chip { color: #9a9aa2; background: rgba(255,255,255,0.07); }
+            html[data-theme="dark"] .typing-dots span { background: #6b6b70; }
+
+            /* 输入框 */
+            html[data-theme="dark"] .chat-inputbar textarea {
+                background: #2a2a2e; border-color: rgba(255,255,255,0.14); color: #f2f2f4;
+                box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+            }
+            html[data-theme="dark"] .chat-inputbar textarea::placeholder { color: #6b6b70; }
+
+            /* 两个弹窗(AI4PPT / 登录,共用.ppt-backdrop/.ppt-dialog) */
+            html[data-theme="dark"] .ppt-backdrop { background: rgba(0,0,0,0.6); }
+            html[data-theme="dark"] .ppt-dialog { background: rgba(30,30,34,0.85); color: #f2f2f4; box-shadow: 0 24px 64px rgba(0,0,0,0.55); }
+            html[data-theme="dark"] .ppt-label, html[data-theme="dark"] .ppt-checkbox-row, html[data-theme="dark"] .ppt-pager-label { color: #9a9aa2; }
+            html[data-theme="dark"] .ppt-input, html[data-theme="dark"] .ppt-select {
+                background: #232326; border-color: rgba(255,255,255,0.14); color: #f2f2f4;
+            }
+            html[data-theme="dark"] .ppt-input::placeholder { color: #6b6b70; }
+            html[data-theme="dark"] .ppt-btn-ghost { color: #d4d4d8; border-color: rgba(255,255,255,0.16); }
+            html[data-theme="dark"] .ppt-btn-ghost:hover { background: rgba(255,255,255,0.08); }
+            html[data-theme="dark"] .ppt-status-err { background: rgba(255,90,90,0.15); color: #ff9b9b; }
+            html[data-theme="dark"] .ppt-status-info { background: rgba(255,255,255,0.07); color: #9a9aa2; }
+            html[data-theme="dark"] #auth-login-view p { color: #f2f2f4 !important; }
+            html[data-theme="dark"] #auth-github-login-btn { color: #f2f2f4 !important; border-color: rgba(255,255,255,0.16) !important; }
+            html[data-theme="dark"] .auth-account-email { color: #f2f2f4; }
+            html[data-theme="dark"] .auth-account-sub { color: #8a8a90; }
+
+            /* PPT预览面板(界面外壳部分,幻灯片本身不在此列) */
+            html[data-theme="dark"] .ppt-canvas { background: rgba(30,30,34,0.6); }
+            html[data-theme="dark"] .ppt-canvas.open { box-shadow: 0 8px 32px rgba(0,0,0,0.4); }
+            html[data-theme="dark"] .ppt-canvas-head { border-bottom-color: rgba(255,255,255,0.1); }
+            html[data-theme="dark"] .ppt-canvas-foot { border-top-color: rgba(255,255,255,0.1); }
+            html[data-theme="dark"] .ppt-canvas-logo-btn { background: #2a2a2e; border-color: rgba(255,255,255,0.14); color: #d4d4d8; }
+            html[data-theme="dark"] .ppt-canvas-logo-btn:hover { background: rgba(255,255,255,0.08); }
+            html[data-theme="dark"] .ppt-canvas-empty { color: #8a8a90; }
+            html[data-theme="dark"] .ppt-pager-btn { background: #2a2a2e; border-color: rgba(255,255,255,0.14); color: #d4d4d8; }
+            html[data-theme="dark"] .ppt-pager-btn:hover:not(:disabled) { background: rgba(255,255,255,0.08); }
     </style>
 </head>
 <body>
@@ -815,6 +1009,7 @@
                     <a href="index.html" class="sidebar-icon-btn back-to-blog-btn" title="返回首页" aria-label="返回首页">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
                     </a>
+                    <button class="sidebar-icon-btn" id="theme-toggle-btn" title="切换深色/浅色模式" aria-label="切换深色/浅色模式"></button>
                     <button class="sidebar-icon-btn sidebar-collapse-btn" id="sidebar-collapse-btn" title="收起/展开侧边栏" aria-label="收起/展开侧边栏">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="3"/><line x1="12" y1="4" x2="12" y2="20"/></svg>
                     </button>
@@ -833,7 +1028,7 @@
 
             <div class="sidebar-group">
                 <button class="sidebar-action-btn sidebar-group-toggle" id="qa-group-btn">
-                    <span class="icon"><svg><use href="#icon-ask"></use></svg></span>
+                    <span class="icon"><svg fill="currentColor"><use href="#icon-ask"></use></svg></span>
                     <span class="label">高质量数据集问答</span>
                 </button>
                 <div class="mode-switch" id="qa-mode-switch" role="tablist" style="display:none;">
@@ -1341,6 +1536,38 @@
         refreshSidebarUserBtn();
         if (AUTH_EMAIL) refreshHistoryList();
         handleGithubOAuthCallback();
+
+        /* ---------- 深色/浅色模式切换 ---------- */
+        const THEME_KEY = 'hqds-theme';
+        const themeToggleBtn = document.getElementById('theme-toggle-btn');
+        const THEME_ICON_SUN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>';
+        const THEME_ICON_MOON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
+        function getEffectiveTheme() {
+            const manual = localStorage.getItem(THEME_KEY);
+            if (manual === 'dark' || manual === 'light') return manual;
+            return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
+        function updateThemeToggleIcon() {
+            // 图标展示的是"点击后会切到的样子":当前深色显示太阳(点了变浅色),当前浅色显示月亮(点了变深色)
+            themeToggleBtn.innerHTML = getEffectiveTheme() === 'dark' ? THEME_ICON_SUN : THEME_ICON_MOON;
+        }
+        function applyManualTheme(manual) {
+            if (manual === 'dark' || manual === 'light') {
+                document.documentElement.dataset.theme = manual;
+            } else {
+                delete document.documentElement.dataset.theme;
+            }
+            updateThemeToggleIcon();
+        }
+        applyManualTheme(localStorage.getItem(THEME_KEY));
+        themeToggleBtn.addEventListener('click', () => {
+            const next = getEffectiveTheme() === 'dark' ? 'light' : 'dark';
+            localStorage.setItem(THEME_KEY, next);
+            applyManualTheme(next);
+        });
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+            if (!localStorage.getItem(THEME_KEY)) updateThemeToggleIcon();
+        });
 
         /* ---------- 侧边栏收缩/展开(记忆状态) ---------- */
         const appSidebar = document.getElementById('app-sidebar');

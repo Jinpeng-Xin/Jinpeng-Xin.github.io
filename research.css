@@ -197,6 +197,17 @@ body {
 }
 
 
+.project-visual.icon-fallback {
+    min-height: 220px;
+    width: 100%;
+    background: linear-gradient(135deg, #eff6ff, #f8fafc);
+}
+
+.project-visual.icon-fallback i {
+    font-size: 4rem;
+    color: #0056b3;
+}
+
 .visual-tag {
     position: absolute;
     top: 20px; left: 20px;

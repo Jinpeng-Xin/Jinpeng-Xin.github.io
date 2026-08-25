@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UCS Prediction Interface - Academic Version</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.19.2/dist/ort.min.js"></script>
+    <style>
+        :root {
+            /* 经典学术配色 */
+            --accent-blue: #0056b3; /* 学术深蓝 */
+            --accent-red: #d32f2f;  /* 数据点亮红 */
+            --bg-page: #f4f6f9;     /* 极浅灰底色，与白卡片形成微弱对比 */
+            --bg-card: #ffffff;     /* 纯白卡片 */
+            --border-color: #cbd5e1;/* 边框色 */
+            --text-main: #111827;   /* 正文深黑 */
+            --text-muted: #4b5563;  /* 标签深灰 */
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', Arial, sans-serif !important;
+        }
+
+        body {
+            background-color: var(--bg-page);
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+        }
+
+        /* ---------------- 左侧控制面板 ---------------- */
+        .left-panel {
+            width: 500px; /* 收紧宽度使其更紧凑 */
+            height: 100vh;
+            padding: 2rem;
+            display: flex;
+            align-items: center;
+            z-index: 10;
+            background: var(--bg-card);
+            border-right: 1px solid var(--border-color);
+            box-shadow: 4px 0 15px rgba(0,0,0,0.03); /* 极弱的投影 */
+        }
+
+        .solid-card {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 1.8rem;
+        }
+
+        .header {
+            border-bottom: 2px solid var(--accent-blue);
+            padding-bottom: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 0.3rem;
+            letter-spacing: -0.5px;
+        }
+
+        .header p {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .input-group label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 0.4rem;
+            display: block;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 6px; /* 更严谨的小圆角 */
+            background: #f8fafc;
+            font-size: 1rem;
+            color: var(--text-main);
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .input-group input:focus {
+            background: #ffffff;
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 3px rgba(0, 86, 179, 0.1);
+        }
+
+        /* 类别选择器 (学术表单风格) */
+        .segmented-control {
+            display: flex;
+            background: #f1f5f9;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            padding: 4px;
+        }
+
+        .segmented-control label {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0.6rem 0;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            cursor: pointer;
+            margin-bottom: 0;
+        }
+
+        .segmented-control input[type="radio"] { display: none; }
+        .segmented-control input[type="radio"]:checked + label {
+            background: #ffffff;
+            color: var(--accent-blue);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border: 1px solid #e2e8f0;
+        }
+
+        /* 主按钮 */
+        .btn-primary {
+            width: 100%;
+            background: var(--accent-blue);
+            color: #ffffff;
+            border: none;
+            padding: 1rem;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-primary:hover {
+            background: #004494;
+        }
+
+        .btn-primary:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+        }
+
+        .model-status {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-align: center;
+            min-height: 1.1em;
+        }
+
+        .model-status.error { color: var(--accent-red); font-weight: 600; }
+
+        /* 结果框 (带浅蓝色强调背景) */
+        .result-box {
+            background: #eff6ff; /* 浅蓝背景突出重点 */
+            border: 1px solid #bfdbfe;
+            padding: 1.5rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .result-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--accent-blue);
+            margin-bottom: 0.4rem;
+            text-transform: uppercase;
+        }
+
+        .result-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        /* ---------------- 右侧地图面板 ---------------- */
+        .right-panel {
+            flex: 1;
+            height: 100vh;
+            position: relative;
+        }
+
+        #map-container {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* 🔥 这里彻底去掉边框、背景、圆角，变成纯文字 */
+        .map-overlay {
+            position: absolute;
+            bottom: 2.5rem;
+            right: 2.5rem;
+            text-align: right;
+            /* 以下全部去掉 */
+            background: transparent !important;
+            border: none !important;
+            padding: 0 !important;
+            pointer-events: none;
+        }
+        
+        .map-overlay h2 { color: var(--text-main); font-size: 1.4rem; font-weight: 700; margin-bottom: 0.2rem;}
+        .map-overlay p { color: var(--text-muted); font-size: 0.85rem; font-weight: 500; margin:0;}
+    </style>
+</head>
+<body>
+
+    <div class="left-panel">
+        <div class="solid-card">
+            <div class="header">
+                <h1>Frozen Soil UCS Predict</h1>
+                <p>Based on Partial Bayesian Neural Network</p>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem;">
+                <div class="input-group">
+                    <label>Temperature (°C)</label>
+                    <input type="number" id="temp" step="0.1" value="-10">
+                </div>
+                <div class="input-group">
+                    <label>Water Content (%)</label>
+                    <input type="number" id="water" step="0.00001" value="9.47032">
+                </div>
+                <div class="input-group">
+                    <label>Dry Density (g/cm³)</label>
+                    <input type="number" id="density" step="0.01" value="1.7">
+                </div>
+                <div class="input-group">
+                    <label>Strain Rate (s⁻¹)</label>
+                    <input type="number" id="strain" step="0.000000001" value="0.000166667">
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label>Soil Category</label>
+                <div class="segmented-control">
+                    <input type="radio" name="soilType" id="clay" value="clay" checked>
+                    <label for="clay">Clay</label>
+
+                    <input type="radio" name="soilType" id="silt" value="silt">
+                    <label for="silt">Silt</label>
+
+                    <input type="radio" name="soilType" id="sand" value="sand">
+                    <label for="sand">Sand</label>
+                </div>
+            </div>
+
+            <button class="btn-primary" id="predictBtn" onclick="predictUCS()" disabled>Loading Model...</button>
+            <div class="model-status" id="modelStatus"></div>
+
+            <div class="result-box" id="resultBox">
+                <div class="result-label">Predicted Strength (UCS)</div>
+                <div class="result-value">
+                    <span id="outputValue">1.58816</span> 
+                    <span style="font-size: 1rem; color: var(--text-muted); font-weight: 600;">MPa</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="right-panel">
+        <div id="map-container"></div>
+        <div class="map-overlay">
+            <h2>Qinghai-Tibet Plateau</h2>
+            <p>Spatial Distribution of Target Boreholes</p>
+        </div>
+    </div>
+
+    <script>
+        // === 1. 加载 ONNX 模型 + 标准化参数(页面打开时异步执行一次) ===
+        const predictBtn = document.getElementById('predictBtn');
+        const modelStatus = document.getElementById('modelStatus');
+
+        let ortSession = null;
+        let scalerParams = null;
+
+        ort.env.wasm.wasmPaths = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.19.2/dist/';
+        ort.env.wasm.numThreads = 1; // 普通静态服务器没开 COOP/COEP,多线程wasm要用SharedArrayBuffer会失败,强制单线程
+
+        async function loadModel() {
+            try {
+                const [modelResp, scalerResp] = await Promise.all([
+                    fetch('./model/ucs_model.onnx'),
+                    fetch('./model/ucs_scaler.json')
+                ]);
+                if (!modelResp.ok) throw new Error('model onnx HTTP ' + modelResp.status);
+                if (!scalerResp.ok) throw new Error('scaler json HTTP ' + scalerResp.status);
+
+                // 直接传字节(ArrayBuffer/Uint8Array)给 create,而不是传 URL 字符串——
+                // 传 URL 会走 onnxruntime-web 内部的虚拟文件系统挂载逻辑,在部分 CDN 版本组合下会报
+                // "Module.MountedFiles is not available",传字节走的是另一条更稳的代码路径。
+                const modelBytes = new Uint8Array(await modelResp.arrayBuffer());
+                ortSession = await ort.InferenceSession.create(modelBytes, { executionProviders: ['wasm'] });
+                scalerParams = await scalerResp.json();
+
+                predictBtn.disabled = false;
+                predictBtn.innerText = 'Execute Prediction';
+                modelStatus.innerText = '';
+            } catch (err) {
+                console.error('模型加载失败:', err);
+                modelStatus.innerText = 'Model failed to load (check console / must be served over http, not file://)';
+                modelStatus.classList.add('error');
+            }
+        }
+        loadModel();
+
+        // === 2. 真实推理:标准化输入 -> ONNX 前向传播 -> 直接就是 UCS(MPa) ===
+        async function predictUCS() {
+            if (!ortSession || !scalerParams) return;
+
+            const temp = parseFloat(document.getElementById('temp').value) || 0;
+            const water = parseFloat(document.getElementById('water').value) || 0;
+            const density = parseFloat(document.getElementById('density').value) || 0;
+            const strain = parseFloat(document.getElementById('strain').value) || 0;
+            const soilType = document.querySelector('input[name="soilType"]:checked').value; // 'clay' | 'silt' | 'sand'
+            const category = scalerParams.category_map[soilType];
+
+            // 顺序必须是 [Temperature, Mass Water Content, Dry Density, Strain Rate, Category]
+            const raw = [temp, water, density, strain, category];
+            const { mean, scale } = scalerParams;
+            const normalized = raw.map((v, i) => (v - mean[i]) / scale[i]);
+
+            try {
+                const inputTensor = new ort.Tensor('float32', Float32Array.from(normalized), [1, 5]);
+                const output = await ortSession.run({ features: inputTensor });
+                const ucs = output.ucs.data[0]; // 训练时 y 没做过 scaler,模型输出即 MPa,不用反归一化
+
+                document.getElementById('outputValue').innerText = ucs.toFixed(5);
+                modelStatus.classList.remove('error');
+                modelStatus.innerText = '';
+            } catch (err) {
+                console.error('推理失败:', err);
+                modelStatus.innerText = 'Prediction failed, see console';
+                modelStatus.classList.add('error');
+            }
+        }
+
+        // === 2. 阿里云在线地图渲染 (适合白底打印风格) ===
+        const chartDom = document.getElementById('map-container');
+        const myChart = echarts.init(chartDom);
+        const ALIYUN_GEOJSON_URL = 'https://geo.datav.aliyun.com/areas_v3/bound/100000_full.json';
+
+        fetch(ALIYUN_GEOJSON_URL)
+            .then(response => response.json())
+            .then(geoJson => {
+                echarts.registerMap('china', geoJson);
+
+                const option = {
+                    backgroundColor: '#ffffff', // 纯白地图背景
+                    geo: {
+                        map: 'china',
+                        roam: true, 
+                        zoom: 2.2, 
+                        center: [92.00, 33.50], 
+                        itemStyle: {
+                            areaColor: '#f1f5f9', // 浅灰大陆块
+                            borderColor: '#94a3b8', // 深灰边界线
+                            borderWidth: 1
+                        },
+                        emphasis: {
+                            itemStyle: { areaColor: '#e2e8f0' },
+                            label: { show: false }
+                        },
+                        // 高亮青藏地区为浅蓝色
+                        regions: [
+                            { name: 'Xizang', itemStyle: { areaColor: '#dbeafe' } },
+                            { name: 'Qinghai', itemStyle: { areaColor: '#dbeafe' } }
+                        ]
+                    },
+                    series: [
+                        {
+                            type: 'scatter', // 移除动态 effect，改为静态 scatter 保证截图质量
+                            coordinateSystem: 'geo',
+                            data: [
+                                { name: 'Borehole A', value: [91.11, 29.97] }, 
+                                { name: 'Borehole B', value: [94.90, 36.40] }, 
+                                { name: 'Borehole C', value: [92.90, 32.80] }, 
+                                { name: 'Borehole D', value: [96.90, 35.80] }  
+                            ],
+                            symbolSize: 10,
+                            itemStyle: {
+                                color: '#d32f2f', // 经典的实心砖红点
+                                opacity: 1,
+                                borderColor: '#ffffff', // 描个白边增强立体感
+                                borderWidth: 1.5
+                            }
+                        }
+                    ]
+                };
+
+                myChart.setOption(option);
+            });
+
+        window.addEventListener('resize', function() {
+            myChart.resize();
+        });
+    </script>
+</body>
+</html>
