@@ -796,6 +796,18 @@
         }
         .auth-account-email { font-size: 0.92rem; font-weight: 500; color: #1d1d1f; word-break: break-all; }
         .auth-account-sub { font-size: 0.76rem; color: #9c9ca2; margin-top: 2px; }
+        /* 登录出错的提示:居中,别像普通表单提示那样左对齐贴着按钮 */
+        #auth-status { text-align: center; margin-top: 22px; }
+        /* 正在登录:居中转圈 + 两行字,单色,和整站的黑白气质一致 */
+        .auth-busy { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 6px 0 14px; animation: pptFade 0.3s ease; }
+        .auth-spinner {
+            width: 34px; height: 34px; margin-bottom: 10px; border-radius: 50%;
+            border: 3px solid rgba(0,0,0,0.09); border-top-color: #1d1d1f;
+            animation: pptSpin 0.85s linear infinite;
+        }
+        .auth-busy-title { font-size: 0.98rem; font-weight: 600; color: #1d1d1f; }
+        .auth-busy-sub { font-size: 0.78rem; color: #9c9ca2; }
+        @media (prefers-reduced-motion: reduce) { .auth-spinner, .auth-busy { animation: none; } }
 
         /* ===== 技能(内置 Skill · 一期纯前端) ===== */
         /* 侧栏「技能」按钮上的激活数量:小圆点徽标,不改按钮本身的样子 */
@@ -1265,6 +1277,9 @@
             html:not([data-theme="light"]) #auth-github-login-btn { color: #f2f2f4 !important; border-color: rgba(255,255,255,0.16) !important; }
             html:not([data-theme="light"]) .auth-account-email { color: #f2f2f4; }
             html:not([data-theme="light"]) .auth-account-sub { color: #8a8a90; }
+            html:not([data-theme="light"]) .auth-spinner { border-color: rgba(255,255,255,0.14); border-top-color: #f2f2f4; }
+            html:not([data-theme="light"]) .auth-busy-title { color: #f2f2f4; }
+            html:not([data-theme="light"]) .auth-busy-sub { color: #8a8a90; }
 
             /* PPT预览面板(界面外壳部分,幻灯片本身不在此列) */
             html:not([data-theme="light"]) .ppt-canvas { background: rgba(30,30,34,0.6); }
@@ -1414,6 +1429,9 @@
             html[data-theme="dark"] #auth-github-login-btn { color: #f2f2f4 !important; border-color: rgba(255,255,255,0.16) !important; }
             html[data-theme="dark"] .auth-account-email { color: #f2f2f4; }
             html[data-theme="dark"] .auth-account-sub { color: #8a8a90; }
+            html[data-theme="dark"] .auth-spinner { border-color: rgba(255,255,255,0.14); border-top-color: #f2f2f4; }
+            html[data-theme="dark"] .auth-busy-title { color: #f2f2f4; }
+            html[data-theme="dark"] .auth-busy-sub { color: #8a8a90; }
 
             /* PPT预览面板(界面外壳部分,幻灯片本身不在此列) */
             html[data-theme="dark"] .ppt-canvas { background: rgba(30,30,34,0.6); }
@@ -1522,7 +1540,7 @@
         <div class="ppt-backdrop" id="auth-backdrop" style="display:none;">
             <div class="ppt-dialog" style="padding-bottom:20px;">
                 <div class="ppt-head" style="margin-bottom:36px;">
-                    <div class="ppt-head-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-6"/><path d="M12 15V3M8 7l4-4 4 4"/></svg></div>
+                    <div class="ppt-head-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-6 8-6s8 2 8 6"/></svg></div>
                     <div class="ppt-head-title" id="auth-dialog-title">登录</div>
                     <button class="ppt-close" id="auth-close-btn" aria-label="关闭">✕</button>
                 </div>
@@ -1539,6 +1557,15 @@
                         </button>
                     </div>
                     <div class="ppt-status" id="auth-status" style="display:none;"></div>
+                </div>
+
+                <!-- 正在跟 GitHub 换取登录态:单独一个状态,不再和登录说明/按钮叠在一起 -->
+                <div id="auth-busy-view" style="display:none;">
+                    <div class="auth-busy" role="status" aria-live="polite">
+                        <div class="auth-spinner" aria-hidden="true"></div>
+                        <div class="auth-busy-title">正在登录…</div>
+                        <div class="auth-busy-sub">正在通过 GitHub 确认你的身份</div>
+                    </div>
                 </div>
 
                 <!-- 已登录:账号信息 + 退出登录 -->
@@ -1818,6 +1845,7 @@
         const authAccountView = document.getElementById('auth-account-view');
         const authGithubLoginBtn = document.getElementById('auth-github-login-btn');
         const authStatusEl = document.getElementById('auth-status');
+        const authBusyView = document.getElementById('auth-busy-view');
         const authAccountAvatar = document.getElementById('auth-account-avatar');
         const authAccountEmail = document.getElementById('auth-account-email');
 
@@ -1826,6 +1854,16 @@
             authStatusEl.style.display = 'block';
             authStatusEl.className = 'ppt-status ' + (type === 'err' ? 'ppt-status-err' : 'ppt-status-info');
             authStatusEl.textContent = text;
+        }
+
+        // 正在登录:只显示转圈状态,把登录说明/按钮/账号页都藏起来
+        function setAuthBusy(on) {
+            authBusyView.style.display = on ? 'block' : 'none';
+            if (on) {
+                authLoginView.style.display = 'none';
+                authAccountView.style.display = 'none';
+                setAuthStatus('');
+            }
         }
 
         function refreshSidebarUserBtn() {
@@ -1846,6 +1884,7 @@
         function openAuthDialog() {
             authBackdrop.style.display = 'flex';
             setAuthStatus('');
+            authBusyView.style.display = 'none';
             if (AUTH_EMAIL) {
                 authLoginView.style.display = 'none';
                 authAccountView.style.display = 'block';
@@ -1907,7 +1946,7 @@
                 return;
             }
             openAuthDialog();
-            setAuthStatus('登录中…', 'info');
+            setAuthBusy(true);
             try {
                 const data = await callBackend({ mode: 'auth_github_exchange', code });
                 if (data.error) throw new Error(data.error);
@@ -1920,6 +1959,7 @@
                 refreshHistoryList();
                 pullUserSkills();
             } catch (e) {
+                openAuthDialog(); // 回到登录视图(同时把转圈藏掉、弹窗重新打开)
                 setAuthStatus('登录失败：' + e.message, 'err');
             }
         }
@@ -3859,6 +3899,8 @@
                     "还没配置 GitHub OAuth App 的 Client ID,登录暂时用不了。": "The GitHub OAuth Client ID isn't configured yet, so sign-in is unavailable.",
                     "登录校验失败(state不匹配),请重新登录。": "Sign-in check failed (state mismatch). Please sign in again.",
                     "登录中…": "Signing in…",
+                    "正在登录…": "Signing you in…",
+                    "正在通过 GitHub 确认你的身份": "Confirming your identity with GitHub",
                     "登录失败：": "Sign-in failed: ",
                     "刚刚": "Just now",
                     "资料问答": "Material Q&A",
