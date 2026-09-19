@@ -12,14 +12,26 @@
             --accent: #3a3a3e;
             --accent-dark: #1f1f22;
             --accent-soft: rgba(58,58,62,0.85);
+            /* 主张那句话的聚光:光斑里 / 光斑外 */
+            --spot-hi: #0f0f11;
+            --spot-lo: #a8a8b0;
         }
+
+        /* ===== 自定义光标:细长箭头(18px,描边 0.8),纯黑白、不带任何颜色 =====
+           真·CSS 光标(cursor: url(svg)),不是 JS 画的跟随图层:零延迟、零性能开销。
+           热点 2 1 = 箭头尖端。深色模式在本文件下方两个主题块里反白覆写。 */
+        * { cursor: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2218%22%20height%3D%2218%22%20viewBox%3D%220%200%2024%2024%22%3E%3Cpath%20d%3D%22M2%201.5%20L2%2016.5%20L5.8%2012.9%20L8.3%2018.6%20L10.9%2017.4%20L8.4%2011.9%20L13.5%2011.9%20Z%22%20fill%3D%22none%22%20stroke%3D%22%23ffffff%22%20stroke-width%3D%221.6%22%20stroke-linejoin%3D%22miter%22%20stroke-linecap%3D%22round%22%2F%3E%3Cpath%20d%3D%22M2%201.5%20L2%2016.5%20L5.8%2012.9%20L8.3%2018.6%20L10.9%2017.4%20L8.4%2011.9%20L13.5%2011.9%20Z%22%20fill%3D%22%231d1d1f%22%2F%3E%3C%2Fsvg%3E") 2 1, auto !important; }
+        textarea, input, [contenteditable="true"] { cursor: text !important; }
+        /* 侧边栏拖拽手柄仍要左右箭头,别被上面那条 * 吃掉 */
+        .sidebar-resize-handle { cursor: col-resize !important; }
+        body.sidebar-resizing, body.sidebar-resizing * { cursor: col-resize !important; }
 
         /* 这一页做成沉浸式App,不走博客文章的滚动方式,也不用站点导航栏 */
         html, body {
             height: 100%;
             overflow: hidden;
             padding-top: 0 !important;
-            background: #F0F2F5;
+            background: #FBFBF9; /* 近白·极暖:几乎纯白,只有一丝暖调,浮层玻璃仍能被看出来 */
         }
         .navbar { display: none !important; }
 
@@ -27,32 +39,60 @@
             position: fixed;
             inset: 0;
             display: flex;
-            background-color: #F0F2F5;
+            background-color: #FBFBF9;
             /* 同色系的极淡渐变(没有引入新颜色,还是黑灰极简那一挂)+ 一层很淡的颗粒噪点(SVG feTurbulence内联,
                不用额外图片资源),纯色背景毛玻璃糊上去啥都看不出来,这样侧栏/PPT面板的磨砂玻璃才有"东西"可磨 */
             background-image:
                 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300' viewBox='0 0 300 300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.05 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
-                radial-gradient(1100px 750px at 12% 0%, rgba(0,0,0,0.035), transparent 60%),
-                radial-gradient(1000px 700px at 100% 100%, rgba(0,0,0,0.03), transparent 55%);
+                radial-gradient(1100px 750px at 12% 0%, rgba(0,0,0,0.016), transparent 60%),
+                radial-gradient(1000px 700px at 100% 100%, rgba(0,0,0,0.013), transparent 55%);
             background-repeat: repeat, no-repeat, no-repeat;
         }
-
         /* ===== 主聊天区(左) ===== */
         .app-main {
             flex: 1;
             min-width: 0;
+            position: relative; /* 供右上角语言切换胶囊定位 */
             display: flex;
             flex-direction: column;
             height: 100%;
+        }
+
+        /* ===== 右上角语言切换胶囊(中文 / EN) ===== */
+        .lang-switch {
+            position: absolute; top: 16px; right: 20px; z-index: 60;
+            display: inline-flex; align-items: center; gap: 2px;
+            padding: 3px; border-radius: 999px;
+            background: rgba(255,255,255,0.55);
+            border: 1px solid rgba(0,0,0,0.07);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            box-shadow: 0 2px 10px rgba(31,38,135,0.07);
+        }
+        .lang-switch button {
+            border: none; background: transparent;
+            padding: 5px 14px; border-radius: 999px;
+            font-family: inherit; font-size: 0.78rem; line-height: 1.2; color: #77777d;
+            transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .lang-switch button:hover { color: #1d1d1f; }
+        .lang-switch button.active {
+            background: #fff; color: #1d1d1f; font-weight: 500;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.10);
+        }
+        @media (max-width: 640px) {
+            .lang-switch { top: 10px; right: 12px; padding: 2px; }
+            .lang-switch button { padding: 4px 10px; font-size: 0.72rem; }
         }
 
         /* ===== 左侧栏:logo + 收起/返回 + 切换胶囊 + 新对话/更多,悬浮玻璃卡片,可收缩 ===== */
         .app-sidebar {
             width: 224px;
             flex-shrink: 0;
+            position: relative; /* 供右缘的拖拽手柄定位 */
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 3px;
             padding: 16px 14px 8px;
             margin: 12px;
             border-radius: 20px;
@@ -63,9 +103,38 @@
             transition: width 0.25s cubic-bezier(0.4,0,0.2,1), padding 0.25s ease;
         }
         .app-sidebar.collapsed {
-            width: 72px;
-            padding: 16px 10px;
+            width: 48px;
+            padding: 16px 4px;
         }
+
+        /* 侧边栏右缘拖拽手柄:平时隐形,hover/拖动时露一条竖条(参考 Claude 的做法) */
+        .sidebar-resize-handle {
+            position: absolute;
+            top: 0; bottom: 0; right: -7px;
+            width: 12px;
+            cursor: col-resize;
+            z-index: 20;
+            touch-action: none;
+        }
+        .sidebar-resize-handle::after {
+            content: '';
+            position: absolute;
+            top: 50%; left: 50%;
+            width: 3px; height: 44px;
+            transform: translate(-50%, -50%);
+            border-radius: 3px;
+            background: rgba(0,0,0,0.14);
+            opacity: 0;
+            transition: opacity 0.15s ease;
+        }
+        .sidebar-resize-handle:hover::after,
+        .app-sidebar.resizing .sidebar-resize-handle::after { opacity: 1; }
+        .app-sidebar.resizing { transition: none; }
+        /* 折叠/展开切换时统一用这条更慢、带缓出的过渡(展开和折叠同速) */
+        .app-sidebar.toggling { transition: width 0.72s cubic-bezier(0.5, 0, 0.2, 1), padding 0.72s cubic-bezier(0.5, 0, 0.2, 1); }
+        body.sidebar-resizing { cursor: col-resize; user-select: none; -webkit-user-select: none; }
+        /* 折叠状态也保留手柄:一拖动就展开(见 JS) */
+        @media (max-width: 640px) { .sidebar-resize-handle { display: none; } }
 
         .sidebar-topline {
             display: flex;
@@ -101,7 +170,8 @@
         .sidebar-icon-btn:hover { background: rgba(0,0,0,0.06); color: #1d1d1f; }
         .sidebar-icon-btn svg { width: 15px; height: 15px; }
         .app-sidebar.collapsed .back-to-blog-btn { display: none; }
-        .app-sidebar.collapsed .sidebar-topline-actions { width: 100%; justify-content: center; margin-left: -9px; }
+        .app-sidebar.collapsed #theme-toggle-btn { display: none; } /* 收起时只留收/展按钮 */
+        .app-sidebar.collapsed .sidebar-topline-actions { width: 100%; justify-content: center; margin-left: 0; gap: 0; }
 
         .mode-switch {
             display: inline-flex;
@@ -142,9 +212,9 @@
         .app-sidebar.collapsed .mode-switch-btn.active { background: var(--accent-soft); color: #fff; box-shadow: none; }
 
         /* "高质量数据集问答"入口 + 展开态胶囊 */
-        .sidebar-group { display: flex; flex-direction: column; gap: 6px; }
+        .sidebar-group { display: flex; flex-direction: column; gap: 3px; }
         .sidebar-group-toggle.active { background: rgba(0,0,0,0.05); }
-        #new-chat-btn.active { background: rgba(0,0,0,0.05); }
+        #new-chat-btn.active, #skill-open-btn.active, #ppt-open-btn.active { background: rgba(0,0,0,0.05); }
         .sidebar-group .mode-switch { margin: 0 0 2px; width: 100%; }
         .app-sidebar:not(.collapsed) .sidebar-group .mode-switch .mode-switch-btn { flex: 1; justify-content: center; }
 
@@ -168,10 +238,15 @@
         }
         .app-sidebar.collapsed .sidebar-action-btn { justify-content: center; gap: 0; padding: 9px 0; }
         .sidebar-action-btn:hover { background: rgba(0,0,0,0.05); }
-        .sidebar-action-btn .icon { display: flex; flex-shrink: 0; }
+        /* 操作按钮组整体往下挪一点,跟顶栏拉开距离 */
+        #new-chat-btn { margin-top: 14px; }
+        /* style.css 里有个全局 .icon{margin-right:10px},会漏进来把折叠态图标顶偏、把展开态间距撑大;这里清掉,间距交给 gap */
+        .sidebar-action-btn .icon { display: flex; flex-shrink: 0; margin: 0; }
+        .mode-switch-btn .icon { margin: 0; }
         .sidebar-action-btn .icon svg { width: 16px; height: 16px; }
         .app-sidebar.collapsed .sidebar-action-btn .label,
         .app-sidebar.collapsed .sidebar-action-btn .badge { display: none; }
+        .app-sidebar.collapsed .sidebar-action-btn.soon { display: none; } /* 折叠态不显示"更多功能" */
         .sidebar-action-btn.soon {
             color: #b5b5bb;
             cursor: default;
@@ -221,6 +296,21 @@
         }
         .chat-thread.active { display: flex; }
 
+        /* AI4PPT 这一屏的背景图:用伪元素铺,靠 opacity 跟页面底色混合,
+           这样浅色/深色两个主题各自会把它压成对应色调的一层氛围,不用准备两张图。 */
+        .chat-thread[data-mode="ppt"] { position: relative; }
+        .chat-thread[data-mode="ppt"]::before {
+            content: "";
+            position: absolute; inset: 0;
+            background: url("https://jinpeng-assets.oss-cn-beijing.aliyuncs.com/%E4%B8%AA%E4%BA%BA%E4%B8%BB%E9%A1%B5/%E5%9F%BA%E6%9C%AC%E5%9B%BE%E7%89%87/ppt-bg.jpg") center / cover no-repeat;
+            opacity: 0.45;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .chat-thread[data-mode="ppt"] > * { position: relative; z-index: 1; }
+
+        /* .chat-scroll 自己带 display:flex,会盖过浏览器默认的 [hidden]{display:none},这里补一条 */
+        .chat-scroll[hidden] { display: none; }
         .chat-scroll {
             flex: 1;
             overflow-y: auto;
@@ -231,56 +321,109 @@
         }
 
         /* 空状态 */
+        /* 空状态:图标和名字都去掉了(侧栏已经标着当前在哪个模式,这里再写一遍是重复),
+           只留一句主张 + 下面的推荐问题/按钮。 */
         .chat-empty {
             margin: auto;
-            text-align: center;
-            max-width: 420px;
             padding: 20px;
+            max-width: 640px;
+            transform: translateY(-4vh); /* 略高于几何正中,视觉上更稳;用 transform 不占布局 */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 24px;
+            text-align: center;
         }
-        .chat-empty .empty-icon {
-            width: 56px; height: 56px;
-            margin: 0 auto 16px;
-            display: flex; align-items: center; justify-content: center;
-        }
-        .chat-empty .empty-icon svg { width: 34px; height: 34px; fill: var(--accent-dark); }
-        .chat-empty .empty-title {
-            font-size: 1.15rem;
-            font-weight: 600;
-            color: #1d1d1f;
-            margin-bottom: 8px;
-        }
+        /* 只剩这一句主张 */
         .chat-empty .empty-sub {
-            font-size: 0.9rem;
-            color: #8e8e93;
-            line-height: 1.6;
+            font-size: 1.5rem;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+            color: #1d1d1f;
+            line-height: 1.45;
+            white-space: pre-line;
         }
-        .chat-empty .empty-action {
-            margin-top: 18px;
+        /* AI4PPT empty state: a personal logo sits above the tagline. At rest only
+           its centre is lit and the edges fade out (watermark-ish); as the cursor
+           passes, the same beam that lights the tagline lights the logo too -- here
+           it drives a radial mask rather than a text gradient. */
+        .chat-empty .empty-logo {
+            width: auto; height: 46px;
+            margin-bottom: 2px;
+            -webkit-user-drag: none; user-select: none;
+        }
+        @supports ((-webkit-mask-image: radial-gradient(#000, #000)) or (mask-image: radial-gradient(#000, #000))) {
+            .chat-empty .empty-logo {
+                --lx: 50%; --ly: 50%;
+                -webkit-mask-image: radial-gradient(circle 84px at var(--lx) var(--ly), #000 0%, rgba(0,0,0,0.34) 100%);
+                        mask-image: radial-gradient(circle 84px at var(--lx) var(--ly), #000 0%, rgba(0,0,0,0.34) 100%);
+            }
+            @media (prefers-reduced-motion: reduce) {
+                .chat-empty .empty-logo { -webkit-mask-image: none; mask-image: none; opacity: 0.82; }
+            }
+        }
+        /* 鼠标跟随的"聚光":一束光扫过这句话,光斑里的字是全黑的,离开就淡下去。
+           只用黑白灰,不引入颜色;靠 background-clip:text 把渐变裁进字形里,
+           每帧只改两个 CSS 变量,不碰布局也不重排。 */
+        @supports ((-webkit-background-clip: text) or (background-clip: text)) {
+            .chat-empty .empty-sub {
+                --sx: 50%; --sy: 50%;
+                background-image: radial-gradient(circle 160px at var(--sx) var(--sy),
+                                  var(--spot-hi) 0%, var(--spot-lo) 100%);
+                -webkit-background-clip: text;
+                        background-clip: text;
+                -webkit-text-fill-color: transparent;
+            }
+            @media (prefers-reduced-motion: reduce) {
+                .chat-empty .empty-sub { background-image: none; -webkit-text-fill-color: currentColor; }
+            }
+        }
+        .chat-empty .empty-action { margin-top: 0; }
+        @media (max-width: 760px) {
+            .chat-empty .empty-sub { font-size: 1.2rem; }
         }
 
         /* 空状态下的示例问题快捷芯片:点了直接填进输入框并发送,降低"不知道问什么"的门槛 */
+        /* 推荐问题:不用胶囊了。三个带底色的圆角块叠在一句主张下面太吵,
+           改成细分隔线的清单——平时只有文字,hover 才亮起来并露出箭头。 */
         .empty-suggestions {
-            margin-top: 18px;
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            width: 100%;
+            max-width: 520px;
+            border-top: 1px solid rgba(0,0,0,0.08);
         }
         .suggestion-chip {
-            display: block;
+            display: flex;
+            align-items: center;
+            gap: 12px;
             width: 100%;
             text-align: left;
-            background: rgba(0,0,0,0.03);
-            border: 1px solid rgba(0,0,0,0.06);
-            border-radius: 10px;
-            padding: 10px 14px;
-            font-size: 0.86rem;
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid rgba(0,0,0,0.08);
+            border-radius: 0;
+            padding: 13px 4px;
+            font-size: 0.9rem;
             font-family: inherit;
-            color: #3a3a3e;
+            line-height: 1.5;
+            color: #6b6b70;
             cursor: pointer;
-            transition: background 0.15s ease, border-color 0.15s ease;
+            transition: color 0.15s ease;
         }
-        .suggestion-chip:hover { background: rgba(0,0,0,0.055); border-color: rgba(0,0,0,0.1); }
-        .suggestion-chip:active { transform: scale(0.99); }
+        /* 箭头只在 hover 时淡入,平时不占视觉重量(用 ::after 免得动 HTML) */
+        .suggestion-chip::after {
+            content: "→";
+            margin-left: auto;
+            flex-shrink: 0;
+            color: #b5b5bb;
+            opacity: 0;
+            transform: translateX(-4px);
+            transition: opacity 0.15s ease, transform 0.15s ease;
+        }
+        .suggestion-chip:hover { color: #1d1d1f; }
+        .suggestion-chip:hover::after { opacity: 1; transform: translateX(0); }
+        .suggestion-chip:active { opacity: 0.6; }
 
         /* 消息行 —— AI回复不做对话气泡,像Claude一样以正文形式呈现 */
         .msg-row {
@@ -512,6 +655,7 @@
         }
         .chat-send-btn {
             width: 38px; height: 38px;
+            margin-bottom: 4px; /* 同 .skill-btn:跟单行输入框视觉居中对齐,不再贴着底 */
             border-radius: 50%;
             border: none;
             background: transparent;
@@ -653,8 +797,206 @@
         .auth-account-email { font-size: 0.92rem; font-weight: 500; color: #1d1d1f; word-break: break-all; }
         .auth-account-sub { font-size: 0.76rem; color: #9c9ca2; margin-top: 2px; }
 
+        /* ===== 技能(内置 Skill · 一期纯前端) ===== */
+        /* 侧栏「技能」按钮上的激活数量:小圆点徽标,不改按钮本身的样子 */
+        #skill-open-btn .badge {
+            background: var(--accent); color: #fff; font-weight: 600;
+            min-width: 16px; padding: 1px 5px; text-align: center;
+        }
+        .skill-active-bar {
+            max-width: 680px; margin: 0 auto 8px;
+            display: flex; flex-wrap: wrap; gap: 6px;
+        }
+        .skill-active-bar[hidden] { display: none; }
+        /* 技能设计对话条 */
+        .skill-design-bar {
+            max-width: 680px; margin: 0 auto 8px;
+            display: flex; align-items: center; gap: 8px;
+            padding: 6px 8px 6px 12px; border-radius: 12px;
+            background: rgba(58,58,62,0.06); border: 1px solid rgba(0,0,0,0.08);
+            font-size: 0.78rem; color: #55555b;
+        }
+        .skill-design-bar[hidden] { display: none; }
+        .skill-design-bar span { flex: 1; }
+        .skill-design-bar button {
+            flex-shrink: 0; border: none; border-radius: 8px; cursor: pointer;
+            font-size: 0.76rem; padding: 5px 12px;
+        }
+        #skill-design-save { background: var(--accent); color: #fff; }
+        #skill-design-save:hover { background: var(--accent-dark); }
+        #skill-design-save:disabled { opacity: 0.5; cursor: default; }
+        #skill-design-exit { background: transparent; color: #8a8a92; }
+        #skill-design-exit:hover { background: rgba(0,0,0,0.06); }
+        .skill-chip {
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 4px 6px 4px 9px; border-radius: 999px;
+            background: rgba(58,58,62,0.92); color: #fff;
+            font-size: 0.76rem; line-height: 1;
+        }
+        .skill-chip-ico { display: inline-flex; align-items: center; }
+        .skill-chip-ico svg { width: 12px; height: 12px; }
+        .skill-chip-ico .skill-ico-emoji { font-size: 0.8rem; line-height: 1; }
+        .skill-chip-x {
+            border: none; background: rgba(255,255,255,0.18); color: #fff;
+            width: 15px; height: 15px; border-radius: 50%; cursor: pointer;
+            font-size: 9px; display: flex; align-items: center; justify-content: center;
+        }
+        .skill-chip-x:hover { background: rgba(255,255,255,0.34); }
+        .skill-chip-add {
+            background: transparent; color: #77777d;
+            border: 1px dashed rgba(0,0,0,0.22); cursor: pointer; padding: 4px 10px;
+        }
+        .skill-chip-add:hover { color: var(--accent-dark); border-color: rgba(0,0,0,0.4); }
+
+        /* 技能商店做成页面后:整页滚动,内容居中限宽,视觉上跟对话区一致 */
+        .skill-page { overflow-y: auto; }
+        .skill-page-inner {
+            width: 100%; max-width: 760px; margin: 0 auto;
+            padding: 28px 24px 32px;
+            display: flex; flex-direction: column; min-height: 100%;
+        }
+        .skill-page .ppt-head-title { font-size: 1.25rem; }
+        .skill-tabs { display: flex; gap: 4px; border-bottom: 1px solid #e2e2e6; margin-bottom: 16px; }
+        .skill-tab {
+            border: none; background: transparent; cursor: pointer;
+            padding: 8px 12px; font-size: 0.85rem; color: #77777d;
+            border-bottom: 2px solid transparent; margin-bottom: -1px;
+        }
+        .skill-tab:hover { color: var(--accent-dark); }
+        .skill-tab.active { color: var(--accent-dark); border-bottom-color: var(--accent); font-weight: 500; }
+        .skill-tabpane { display: none; }
+        /* 三个分页内容高低差很多(「创建技能」最矮),不锁高的话每切一次标签弹窗就跳一次大小。
+           这里把分页区高度固定死:内容少的留白、内容多的自己滚,弹窗尺寸始终一致。 */
+        .skill-tabpane.active { display: flex; flex-direction: column; flex: 1; }
+        /* 「创建技能」最后那行小字压到底,免得上半截内容看着像被截断 */
+        .skill-tabpane[data-tab="create"] > .skill-hint:last-child { margin-top: auto; padding-top: 10px; }
+        /* 分页里的固定头部(全局技能框 / 小标题 / 搜索框)不参与伸缩 */
+        .skill-tabpane > .skill-global,
+        .skill-tabpane > .skill-sub,
+        .skill-tabpane > #skill-market-search { flex-shrink: 0; }
+
+        .skill-global { background: rgba(0,0,0,0.035); border-radius: 12px; padding: 12px; margin-bottom: 16px; }
+        .skill-global-head { font-size: 0.82rem; font-weight: 600; color: #1d1d1f; margin-bottom: 8px; }
+        .skill-star { color: #f0a500; }
+        .skill-textarea {
+            width: 100%; box-sizing: border-box; padding: 10px 12px; border-radius: 10px;
+            border: 1px solid #e2e2e6; background: #fafafb; color: #1d1d1f;
+            font-size: 0.85rem; font-family: inherit; line-height: 1.55; outline: none; resize: vertical;
+        }
+        .skill-textarea:focus { border-color: var(--accent); }
+        .skill-hint { font-size: 0.72rem; color: #9c9ca2; margin-top: 6px; line-height: 1.5; }
+        .skill-sub { font-size: 0.78rem; font-weight: 500; color: #77777d; margin: 4px 0 8px; }
+
+        .skill-mine-list { display: flex; flex-direction: column; gap: 6px; }
+        .skill-row { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 10px; background: rgba(0,0,0,0.025); }
+        /* 技能图标统一放进淡色圆角方块,线性 svg 用 currentColor */
+        .skill-row-ico, .skill-card-ico {
+            flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+            background: rgba(0,0,0,0.06); color: var(--accent-dark);
+        }
+        .skill-row-ico { width: 28px; height: 28px; border-radius: 8px; }
+        .skill-row-ico svg { width: 16px; height: 16px; }
+        .skill-row-ico .skill-ico-emoji { font-size: 0.95rem; line-height: 1; }
+        .skill-row-meta { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+        .skill-row-name { font-size: 0.85rem; color: #1d1d1f; font-weight: 500; }
+        .skill-row-name em { font-style: normal; font-size: 0.66rem; color: #9c9ca2; border: 1px solid #d8d8dc; border-radius: 4px; padding: 0 4px; margin-left: 4px; }
+        .skill-row-desc { font-size: 0.74rem; color: #9c9ca2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .skill-row-x { flex-shrink: 0; border: none; background: transparent; color: #b5b5bb; width: 22px; height: 22px; border-radius: 6px; cursor: pointer; font-size: 11px; }
+        .skill-row-x:hover { background: rgba(168,58,58,0.12); color: #a83a3a; }
+        .skill-row-edit {
+            flex-shrink: 0; border: none; background: transparent; color: #b5b5bb;
+            width: 22px; height: 22px; border-radius: 6px;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .skill-row-edit svg { width: 13px; height: 13px; }
+        .skill-row-edit:hover { background: rgba(0,0,0,0.07); color: #1d1d1f; }
+        .skill-row-pub {
+            flex-shrink: 0; border: none; background: transparent; color: #b5b5bb;
+            width: 22px; height: 22px; border-radius: 6px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .skill-row-pub svg { width: 13px; height: 13px; }
+        .skill-row-pub:hover { background: rgba(0,0,0,0.07); color: #1d1d1f; }
+
+        .skill-switch { flex-shrink: 0; position: relative; width: 36px; height: 20px; cursor: pointer; }
+        .skill-switch input { opacity: 0; width: 0; height: 0; }
+        .skill-switch > span { position: absolute; inset: 0; border-radius: 999px; background: #cfcfd4; transition: background 0.15s ease; }
+        .skill-switch > span::before { content: ''; position: absolute; width: 16px; height: 16px; left: 2px; top: 2px; border-radius: 50%; background: #fff; transition: transform 0.15s ease; }
+        .skill-switch input:checked + span { background: var(--accent); }
+        .skill-switch input:checked + span::before { transform: translateX(16px); }
+        .skill-switch.is-disabled { cursor: not-allowed; opacity: 0.45; }
+
+        .skill-market-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; align-content: start; }
+        .skill-card { border: 1px solid #e6e6ea; border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 6px; background: #fff; }
+        .skill-card-ico { width: 36px; height: 36px; border-radius: 10px; }
+        .skill-card-ico svg { width: 20px; height: 20px; }
+        .skill-card-ico .skill-ico-emoji { font-size: 1.15rem; line-height: 1; }
+        .skill-card-name { font-size: 0.86rem; font-weight: 600; color: #1d1d1f; }
+        .skill-card-desc { font-size: 0.74rem; color: #77777d; line-height: 1.5; flex: 1; }
+        .skill-card-btn { align-self: flex-start; border: 1px solid var(--accent); background: transparent; color: var(--accent-dark); border-radius: 8px; padding: 5px 12px; font-size: 0.78rem; cursor: pointer; }
+        .skill-card-btn:hover { background: rgba(0,0,0,0.05); }
+        .skill-card-btn.is-added { border-color: #d8d8dc; color: #9c9ca2; }
+        .skill-card-meta { font-size: 0.68rem; color: #9c9ca2; }
+        .skill-card-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; }
+        .skill-card-actions .skill-card-btn { align-self: auto; }
+        .skill-card-link { border: none; background: transparent; padding: 2px 0; font-size: 0.74rem; color: #77777d; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
+        .skill-card-link:hover { color: #1d1d1f; }
+        .skill-card-link.is-danger:hover { color: #a83a3a; }
+        .skill-card-detail { font-size: 0.72rem; line-height: 1.55; color: #55555b; background: rgba(0,0,0,0.03); border-radius: 8px; padding: 8px 10px; white-space: pre-wrap; word-break: break-word; max-height: 180px; overflow-y: auto; }
+        .skill-create-row { display: flex; gap: 10px; }
+        .skill-empty { font-size: 0.78rem; color: #9c9ca2; padding: 16px; text-align: center; line-height: 1.6; }
+
+        /* 创建技能:三种方式 + 结果预览 */
+        .skill-make-methods, .skill-gmake-methods { display: flex; gap: 6px; margin-bottom: 14px; }
+        .skill-make-tab, .skill-gmake-tab {
+            flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px;
+            padding: 12px 8px; border: 1px solid #e2e2e6; border-radius: 12px;
+            background: #fff; color: #55555b; font-size: 0.8rem; cursor: pointer;
+            transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+        }
+        .skill-make-tab svg, .skill-gmake-tab svg { width: 20px; height: 20px; }
+        .skill-make-tab:hover, .skill-gmake-tab:hover { border-color: #cfcfd4; color: var(--accent-dark); }
+        .skill-make-tab.active, .skill-gmake-tab.active { border-color: var(--accent); background: rgba(0,0,0,0.04); color: var(--accent-dark); font-weight: 500; }
+        .skill-make-body, .skill-gmake-body { margin-bottom: 12px; }
+        .skill-import-row { display: flex; gap: 8px; align-items: center; }
+        .skill-import-row .ppt-input { flex: 1; min-width: 0; }
+        .skill-import-row .ppt-btn-ghost { flex-shrink: 0; padding: 8px 12px; font-size: 0.82rem; }
+        .skill-import-status { margin: 0 0 12px; font-size: 0.76rem; color: #55555b; line-height: 1.5; word-break: break-all; }
+        .skill-import-status.is-err { color: #a83a3a; }
+
+        .skill-preview { border: 1px solid #e2e2e6; border-radius: 12px; padding: 14px; margin-bottom: 12px; background: rgba(0,0,0,0.02); }
+        .skill-preview-top { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+        .skill-preview-name { font-size: 0.92rem; font-weight: 600; color: #1d1d1f; }
+        .skill-preview-desc { font-size: 0.78rem; color: #77777d; line-height: 1.5; margin-bottom: 10px; }
+        .skill-preview-inst {
+            font-size: 0.78rem; color: #3a3a3e; line-height: 1.6; white-space: pre-wrap;
+            max-height: 150px; overflow-y: auto; padding: 10px 12px;
+            background: #fff; border: 1px solid #ececef; border-radius: 8px;
+        }
+        .skill-preview-starters { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+        .skill-preview-starters span {
+            font-size: 0.72rem; color: #55555b; background: rgba(0,0,0,0.05);
+            padding: 3px 8px; border-radius: 999px;
+        }
+        .skill-preview .ppt-row { margin-top: 14px; }
+
         /* ===== 侧边栏"历史对话" ===== */
-        .sidebar-history-list { display: flex; flex-direction: column; gap: 2px; margin: 0 0 2px 2px; max-height: 260px; overflow-y: auto; }
+        /* 历史分组吃满剩余高度,列表一直铺到底部"更多功能"那一行;跟上方按钮组多留一段间距 */
+        #history-group { flex: 1; min-height: 0; margin-top: 16px; }
+        #history-body { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+        .sidebar-history-list {
+            flex: 1; min-height: 0;
+            display: flex; flex-direction: column; gap: 2px;
+            margin: 0 0 2px 2px;
+            overflow-y: auto; overscroll-behavior: contain;
+            /* 细一点、圆一点的滚动条,不用系统那根粗的 */
+            scrollbar-width: thin;
+            scrollbar-color: rgba(0,0,0,0.18) transparent;
+        }
+        .sidebar-history-list::-webkit-scrollbar { width: 6px; }
+        .sidebar-history-list::-webkit-scrollbar-track { background: transparent; }
+        .sidebar-history-list::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 3px; }
+        .sidebar-history-list::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.3); }
         .sidebar-history-item {
             display: flex; align-items: center; gap: 6px; width: 100%;
             padding: 7px 8px; border-radius: 10px; cursor: pointer;
@@ -672,7 +1014,7 @@
         }
         .sidebar-history-item:hover .sidebar-history-item-del { opacity: 1; }
         .sidebar-history-item-del:hover { background: rgba(168,58,58,0.12); color: #a83a3a; }
-        .sidebar-history-empty { font-size: 0.76rem; color: #9c9ca2; padding: 6px 10px; line-height: 1.5; }
+        .sidebar-history-empty { font-size: 0.76rem; color: #9c9ca2; padding: 6px 10px; line-height: 1.5; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .app-sidebar.collapsed .sidebar-history-list,
         .app-sidebar.collapsed .sidebar-history-empty { display: none; }
 
@@ -790,18 +1132,27 @@
            .wysiwyg-slide / .ws-* (PPT幻灯片预览内容) 故意不在这里面——那是"文档内容"
            不是"网站界面",不管网站是明是暗,幻灯片该长什么样就长什么样,导出的pptx更是完全独立的。 */
         @media (prefers-color-scheme: dark) {
-            html:not([data-theme="light"]), html:not([data-theme="light"]) body { background: #1a1a1d; }
+            html:not([data-theme="light"]), html:not([data-theme="light"]) body { background: #202126; }
+            /* 深色模式:光标反白(白体黑描边) */
+            html:not([data-theme="light"]) * { cursor: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2218%22%20height%3D%2218%22%20viewBox%3D%220%200%2024%2024%22%3E%3Cpath%20d%3D%22M2%201.5%20L2%2016.5%20L5.8%2012.9%20L8.3%2018.6%20L10.9%2017.4%20L8.4%2011.9%20L13.5%2011.9%20Z%22%20fill%3D%22none%22%20stroke%3D%22%231d1d1f%22%20stroke-width%3D%221.6%22%20stroke-linejoin%3D%22miter%22%20stroke-linecap%3D%22round%22%2F%3E%3Cpath%20d%3D%22M2%201.5%20L2%2016.5%20L5.8%2012.9%20L8.3%2018.6%20L10.9%2017.4%20L8.4%2011.9%20L13.5%2011.9%20Z%22%20fill%3D%22%23ffffff%22%2F%3E%3C%2Fsvg%3E") 2 1, auto !important; }
+            html:not([data-theme="light"]) textarea, html:not([data-theme="light"]) input, html:not([data-theme="light"]) [contenteditable="true"] { cursor: text !important; }
+            html:not([data-theme="light"]) .sidebar-resize-handle { cursor: col-resize !important; }
+            html:not([data-theme="light"]) body.sidebar-resizing, html:not([data-theme="light"]) body.sidebar-resizing * { cursor: col-resize !important; }
             html:not([data-theme="light"]) .app-shell {
-                background-color: #1a1a1d;
+                background-color: #202126;
                 background-image:
                     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300' viewBox='0 0 300 300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.05 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
-                    radial-gradient(1100px 750px at 12% 0%, rgba(255,255,255,0.05), transparent 60%),
-                    radial-gradient(1000px 700px at 100% 100%, rgba(255,255,255,0.04), transparent 55%);
+                    radial-gradient(1100px 750px at 12% 0%, rgba(225,233,255,0.05), transparent 60%),
+                    radial-gradient(1000px 700px at 100% 100%, rgba(225,233,255,0.04), transparent 55%);
             }
 
             /* 侧栏玻璃卡片 */
-            html:not([data-theme="light"]) .app-sidebar { background: rgba(32,32,36,0.55); box-shadow: 0 8px 32px rgba(0,0,0,0.45); }
+            html:not([data-theme="light"]) .app-sidebar { background: rgba(33,35,42,0.58); box-shadow: 0 8px 32px rgba(0,0,0,0.45); }
             html:not([data-theme="light"]) .sidebar-logo img { filter: invert(1); }
+            html:not([data-theme="light"]) .sidebar-resize-handle::after { background: rgba(255,255,255,0.18); }
+            html:not([data-theme="light"]) .sidebar-history-list { scrollbar-color: rgba(255,255,255,0.22) transparent; }
+            html:not([data-theme="light"]) .sidebar-history-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); }
+            html:not([data-theme="light"]) .sidebar-history-list::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.34); }
             html:not([data-theme="light"]) .sidebar-icon-btn { color: #9a9aa2; }
             html:not([data-theme="light"]) .sidebar-icon-btn:hover { background: rgba(255,255,255,0.08); color: #f2f2f4; }
             html:not([data-theme="light"]) .mode-switch { background: rgba(255,255,255,0.06); }
@@ -809,12 +1160,16 @@
             html:not([data-theme="light"]) .mode-switch-btn:hover { color: #d4d4d8; }
             html:not([data-theme="light"]) .mode-switch-btn.active { background: #3a3a3e; color: #f2f2f4; box-shadow: 0 1px 3px rgba(0,0,0,0.5); }
             html:not([data-theme="light"]) .app-sidebar.collapsed .mode-switch-btn.active { background: #55555c; }
-            html:not([data-theme="light"]) .sidebar-group-toggle.active, html:not([data-theme="light"]) #new-chat-btn.active { background: rgba(255,255,255,0.08); }
+            html:not([data-theme="light"]) .sidebar-group-toggle.active, html:not([data-theme="light"]) #new-chat-btn.active, html:not([data-theme="light"]) #skill-open-btn.active, html:not([data-theme="light"]) #ppt-open-btn.active { background: rgba(255,255,255,0.08); }
             html:not([data-theme="light"]) .sidebar-action-btn { color: #d4d4d8; }
             html:not([data-theme="light"]) .sidebar-action-btn:hover { background: rgba(255,255,255,0.07); }
             html:not([data-theme="light"]) .sidebar-action-btn.soon { color: #5a5a60; }
             html:not([data-theme="light"]) .sidebar-action-btn .badge { background: rgba(255,255,255,0.09); }
             html:not([data-theme="light"]) .sidebar-footer { border-top-color: rgba(255,255,255,0.1); }
+            html:not([data-theme="light"]) .lang-switch { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.12); box-shadow: none; }
+            html:not([data-theme="light"]) .lang-switch button { color: #9a9aa2; }
+            html:not([data-theme="light"]) .lang-switch button:hover { color: #f2f2f4; }
+            html:not([data-theme="light"]) .lang-switch button.active { background: #45454c; color: #fff; box-shadow: none; }
             html:not([data-theme="light"]) .sidebar-user-btn:hover { background: rgba(255,255,255,0.07); }
             html:not([data-theme="light"]) .sidebar-user-name { color: #e8e8ec; }
             html:not([data-theme="light"]) .sidebar-user-sub { color: #8a8a90; }
@@ -827,17 +1182,58 @@
 
             /* 图标类:原来跟 --accent-dark 走的那几处,这个变量本身不跟主题变(PPT品牌色不该被网站主题带偏),
                所以这几处单独覆写成浅色,而不是去改 --accent-dark 本身 */
-            html:not([data-theme="light"]) .chat-empty .empty-icon svg, html:not([data-theme="light"]) .ppt-head-icon, html:not([data-theme="light"]) .ppt-canvas-head-icon, html:not([data-theme="light"]) .ppt-close, html:not([data-theme="light"]) .ppt-canvas-close, html:not([data-theme="light"]) .ppt-canvas-title, html:not([data-theme="light"]) .chat-send-btn { color: #f2f2f4; fill: #f2f2f4; }
+            html:not([data-theme="light"]) .ppt-head-icon, html:not([data-theme="light"]) .ppt-canvas-head-icon, html:not([data-theme="light"]) .ppt-close, html:not([data-theme="light"]) .ppt-canvas-close, html:not([data-theme="light"]) .ppt-canvas-title, html:not([data-theme="light"]) .chat-send-btn { color: #f2f2f4; fill: #f2f2f4; }
             html:not([data-theme="light"]) .ppt-close:hover, html:not([data-theme="light"]) .ppt-canvas-close:hover { background: rgba(255,255,255,0.1); }
             html:not([data-theme="light"]) .chat-send-btn:hover { color: #ffffff; }
             html:not([data-theme="light"]) .msg-copy-btn:hover { color: #f2f2f4; background: rgba(255,255,255,0.08); }
             html:not([data-theme="light"]) .quiz-label { color: #b8b8c0; }
 
             /* 空状态 + 示例问题芯片 */
-            html:not([data-theme="light"]) .chat-empty .empty-title { color: #f2f2f4; }
-            html:not([data-theme="light"]) .chat-empty .empty-sub { color: #9a9aa2; }
-            html:not([data-theme="light"]) .suggestion-chip { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: #d4d4d8; }
-            html:not([data-theme="light"]) .suggestion-chip:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.16); }
+            html:not([data-theme="light"]) .chat-empty .empty-sub { color: #f2f2f4; }
+            html:not([data-theme="light"]) .chat-empty .empty-logo { filter: invert(1); }
+            html:not([data-theme="light"]) .chat-thread[data-mode="ppt"]::before { opacity: 0.5; }
+            html:not([data-theme="light"]) { --spot-hi: #ffffff; --spot-lo: #56565f; }
+            html:not([data-theme="light"]) .empty-suggestions { border-top-color: rgba(255,255,255,0.1); }
+            html:not([data-theme="light"]) .suggestion-chip { background: transparent; border-bottom-color: rgba(255,255,255,0.1); color: #9a9aa2; }
+            html:not([data-theme="light"]) .suggestion-chip::after { color: #6b6b70; }
+            html:not([data-theme="light"]) .suggestion-chip:hover { color: #f2f2f4; background: transparent; }
+
+            /* 技能 Skill */
+            html:not([data-theme="light"]) #skill-open-btn .badge { background: #55555c; }
+            html:not([data-theme="light"]) .skill-chip { background: rgba(255,255,255,0.16); }
+            html:not([data-theme="light"]) .skill-chip-add { color: #9a9aa2; border-color: rgba(255,255,255,0.22); }
+            html:not([data-theme="light"]) .skill-tabs { border-bottom-color: rgba(255,255,255,0.12); }
+            html:not([data-theme="light"]) .skill-tab { color: #9a9aa2; }
+            html:not([data-theme="light"]) .skill-tab.active { color: #f2f2f4; border-bottom-color: #f2f2f4; }
+            html:not([data-theme="light"]) .skill-global,
+            html:not([data-theme="light"]) .skill-import-status { color: #9a9aa2; }
+            html:not([data-theme="light"]) .skill-make-tab, html:not([data-theme="light"]) .skill-gmake-tab { background: #2a2a2e; border-color: rgba(255,255,255,0.14); color: #9a9aa2; }
+            html:not([data-theme="light"]) .skill-make-tab:hover, html:not([data-theme="light"]) .skill-gmake-tab:hover { border-color: rgba(255,255,255,0.3); color: #f2f2f4; }
+            html:not([data-theme="light"]) .skill-make-tab.active, html:not([data-theme="light"]) .skill-gmake-tab.active { border-color: #f2f2f4; background: rgba(255,255,255,0.08); color: #f2f2f4; }
+            html:not([data-theme="light"]) .skill-preview { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.12); }
+            html:not([data-theme="light"]) .skill-preview-name { color: #f2f2f4; }
+            html:not([data-theme="light"]) .skill-preview-inst { background: #2a2a2e; border-color: rgba(255,255,255,0.12); color: #d4d4d8; }
+            html:not([data-theme="light"]) .skill-preview-starters span { background: rgba(255,255,255,0.08); color: #c4c4c8; }
+            html:not([data-theme="light"]) .skill-design-bar { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.12); color: #b4b4b8; }
+            html:not([data-theme="light"]) #skill-design-exit { color: #9a9aa2; }
+            html:not([data-theme="light"]) #skill-design-exit:hover { background: rgba(255,255,255,0.08); }
+            html:not([data-theme="light"]) .skill-global-head { color: #f2f2f4; }
+            html:not([data-theme="light"]) .skill-textarea { background: #2a2a2e; border-color: rgba(255,255,255,0.14); color: #e8e8ea; }
+            html:not([data-theme="light"]) .skill-sub, html:not([data-theme="light"]) .skill-card-desc { color: #9a9aa2; }
+            html:not([data-theme="light"]) .skill-row { background: rgba(255,255,255,0.05); }
+            html:not([data-theme="light"]) .skill-row-ico,
+            html:not([data-theme="light"]) .skill-card-ico { background: rgba(255,255,255,0.1); color: #e8e8ea; }
+            html:not([data-theme="light"]) .skill-row-name { color: #f2f2f4; }
+            html:not([data-theme="light"]) .skill-row-edit:hover { background: rgba(255,255,255,0.1); color: #f2f2f4; }
+            html:not([data-theme="light"]) .skill-card { background: #2a2a2e; border-color: rgba(255,255,255,0.1); }
+            html:not([data-theme="light"]) .skill-card-name { color: #f2f2f4; }
+            html:not([data-theme="light"]) .skill-card-btn { color: #e8e8ea; border-color: #6a6a72; }
+            html:not([data-theme="light"]) .skill-card-meta { color: #7a7a82; }
+            html:not([data-theme="light"]) .skill-card-link { color: #9a9aa2; }
+            html:not([data-theme="light"]) .skill-card-link:hover { color: #f2f2f4; }
+            html:not([data-theme="light"]) .skill-card-detail { color: #b8b8c0; background: rgba(255,255,255,0.05); }
+            html:not([data-theme="light"]) .skill-row-pub:hover { background: rgba(255,255,255,0.1); color: #f2f2f4; }
+            html:not([data-theme="light"]) .skill-switch > span { background: #55555c; }
 
             /* 消息 */
             html:not([data-theme="light"]) .msg-row.user .msg-bubble { background: rgba(255,255,255,0.1); color: #f2f2f4; }
@@ -885,18 +1281,27 @@
         /* 手动切换到深色模式(data-theme="dark"):跟上面 media query 同一套值,
            保证系统是浅色但用户手动选了深色时也生效;上面的 media query 额外加了
            :not([data-theme="light"]),让用户手动选浅色时能盖过系统深色 */
-            html[data-theme="dark"], html[data-theme="dark"] body { background: #1a1a1d; }
+            html[data-theme="dark"], html[data-theme="dark"] body { background: #202126; }
+            /* 深色模式:光标反白(白体黑描边) */
+            html[data-theme="dark"] * { cursor: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2218%22%20height%3D%2218%22%20viewBox%3D%220%200%2024%2024%22%3E%3Cpath%20d%3D%22M2%201.5%20L2%2016.5%20L5.8%2012.9%20L8.3%2018.6%20L10.9%2017.4%20L8.4%2011.9%20L13.5%2011.9%20Z%22%20fill%3D%22none%22%20stroke%3D%22%231d1d1f%22%20stroke-width%3D%221.6%22%20stroke-linejoin%3D%22miter%22%20stroke-linecap%3D%22round%22%2F%3E%3Cpath%20d%3D%22M2%201.5%20L2%2016.5%20L5.8%2012.9%20L8.3%2018.6%20L10.9%2017.4%20L8.4%2011.9%20L13.5%2011.9%20Z%22%20fill%3D%22%23ffffff%22%2F%3E%3C%2Fsvg%3E") 2 1, auto !important; }
+            html[data-theme="dark"] textarea, html[data-theme="dark"] input, html[data-theme="dark"] [contenteditable="true"] { cursor: text !important; }
+            html[data-theme="dark"] .sidebar-resize-handle { cursor: col-resize !important; }
+            html[data-theme="dark"] body.sidebar-resizing, html[data-theme="dark"] body.sidebar-resizing * { cursor: col-resize !important; }
             html[data-theme="dark"] .app-shell {
-                background-color: #1a1a1d;
+                background-color: #202126;
                 background-image:
                     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300' viewBox='0 0 300 300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.05 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
-                    radial-gradient(1100px 750px at 12% 0%, rgba(255,255,255,0.05), transparent 60%),
-                    radial-gradient(1000px 700px at 100% 100%, rgba(255,255,255,0.04), transparent 55%);
+                    radial-gradient(1100px 750px at 12% 0%, rgba(225,233,255,0.05), transparent 60%),
+                    radial-gradient(1000px 700px at 100% 100%, rgba(225,233,255,0.04), transparent 55%);
             }
 
             /* 侧栏玻璃卡片 */
-            html[data-theme="dark"] .app-sidebar { background: rgba(32,32,36,0.55); box-shadow: 0 8px 32px rgba(0,0,0,0.45); }
+            html[data-theme="dark"] .app-sidebar { background: rgba(33,35,42,0.58); box-shadow: 0 8px 32px rgba(0,0,0,0.45); }
             html[data-theme="dark"] .sidebar-logo img { filter: invert(1); }
+            html[data-theme="dark"] .sidebar-resize-handle::after { background: rgba(255,255,255,0.18); }
+            html[data-theme="dark"] .sidebar-history-list { scrollbar-color: rgba(255,255,255,0.22) transparent; }
+            html[data-theme="dark"] .sidebar-history-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); }
+            html[data-theme="dark"] .sidebar-history-list::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.34); }
             html[data-theme="dark"] .sidebar-icon-btn { color: #9a9aa2; }
             html[data-theme="dark"] .sidebar-icon-btn:hover { background: rgba(255,255,255,0.08); color: #f2f2f4; }
             html[data-theme="dark"] .mode-switch { background: rgba(255,255,255,0.06); }
@@ -904,12 +1309,16 @@
             html[data-theme="dark"] .mode-switch-btn:hover { color: #d4d4d8; }
             html[data-theme="dark"] .mode-switch-btn.active { background: #3a3a3e; color: #f2f2f4; box-shadow: 0 1px 3px rgba(0,0,0,0.5); }
             html[data-theme="dark"] .app-sidebar.collapsed .mode-switch-btn.active { background: #55555c; }
-            html[data-theme="dark"] .sidebar-group-toggle.active, html[data-theme="dark"] #new-chat-btn.active { background: rgba(255,255,255,0.08); }
+            html[data-theme="dark"] .sidebar-group-toggle.active, html[data-theme="dark"] #new-chat-btn.active, html[data-theme="dark"] #skill-open-btn.active, html[data-theme="dark"] #ppt-open-btn.active { background: rgba(255,255,255,0.08); }
             html[data-theme="dark"] .sidebar-action-btn { color: #d4d4d8; }
             html[data-theme="dark"] .sidebar-action-btn:hover { background: rgba(255,255,255,0.07); }
             html[data-theme="dark"] .sidebar-action-btn.soon { color: #5a5a60; }
             html[data-theme="dark"] .sidebar-action-btn .badge { background: rgba(255,255,255,0.09); }
             html[data-theme="dark"] .sidebar-footer { border-top-color: rgba(255,255,255,0.1); }
+            html[data-theme="dark"] .lang-switch { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.12); box-shadow: none; }
+            html[data-theme="dark"] .lang-switch button { color: #9a9aa2; }
+            html[data-theme="dark"] .lang-switch button:hover { color: #f2f2f4; }
+            html[data-theme="dark"] .lang-switch button.active { background: #45454c; color: #fff; box-shadow: none; }
             html[data-theme="dark"] .sidebar-user-btn:hover { background: rgba(255,255,255,0.07); }
             html[data-theme="dark"] .sidebar-user-name { color: #e8e8ec; }
             html[data-theme="dark"] .sidebar-user-sub { color: #8a8a90; }
@@ -922,17 +1331,58 @@
 
             /* 图标类:原来跟 --accent-dark 走的那几处,这个变量本身不跟主题变(PPT品牌色不该被网站主题带偏),
                所以这几处单独覆写成浅色,而不是去改 --accent-dark 本身 */
-            html[data-theme="dark"] .chat-empty .empty-icon svg, html[data-theme="dark"] .ppt-head-icon, html[data-theme="dark"] .ppt-canvas-head-icon, html[data-theme="dark"] .ppt-close, html[data-theme="dark"] .ppt-canvas-close, html[data-theme="dark"] .ppt-canvas-title, html[data-theme="dark"] .chat-send-btn { color: #f2f2f4; fill: #f2f2f4; }
+            html[data-theme="dark"] .ppt-head-icon, html[data-theme="dark"] .ppt-canvas-head-icon, html[data-theme="dark"] .ppt-close, html[data-theme="dark"] .ppt-canvas-close, html[data-theme="dark"] .ppt-canvas-title, html[data-theme="dark"] .chat-send-btn { color: #f2f2f4; fill: #f2f2f4; }
             html[data-theme="dark"] .ppt-close:hover, html[data-theme="dark"] .ppt-canvas-close:hover { background: rgba(255,255,255,0.1); }
             html[data-theme="dark"] .chat-send-btn:hover { color: #ffffff; }
             html[data-theme="dark"] .msg-copy-btn:hover { color: #f2f2f4; background: rgba(255,255,255,0.08); }
             html[data-theme="dark"] .quiz-label { color: #b8b8c0; }
 
             /* 空状态 + 示例问题芯片 */
-            html[data-theme="dark"] .chat-empty .empty-title { color: #f2f2f4; }
-            html[data-theme="dark"] .chat-empty .empty-sub { color: #9a9aa2; }
-            html[data-theme="dark"] .suggestion-chip { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: #d4d4d8; }
-            html[data-theme="dark"] .suggestion-chip:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.16); }
+            html[data-theme="dark"] .chat-empty .empty-sub { color: #f2f2f4; }
+            html[data-theme="dark"] .chat-empty .empty-logo { filter: invert(1); }
+            html[data-theme="dark"] .chat-thread[data-mode="ppt"]::before { opacity: 0.5; }
+            html[data-theme="dark"] { --spot-hi: #ffffff; --spot-lo: #56565f; }
+            html[data-theme="dark"] .empty-suggestions { border-top-color: rgba(255,255,255,0.1); }
+            html[data-theme="dark"] .suggestion-chip { background: transparent; border-bottom-color: rgba(255,255,255,0.1); color: #9a9aa2; }
+            html[data-theme="dark"] .suggestion-chip::after { color: #6b6b70; }
+            html[data-theme="dark"] .suggestion-chip:hover { color: #f2f2f4; background: transparent; }
+
+            /* 技能 Skill */
+            html[data-theme="dark"] #skill-open-btn .badge { background: #55555c; }
+            html[data-theme="dark"] .skill-chip { background: rgba(255,255,255,0.16); }
+            html[data-theme="dark"] .skill-chip-add { color: #9a9aa2; border-color: rgba(255,255,255,0.22); }
+            html[data-theme="dark"] .skill-tabs { border-bottom-color: rgba(255,255,255,0.12); }
+            html[data-theme="dark"] .skill-tab { color: #9a9aa2; }
+            html[data-theme="dark"] .skill-tab.active { color: #f2f2f4; border-bottom-color: #f2f2f4; }
+            html[data-theme="dark"] .skill-global,
+            html[data-theme="dark"] .skill-import-status { color: #9a9aa2; }
+            html[data-theme="dark"] .skill-make-tab, html[data-theme="dark"] .skill-gmake-tab { background: #2a2a2e; border-color: rgba(255,255,255,0.14); color: #9a9aa2; }
+            html[data-theme="dark"] .skill-make-tab:hover, html[data-theme="dark"] .skill-gmake-tab:hover { border-color: rgba(255,255,255,0.3); color: #f2f2f4; }
+            html[data-theme="dark"] .skill-make-tab.active, html[data-theme="dark"] .skill-gmake-tab.active { border-color: #f2f2f4; background: rgba(255,255,255,0.08); color: #f2f2f4; }
+            html[data-theme="dark"] .skill-preview { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.12); }
+            html[data-theme="dark"] .skill-preview-name { color: #f2f2f4; }
+            html[data-theme="dark"] .skill-preview-inst { background: #2a2a2e; border-color: rgba(255,255,255,0.12); color: #d4d4d8; }
+            html[data-theme="dark"] .skill-preview-starters span { background: rgba(255,255,255,0.08); color: #c4c4c8; }
+            html[data-theme="dark"] .skill-design-bar { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.12); color: #b4b4b8; }
+            html[data-theme="dark"] #skill-design-exit { color: #9a9aa2; }
+            html[data-theme="dark"] #skill-design-exit:hover { background: rgba(255,255,255,0.08); }
+            html[data-theme="dark"] .skill-global-head { color: #f2f2f4; }
+            html[data-theme="dark"] .skill-textarea { background: #2a2a2e; border-color: rgba(255,255,255,0.14); color: #e8e8ea; }
+            html[data-theme="dark"] .skill-sub, html[data-theme="dark"] .skill-card-desc { color: #9a9aa2; }
+            html[data-theme="dark"] .skill-row { background: rgba(255,255,255,0.05); }
+            html[data-theme="dark"] .skill-row-ico,
+            html[data-theme="dark"] .skill-card-ico { background: rgba(255,255,255,0.1); color: #e8e8ea; }
+            html[data-theme="dark"] .skill-row-name { color: #f2f2f4; }
+            html[data-theme="dark"] .skill-row-edit:hover { background: rgba(255,255,255,0.1); color: #f2f2f4; }
+            html[data-theme="dark"] .skill-card { background: #2a2a2e; border-color: rgba(255,255,255,0.1); }
+            html[data-theme="dark"] .skill-card-name { color: #f2f2f4; }
+            html[data-theme="dark"] .skill-card-btn { color: #e8e8ea; border-color: #6a6a72; }
+            html[data-theme="dark"] .skill-card-meta { color: #7a7a82; }
+            html[data-theme="dark"] .skill-card-link { color: #9a9aa2; }
+            html[data-theme="dark"] .skill-card-link:hover { color: #f2f2f4; }
+            html[data-theme="dark"] .skill-card-detail { color: #b8b8c0; background: rgba(255,255,255,0.05); }
+            html[data-theme="dark"] .skill-row-pub:hover { background: rgba(255,255,255,0.1); color: #f2f2f4; }
+            html[data-theme="dark"] .skill-switch > span { background: #55555c; }
 
             /* 消息 */
             html[data-theme="dark"] .msg-row.user .msg-bubble { background: rgba(255,255,255,0.1); color: #f2f2f4; }
@@ -1001,6 +1451,7 @@
 
     <div class="app-shell">
         <aside class="app-sidebar" id="app-sidebar">
+            <div class="sidebar-resize-handle" id="sidebar-resize-handle" title="拖动调节宽度，双击复位"></div>
             <div class="sidebar-topline">
                 <a href="index.html#about" class="sidebar-logo" title="Jinpeng Xin">
                     <img src="https://jinpeng-assets.oss-cn-beijing.aliyuncs.com/%E4%B8%AA%E4%BA%BA%E4%B8%BB%E9%A1%B5/%E5%9F%BA%E6%9C%AC%E5%9B%BE%E7%89%87/logo3.0.svg" alt="Jinpeng Xin Logo">
@@ -1026,6 +1477,12 @@
                 <span class="label">AI4PPT</span>
             </button>
 
+            <button class="sidebar-action-btn" id="skill-open-btn" type="button">
+                <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h3a1 1 0 0 0 1 -1v-1a2 2 0 0 1 4 0v1a1 1 0 0 0 1 1h3a1 1 0 0 1 1 1v3a1 1 0 0 0 1 1h1a2 2 0 0 1 0 4h-1a1 1 0 0 0 -1 1v3a1 1 0 0 1 -1 1h-3a1 1 0 0 1 -1 -1v-1a2 2 0 0 0 -4 0v1a1 1 0 0 1 -1 1h-3a1 1 0 0 1 -1 -1v-3a1 1 0 0 1 1 -1h1a2 2 0 0 0 0 -4h-1a1 1 0 0 1 -1 -1v-3a1 1 0 0 1 1 -1"/></svg></span>
+                <span class="label">技能市场</span>
+                <span class="badge" id="skill-count-badge" hidden></span>
+            </button>
+
             <div class="sidebar-group">
                 <button class="sidebar-action-btn sidebar-group-toggle" id="qa-group-btn">
                     <span class="icon"><svg fill="currentColor"><use href="#icon-ask"></use></svg></span>
@@ -1037,11 +1494,7 @@
                 </div>
             </div>
 
-            <div class="sidebar-group">
-                <button class="sidebar-action-btn" id="history-group-btn" style="cursor:default;">
-                    <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></span>
-                    <span class="label">历史对话</span>
-                </button>
+            <div class="sidebar-group" id="history-group">
                 <div id="history-body">
                     <div class="sidebar-history-empty" id="history-empty">登录后可以查看过往的对话记录</div>
                     <div class="sidebar-history-list" id="history-list"></div>
@@ -1105,45 +1558,16 @@
             </div>
         </div>
 
-        <!-- ===== PPT 生成弹窗 ===== -->
-        <div class="ppt-backdrop" id="ppt-backdrop" style="display:none;">
-            <div class="ppt-dialog">
-                <div class="ppt-head">
-                    <div class="ppt-head-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg></div>
-                    <div class="ppt-head-title">AI4PPT</div>
-                    <button class="ppt-close" id="ppt-close-btn" aria-label="关闭">✕</button>
-                </div>
-
-                <!-- 弹窗只确定主题,提交后关闭弹窗、在右侧开一个新的PPT对话 -->
-                <label class="ppt-label" for="ppt-topic-input">主题</label>
-                <input class="ppt-input" id="ppt-topic-input" placeholder="例如:高质量数据集的分类维度与评测方法" />
-                <label class="ppt-label" for="ppt-slides-select">页数(不含封面)</label>
-                <select class="ppt-select" id="ppt-slides-select">
-                    <option value="5">5 页</option>
-                    <option value="7" selected>7 页</option>
-                    <option value="9">9 页</option>
-                    <option value="12">12 页</option>
-                </select>
-                <label class="ppt-checkbox-row">
-                    <input type="checkbox" id="ppt-grounded-checkbox">
-                    <span>限定在本页"高质量数据集"资料范围内(取消勾选可以做任意主题)</span>
-                </label>
-                <div class="ppt-row">
-                    <button class="ppt-btn-ghost" id="ppt-cancel-btn">取消</button>
-                    <button class="ppt-btn-primary" id="ppt-generate-btn">生成大纲</button>
-                </div>
-
-                <div class="ppt-status" id="ppt-status" style="display:none;"></div>
-            </div>
-        </div>
-
         <div class="app-main">
+            <!-- 语言切换:只切界面文案,状态存 localStorage(hqds-lang) -->
+            <div class="lang-switch" id="lang-switch">
+                <button type="button" data-lang="zh">中文</button>
+                <button type="button" data-lang="en">EN</button>
+            </div>
             <!-- 通用问答线程:不检索、不限定语料,DeepSeek直接回答任意问题,"新对话"按钮进的就是这里 -->
             <div class="chat-thread active" data-mode="chat">
                 <div class="chat-scroll" id="chat-scroll">
                     <div class="chat-empty" id="chat-empty">
-                        <div class="empty-icon"><svg><use href="#icon-ask"></use></svg></div>
-                        <div class="empty-title">新对话</div>
                         <div class="empty-sub">问我任何问题</div>
                         <div class="empty-suggestions">
                             <button class="suggestion-chip" type="button">用大白话讲讲 Transformer 里的 Attention 机制</button>
@@ -1153,6 +1577,12 @@
                     </div>
                 </div>
                 <div class="chat-inputbar">
+                    <div class="skill-design-bar" id="skill-design-bar" hidden>
+                        <span id="skill-design-label">🛠 技能设计中</span>
+                        <button type="button" id="skill-design-save">存为技能</button>
+                        <button type="button" id="skill-design-exit">退出</button>
+                    </div>
+                    <div class="skill-active-bar" id="skill-active-bar" hidden></div>
                     <div class="chat-inputbar-inner">
                         <div class="chat-input-wrap"><textarea id="chat-input" placeholder="发消息…" rows="1"></textarea></div>
                         <button class="chat-send-btn" id="chat-send"><svg><use href="#icon-send"></use></svg></button>
@@ -1164,8 +1594,6 @@
             <div class="chat-thread" data-mode="ask">
                 <div class="chat-scroll" id="ask-scroll">
                     <div class="chat-empty" id="ask-empty">
-                        <div class="empty-icon"><svg><use href="#icon-ask"></use></svg></div>
-                        <div class="empty-title">问答模式</div>
                         <div class="empty-sub">问点什么，比如「质量评测规范的三个维度是什么」</div>
                         <div class="empty-suggestions">
                             <button class="suggestion-chip" type="button">高质量数据集常见的评测维度有哪些？</button>
@@ -1186,8 +1614,6 @@
             <div class="chat-thread" data-mode="quiz">
                 <div class="chat-scroll" id="quiz-scroll">
                     <div class="chat-empty" id="quiz-empty">
-                        <div class="empty-icon"><svg><use href="#icon-quiz"></use></svg></div>
-                        <div class="empty-title">自测模式</div>
                         <div class="empty-sub">随机抽一段内容出题考你，答完给你点评和参考答案</div>
                         <div class="empty-action">
                             <button class="quiz-action-btn" id="quiz-start-empty">出一道题</button>
@@ -1207,25 +1633,140 @@
                 </div>
             </div>
 
+
+            <!-- 技能商店:跟"新对话 / AI4PPT / 高质量数据集问答"平级的一个页面,不再是弹窗 -->
+            <div class="chat-thread skill-page" data-mode="skill">
+                <div class="skill-page-inner">
+                    <div class="ppt-head" style="margin-bottom:12px;">
+                        <div class="ppt-head-icon"><svg viewBox="0 0 1024 1024" fill="currentColor"><path d="M576 32A160 160 0 0 1 736 192H896a64 64 0 0 1 64 64v640a64 64 0 0 1-64 64h-234.24v-104.32a87.68 87.68 0 0 0-79.232-87.296L574.08 768a87.68 87.68 0 0 0-87.68 87.68V960H256a64 64 0 0 1-64-64v-160a160 160 0 1 1 0-320V256a64 64 0 0 1 64-64h160A160 160 0 0 1 576 32z m0 74.24c-47.36 0-85.76 38.4-85.76 85.76v74.24h-211.2a12.8 12.8 0 0 0-12.8 12.8v211.2H192a85.76 85.76 0 0 0 0 171.52h74.24v211.2c0 7.04 5.76 12.8 12.8 12.8h133.12v-30.08c0-85.824 66.816-156.096 154.368-161.472l11.072-0.384 11.968 0.64A161.92 161.92 0 0 1 736 855.68v30.08h136.96a12.8 12.8 0 0 0 12.8-12.8V279.04a12.8 12.8 0 0 0-12.8-12.8h-211.2V192c0-47.36-38.4-85.76-85.76-85.76z"/></svg></div>
+                        <div class="ppt-head-title">技能</div>
+                    </div>
+
+                    <div class="skill-tabs">
+                        <button class="skill-tab active" data-tab="mine" type="button">我的技能</button>
+                        <button class="skill-tab" data-tab="market" type="button">技能市场</button>
+                        <button class="skill-tab" data-tab="create" type="button">创建技能</button>
+                    </div>
+
+                    <div class="skill-tabpane active" data-tab="mine">
+                        <div class="skill-global">
+                            <div class="skill-global-head"><span class="skill-star">★</span> 全局技能 · 对每一个对话都生效</div>
+                            
+                            <!-- 和下面「创建技能」同一套三种方式，只是结果不落成一张技能卡，
+                                 而是直接填进下面这个文本框，你还能接着改。 -->
+                            <div class="skill-make-methods skill-gmake-methods">
+                                <button type="button" class="skill-gmake-tab active" data-gmethod="file">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/></svg>
+                                    <span>本地导入</span>
+                                </button>
+                                <button type="button" class="skill-gmake-tab" data-gmethod="url">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                                    <span>链接导入</span>
+                                </button>
+                                <button type="button" class="skill-gmake-tab" data-gmethod="chat">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>
+                                    <span>对话生成</span>
+                                </button>
+                            </div>
+
+                            <div class="skill-gmake-body" data-gmethod="file">
+                                <button type="button" class="ppt-btn-ghost" id="skill-global-import-file-btn">选择文件…</button>
+                                <input type="file" id="skill-global-import-file" accept=".json,.md,.markdown,.txt,.yml,.yaml" hidden>
+                                <div class="skill-hint">支持 SKILL.md（带 name / description 的 frontmatter，或纯正文）和 .json</div>
+                            </div>
+                            <div class="skill-gmake-body" data-gmethod="url" hidden>
+                                <div class="skill-import-row">
+                                    <input type="text" class="ppt-input" id="skill-global-import-url" placeholder="https://…  GitHub 的 SKILL.md / .json / 仓库地址，或任意 raw 链接">
+                                    <button type="button" class="ppt-btn-ghost" id="skill-global-import-url-btn">拉取</button>
+                                </div>
+                            </div>
+                            <div class="skill-gmake-body" data-gmethod="chat" hidden>
+                                <div class="skill-hint" style="margin-bottom:10px;">开一个新对话，跟 AI 一起把你的全局设定打磨到满意，再存下来。</div>
+                                <button type="button" class="ppt-btn-primary" id="skill-global-design-start">开始设计对话</button>
+                            </div>
+
+                            <div class="skill-import-status" id="skill-global-import-status" hidden></div>
+
+                            <textarea id="skill-global-input" class="skill-textarea" rows="3" placeholder="例如：我是隧道工程方向的博士生，回答偏工程实践，中文，公式用 LaTeX，先给结论再展开。"></textarea>
+                            <div class="skill-hint" id="skill-global-hint">自动保存在本机浏览器。</div>
+                        </div>
+                        <div class="skill-sub">已装技能 · 勾选后在当前对话启用（最多 3 个）</div>
+                        <div id="skill-mine-list" class="skill-mine-list"></div>
+                    </div>
+
+                    <div class="skill-tabpane" data-tab="market">
+                        <input id="skill-market-search" class="ppt-input" placeholder="搜索技能…" style="margin-bottom:12px;">
+                        <div class="skill-hint" id="skill-market-status" style="margin-bottom:8px;" hidden>技能商店暂时连不上,先显示内置技能</div>
+                        <div id="skill-market-grid" class="skill-market-grid"></div>
+                    </div>
+
+                    <div class="skill-tabpane" data-tab="create">
+                        <div class="skill-make-methods">
+                            <button type="button" class="skill-make-tab active" data-method="file">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/></svg>
+                                <span>本地导入</span>
+                            </button>
+                            <button type="button" class="skill-make-tab" data-method="url">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                                <span>链接导入</span>
+                            </button>
+                            <button type="button" class="skill-make-tab" data-method="chat">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>
+                                <span>对话生成</span>
+                            </button>
+                        </div>
+
+                        <div class="skill-make-body" data-method="file">
+                            <button type="button" class="ppt-btn-ghost" id="skill-import-file-btn">选择文件…</button>
+                            <input type="file" id="skill-import-file" accept=".json,.md,.markdown,.txt,.yml,.yaml" hidden>
+                            <div class="skill-hint">支持 SKILL.md（带 name / description 的 frontmatter，或纯正文）和 .json</div>
+                        </div>
+                        <div class="skill-make-body" data-method="url" hidden>
+                            <div class="skill-import-row">
+                                <input type="text" class="ppt-input" id="skill-import-url" placeholder="https://…  GitHub 的 SKILL.md / .json / 仓库地址，或任意 raw 链接">
+                                <button type="button" class="ppt-btn-ghost" id="skill-import-url-btn">拉取</button>
+                            </div>
+                        </div>
+                        <div class="skill-make-body" data-method="chat" hidden>
+                            <div class="skill-hint" style="margin-bottom:10px;">开一个新对话，跟 AI 一起把技能打磨到满意，再存下来。</div>
+                            <button type="button" class="ppt-btn-primary" id="skill-design-start">开始设计对话</button>
+                        </div>
+
+                        <div class="skill-import-status" id="skill-import-status" hidden></div>
+
+                        <div class="skill-preview" id="skill-preview" hidden>
+                            <div class="skill-preview-top">
+                                <span class="skill-card-ico" id="skill-preview-ico"></span>
+                                <span class="skill-preview-name" id="skill-preview-name"></span>
+                            </div>
+                            <div class="skill-preview-desc" id="skill-preview-desc"></div>
+                            <div class="skill-preview-inst" id="skill-preview-inst"></div>
+                            <div class="skill-preview-starters" id="skill-preview-starters"></div>
+                            <div class="ppt-row">
+                                <button type="button" class="ppt-btn-ghost" id="skill-preview-cancel">放弃</button>
+                                <button type="button" class="ppt-btn-primary" id="skill-preview-save">保存到我的技能</button>
+                            </div>
+                        </div>
+                        <div class="skill-hint" id="skill-custom-hint">自建技能只存在本机浏览器。</div>
+                    </div>
+                </div>
+            </div>
+
             <!-- PPT线程:弹窗只确定主题,生成后作为第一轮对话出现在这里,后续编辑就是普通发消息 -->
             <div class="chat-thread" data-mode="ppt">
                 <div class="chat-scroll" id="ppt-scroll">
                     <div class="chat-empty" id="ppt-empty">
-                        <div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#1f1f22" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg></div>
-                        <div class="empty-title">AI4PPT</div>
-                        <div class="empty-sub">先说一个主题,生成一份大纲,之后可以继续对话来调整内容</div>
-                        <div class="empty-action">
-                            <button class="quiz-action-btn" id="ppt-start-empty">生成PPT</button>
-                        </div>
+                        <img class="empty-logo" src="https://jinpeng-assets.oss-cn-beijing.aliyuncs.com/%E4%B8%AA%E4%BA%BA%E4%B8%BB%E9%A1%B5/%E5%9F%BA%E6%9C%AC%E5%9B%BE%E7%89%87/logo3.0.svg" alt="Jinpeng Xin" aria-hidden="true" draggable="false">
+                        <div class="empty-sub">边聊边改&nbsp;&nbsp;所见即所得</div>
                     </div>
                 </div>
-                <div class="chat-inputbar" id="ppt-inputbar" style="display:none;">
+                <div class="chat-inputbar" id="ppt-inputbar">
                     <div class="ppt-focus-chip" id="ppt-focus-chip" style="display:none;">
                         <span>正在修改：<b id="ppt-focus-chip-label"></b></span>
                         <button id="ppt-focus-chip-clear" aria-label="退出单页修改" title="退出单页修改">✕</button>
                     </div>
                     <div class="chat-inputbar-inner">
-                        <div class="chat-input-wrap"><textarea id="ppt-edit-input" placeholder="说说怎么改,比如「第3页精简成3条要点」…" rows="1"></textarea></div>
+                        <div class="chat-input-wrap"><textarea id="ppt-edit-input" placeholder="说一个主题,比如「盾构隧道施工风险管理」…" rows="1"></textarea></div>
                         <button class="chat-send-btn" id="ppt-edit-send"><svg><use href="#icon-send"></use></svg></button>
                     </div>
                 </div>
@@ -1377,6 +1918,7 @@
                 refreshSidebarUserBtn();
                 closeAuthDialog();
                 refreshHistoryList();
+                pullUserSkills();
             } catch (e) {
                 setAuthStatus('登录失败：' + e.message, 'err');
             }
@@ -1387,6 +1929,8 @@
             AUTH_EMAIL = null;
             localStorage.removeItem('hqds-auth-token');
             localStorage.removeItem('hqds-auth-email');
+            clearTimeout(skillsPushTimer);
+            refreshSkillHints();
             historyConversations = [];
             currentConvId.chat = currentConvId.ask = currentConvId.quiz = currentConvId.ppt = null;
             refreshSidebarUserBtn();
@@ -1394,13 +1938,9 @@
             closeAuthDialog();
         });
 
-        /* ---------- 历史对话:侧边栏分组,登录后拉列表,点击某条=把那一屏内容恢复回来 ---------- */
-        const historyGroupBtn = document.getElementById('history-group-btn');
-        const historyBody = document.getElementById('history-body');
+        /* ---------- 历史对话:侧边栏常驻列表(无标题按钮),登录后拉列表,点击某条=把那一屏内容恢复回来 ---------- */
         const historyListEl = document.getElementById('history-list');
         const historyEmptyEl = document.getElementById('history-empty');
-
-        // 历史对话现在是常驻显示的一个区块,不再靠点击展开——数据本来就已经在登录后/页面加载时自动拉取了(见下方 refreshHistoryList 调用处)
 
         function formatRelTime(ts) {
             const diff = Date.now() / 1000 - ts;
@@ -1473,6 +2013,9 @@
                     switchMode('chat');
                     chatScroll.innerHTML = rec.scrollHTML;
                     chatMessages = rec.messages || [];
+                    activeSkillIds = [];        // 一期不跨会话持久化激活技能,加载历史时清空,需要再手动勾
+                    if (typeof exitSkillDesign === 'function') exitSkillDesign();
+                    renderSkillActiveBar();
                     currentConvId.chat = rec.id;
                 } else if (rec.mode === 'ask') {
                     switchMode('ask');
@@ -1490,9 +2033,9 @@
                     pptScroll.innerHTML = rec.scrollHTML;
                     pptData = rec.pptData || null;
                     currentConvId.ppt = rec.id;
+                    pptEditInput.placeholder = pptPlaceholder();
                     if (pptData) {
                         renderPptCanvas(pptData);
-                        pptInputbar.style.display = 'block';
                         openPptCanvas();
                     }
                 }
@@ -1569,16 +2112,78 @@
             if (!localStorage.getItem(THEME_KEY)) updateThemeToggleIcon();
         });
 
-        /* ---------- 侧边栏收缩/展开(记忆状态) ---------- */
+        /* ---------- 侧边栏:收缩/展开 + 拖拽调宽 ---------- */
         const appSidebar = document.getElementById('app-sidebar');
         const sidebarCollapseBtn = document.getElementById('sidebar-collapse-btn');
+        const SIDEBAR_MIN = 180, SIDEBAR_MAX = 420, SIDEBAR_DEFAULT = 224; // 展开永远回到这个固定宽度
+        const SIDEBAR_COLLAPSE_AT = 155; // 拖得比这更窄就直接折叠成图标条
+
+        // 只记忆"折叠/展开"这个状态;拖出来的宽度不持久化,展开一律回到 SIDEBAR_DEFAULT
+        localStorage.removeItem('hqds-sidebar-width'); // 清掉旧版本可能残留的存值
         if (localStorage.getItem('hqds-sidebar-collapsed') === '1') {
             appSidebar.classList.add('collapsed');
         }
-        sidebarCollapseBtn.addEventListener('click', () => {
-            const collapsed = appSidebar.classList.toggle('collapsed');
+
+        let sidebarTogTimer = 0;
+        // 折叠/展开统一走这里;slow=true 时用 .toggling 那条 0.72s 慢过渡(展开、折叠同速)
+        function setSidebarCollapsed(collapsed, slow) {
+            appSidebar.classList.remove('resizing');
+            appSidebar.classList.toggle('collapsed', collapsed);
             localStorage.setItem('hqds-sidebar-collapsed', collapsed ? '1' : '0');
+            appSidebar.style.width = ''; // 清内联宽度 → 折叠 48 / 展开固定 224 由 CSS 决定
+            if (slow) {
+                appSidebar.classList.add('toggling');
+                clearTimeout(sidebarTogTimer);
+                sidebarTogTimer = setTimeout(() => appSidebar.classList.remove('toggling'), 800);
+            }
+        }
+        const expandSidebar = (slow) => setSidebarCollapsed(false, slow);
+        const collapseSidebar = (slow) => setSidebarCollapsed(true, slow);
+
+        sidebarCollapseBtn.addEventListener('click', () => {
+            setSidebarCollapsed(!appSidebar.classList.contains('collapsed'), true);
         });
+
+        /* 右缘拖拽调宽(仅当前会话有效,不持久化) */
+        const sidebarResizeHandle = document.getElementById('sidebar-resize-handle');
+        let dragStartX = 0, dragStartW = 0, dragMoved = false;
+        function onSidebarDragMove(e) {
+            if (!dragMoved) { // 第一次真正移动:从慢过渡切到"跟手无过渡"
+                dragMoved = true;
+                appSidebar.classList.remove('toggling');
+                appSidebar.classList.add('resizing');
+            }
+            const raw = dragStartW + (e.clientX - dragStartX);
+            if (raw < SIDEBAR_COLLAPSE_AT) { // 拖太窄:平滑折叠并结束
+                collapseSidebar(true);
+                onSidebarDragEnd();
+                return;
+            }
+            appSidebar.style.width = Math.min(SIDEBAR_MAX, Math.max(SIDEBAR_MIN, raw)) + 'px';
+        }
+        function onSidebarDragEnd() {
+            appSidebar.classList.remove('resizing');
+            document.body.classList.remove('sidebar-resizing');
+            document.removeEventListener('pointermove', onSidebarDragMove);
+            document.removeEventListener('pointerup', onSidebarDragEnd);
+        }
+        sidebarResizeHandle.addEventListener('pointerdown', (e) => {
+            e.preventDefault();
+            dragMoved = false;
+            document.body.classList.add('sidebar-resizing');
+            if (appSidebar.classList.contains('collapsed')) {
+                expandSidebar(true);          // 折叠态点/拖手柄:永远先慢展开到固定的 224
+                dragStartW = SIDEBAR_DEFAULT;
+            } else {
+                appSidebar.classList.add('resizing'); // 已展开:直接跟手,无过渡
+                dragStartW = appSidebar.getBoundingClientRect().width;
+            }
+            dragStartX = e.clientX;
+            document.addEventListener('pointermove', onSidebarDragMove);
+            document.addEventListener('pointerup', onSidebarDragEnd);
+        });
+        // 双击手柄:回到默认宽度
+        sidebarResizeHandle.addEventListener('dblclick', () => { appSidebar.style.width = ''; });
 
         /* ---------- 轻量 Markdown 渲染 ---------- */
         function escapeHtml(str) {
@@ -1627,6 +2232,8 @@
             qaGroupBtn.classList.toggle('active', inQaGroup);
             qaModeSwitch.style.display = inQaGroup ? 'inline-flex' : 'none';
             document.getElementById('new-chat-btn').classList.toggle('active', mode === 'chat');
+            document.getElementById('skill-open-btn').classList.toggle('active', mode === 'skill');
+            document.getElementById('ppt-open-btn').classList.toggle('active', mode === 'ppt');
             if (mode === 'chat') {
                 setTimeout(() => document.getElementById('chat-input').focus(), 50);
             } else if (mode === 'ask') {
@@ -1729,7 +2336,7 @@
             const loadingRow = appendTyping(chatScroll);
 
             try {
-                const data = await callBackend({ mode: 'chat', token: AUTH_TOKEN, messages: chatMessages });
+                const data = await callBackend({ mode: 'chat', token: AUTH_TOKEN, messages: buildChatOutbound() });
                 if (data.error) throw new Error(data.error);
                 loadingRow.querySelector('.msg-bubble').innerHTML = renderMarkdown(data.answer);
                 chatMessages.push({ role: 'assistant', content: data.answer });
@@ -1783,12 +2390,18 @@
             if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendAsk(); }
         });
 
-        /* 空状态里的示例问题芯片:点了直接填进对应输入框并发送 */
-        document.querySelectorAll('#chat-empty .suggestion-chip').forEach((btn) => {
-            btn.addEventListener('click', () => {
-                chatInput.value = btn.textContent.trim();
-                sendChat();
-            });
+        /* 空状态里的示例问题芯片:点了直接填进对应输入框并发送。
+           通用问答这一侧改用事件委托——激活技能后芯片会被换成技能的开场白,原来的一次性绑定就失效了 */
+        chatScroll.addEventListener('click', (e) => {
+            const chip = e.target.closest('.suggestion-chip');
+            if (!chip) return;
+            const text = chip.textContent.trim();
+            chatInput.value = text;
+            chatInput.style.height = 'auto';
+            chatInput.style.height = Math.min(chatInput.scrollHeight, 140) + 'px';
+            chatInput.focus();
+            // 以冒号结尾的是"待补全"式开场白(比如"润色这段摘要:"),只填不发,等用户补内容
+            if (!/[:：]\s*$/.test(text)) sendChat();
         });
         document.querySelectorAll('#ask-empty .suggestion-chip').forEach((btn) => {
             btn.addEventListener('click', () => {
@@ -1896,6 +2509,9 @@
             currentConvId.chat = null;
             chatScroll.innerHTML = chatScrollPristineHTML;
             chatMessages = [];
+            activeSkillIds = [];
+            if (typeof exitSkillDesign === 'function') exitSkillDesign();
+            renderSkillActiveBar();
             chatInput.value = '';
             chatInput.style.height = 'auto';
             switchMode('chat');
@@ -1904,12 +2520,6 @@
         /* ---------- 生成PPT:弹窗只确定主题,提交后当成一轮对话插进PPT线程里 ---------- */
         const PPT_ACCENT = '3A3A3E';
         const PPT_ACCENT_DARK = '1F1F22';
-
-        const pptBackdrop = document.getElementById('ppt-backdrop');
-        const pptStatusEl = document.getElementById('ppt-status');
-        const pptTopicInput = document.getElementById('ppt-topic-input');
-        const pptSlidesSelect = document.getElementById('ppt-slides-select');
-        const pptGenerateBtn = document.getElementById('ppt-generate-btn');
 
         const pptScroll = document.getElementById('ppt-scroll');
         const pptScrollPristineHTML = pptScroll.innerHTML;
@@ -1921,12 +2531,6 @@
         let pptData = null;   // 当前这份大纲,ppt_edit 靠它带上下文;每轮对话各自的下载按钮用闭包存自己那份快照
         let pptBusy = false;
 
-        function setPptStatus(text, type) {
-            if (!text) { pptStatusEl.style.display = 'none'; return; }
-            pptStatusEl.style.display = 'block';
-            pptStatusEl.className = 'ppt-status ' + (type === 'err' ? 'ppt-status-err' : 'ppt-status-info');
-            pptStatusEl.innerHTML = text;
-        }
 
         /* ---------- 右侧画布:所见即所得,始终显示pptData这"当前一版" ---------- */
         const pptCanvas = document.getElementById('ppt-canvas');
@@ -2167,64 +2771,68 @@
             return row;
         }
 
-        function openPptDialog() {
-            pptBackdrop.style.display = 'flex';
-            setPptStatus('');
-            pptTopicInput.focus();
+        /* AI4PPT 就是一个普通对话:第一句话当主题,生成大纲;之后每一句都是改大纲的指令。
+           页数和"限定资料范围"不再让用户选——固定 7 页、不限定,想改页数直接在对话里说。 */
+        const PPT_DEFAULT_SLIDES = 7;
+        function pptPlaceholder() {
+            return pptData ? '说说怎么改,比如「第3页精简成3条要点」…' : '说一个主题,比如「盾构隧道施工风险管理」…';
         }
-        function closePptDialog() { pptBackdrop.style.display = 'none'; }
+        function openPptDialog() {
+            switchMode('ppt');
+            // 从侧栏进来 = 开一份新的 PPT,而不是停在上一份上
+            pptData = null;
+            currentConvId.ppt = null;
+            pptScroll.innerHTML = pptScrollPristineHTML;
+            setPptFocus(null);
+            closePptCanvas();
+            pptEditInput.value = '';
+            pptEditInput.style.height = 'auto';
+            pptEditInput.placeholder = pptPlaceholder();
+            setTimeout(() => pptEditInput.focus(), 60);
+        }
 
-        document.getElementById('ppt-start-empty').addEventListener('click', openPptDialog);
-        document.getElementById('ppt-close-btn').addEventListener('click', closePptDialog);
-        document.getElementById('ppt-cancel-btn').addEventListener('click', closePptDialog);
-        pptBackdrop.addEventListener('click', (e) => { if (e.target === pptBackdrop) closePptDialog(); });
-
-        async function generatePptOutline() {
-            const topic = pptTopicInput.value.trim();
+        async function generatePptOutline(topic) {
             if (!topic || pptBusy) return;
-            if (!requireLogin()) { closePptDialog(); return; }
+            if (!requireLogin()) return;
+            pptEditInput.value = '';
+            pptEditInput.style.height = 'auto';
             pptBusy = true;
-            pptGenerateBtn.disabled = true;
-            setPptStatus('<span class="ppt-spin"></span>正在生成大纲…', 'info');
+            pptEditSend.disabled = true;
+            appendMessage(pptScroll, 'user', { html: escapeHtml(topic) });
+            const loadingRow = appendTyping(pptScroll);
             try {
                 const data = await callBackend({
                     mode: 'ppt_outline',
                     token: AUTH_TOKEN,
                     topic,
-                    slides: Number(pptSlidesSelect.value),
-                    grounded: document.getElementById('ppt-grounded-checkbox').checked,
+                    slides: PPT_DEFAULT_SLIDES,
+                    grounded: false,
                 });
                 if (data.error) throw new Error(data.error);
                 pptData = data;
-
-                closePptDialog();
-                switchMode('ppt');
-                appendMessage(pptScroll, 'user', { html: escapeHtml(topic) });
+                loadingRow.remove();
                 appendPptConfirm(`已经生成《${pptData.title}》的大纲,共 ${pptData.slides.length} 页。`);
                 renderPptCanvas(pptData);
                 openPptCanvas();
-                pptInputbar.style.display = 'block';
-                pptTopicInput.value = '';
+                pptEditInput.placeholder = pptPlaceholder();
                 setTimeout(() => pptEditInput.focus(), 50);
                 await saveConversation('ppt');
             } catch (e) {
-                setPptStatus('生成失败：' + e.message, 'err');
+                loadingRow.querySelector('.msg-bubble').textContent = '生成失败：' + e.message;
             } finally {
                 pptBusy = false;
-                pptGenerateBtn.disabled = false;
+                pptEditSend.disabled = false;
             }
         }
-        pptGenerateBtn.addEventListener('click', generatePptOutline);
-        pptTopicInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') { e.preventDefault(); generatePptOutline(); }
-        });
 
         /* 生成之后的继续对话:就是线程里普通的发消息,只是回复内容是更新后的整份大纲。
            聚焦了某一页时,给指令加一句范围限定前缀——不用改后端,ppt_edit本来就是"照指令改,其余不动"的prompt,
            前缀只是把"其余不动"的范围明确到具体某一页。 */
         async function sendPptEdit() {
             const instruction = pptEditInput.value.trim();
-            if (!instruction || !pptData || pptBusy) return;
+            if (!instruction || pptBusy) return;
+            // 还没有大纲 = 这句话是主题
+            if (!pptData) { generatePptOutline(instruction); return; }
 
             // logo的位置/大小是纯本地状态,不属于DeepSeek管的大纲内容——命中了就地处理,不打后端
             const logoCmd = parsePptLogoCommand(instruction);
@@ -2362,6 +2970,1198 @@
                 triggerBtn.textContent = original;
             }
         }
+
+        /* ==================== 内置技能(Skill)· 一期纯前端 ====================
+           分两层:
+             - 全局技能:最高级,存 localStorage,每一轮通用问答都注入
+             - 激活技能:0~3 个,只作用于当前这个对话
+           一期不改后端:把设定拼成一段 user/assistant 对,插在发出去的 messages 最前面。
+           后端支持结构化字段(globalInstruction / skills)后,把 buildChatOutbound 换成
+           直接透传 chatMessages + 结构化字段即可。 */
+        const SKILL_GLOBAL_KEY = 'hqds-skill-global';
+        const SKILL_INSTALLED_KEY = 'hqds-skill-installed';
+        const SKILL_CUSTOM_KEY = 'hqds-skill-custom';
+        const SKILL_MAX_ACTIVE = 3;
+
+        const BUILTIN_SKILLS = [
+            {
+                id: 'paper-polish', icon: '✍️', name: '论文润色',
+                description: '把中式英文 / 生硬表达改写成地道、简洁的期刊英文,保留术语',
+                instruction: '你是一名资深 SCI 期刊语言编辑。用户给出的英文或中英混写段落,请改写为地道、简洁、符合学术书面语的英文:\n- 保留专业术语与缩写,不擅自替换其含义\n- 多用主动语态和短句,删去冗余修饰\n- 只输出润色后的文本,再附一小段「主要改动说明」,不要逐句翻译\n- 技术含义不确定时先提问,不要臆测',
+                starters: ['润色这段摘要：', '把这段改写得更简洁、地道：']
+            },
+            {
+                id: 'sci-translate', icon: '🌐', name: '中英学术互译',
+                description: '工程 / 岩土 / AI 领域的中英互译,术语一致、不漏信息',
+                instruction: '你是隧道工程与人工智能领域的专业译者,在中英之间翻译用户给的文本:\n- 术语按学界通用译法,同一术语全篇保持一致\n- 公式、变量名、文献引用标记原样保留\n- 译文通顺,不要逐字硬译\n- 关键术语若有多种译法,在译文后用括号标注原文',
+                starters: ['翻译成英文：', '翻译成中文：']
+            },
+            {
+                id: 'review-reply', icon: '📝', name: '审稿意见回复',
+                description: '按期刊 response-to-reviewers 格式,逐条起草回复草稿',
+                instruction: '你在帮用户起草「对审稿人意见的回复」。对每一条意见:\n1. 用一句话复述审稿人的关切(先致谢)\n2. 说明将如何修改,并给出可直接放进正文的措辞\n3. 指出修改位置(第几节 / 图表)\n语气礼貌、就事论事、不卑不亢;中英文跟随用户输入的语言。',
+                starters: ['帮我回复这条审稿意见：']
+            },
+            {
+                id: 'paper-digest', icon: '📚', name: '文献速读',
+                description: '把一篇论文 / 一段材料压成结构化笔记',
+                instruction: '把用户提供的论文内容或摘要整理成结构化速读笔记,固定小标题:\n【研究问题】【核心方法】【关键结果】【创新点】【局限与存疑】【对我的启发】\n每节 2~4 条要点,用词精炼;材料没提到的不要编,写「未提及」。',
+                starters: ['速读这篇：', '把这段材料整理成笔记：']
+            },
+            {
+                id: 'code-explain', icon: '💻', name: '代码逐行讲解',
+                description: '逐段解释代码在做什么,点出坑和复杂度',
+                instruction: '逐段讲解用户给的代码:先一句话说整体目的,再按逻辑块解释,并标出\n- 易错点 / 边界条件\n- 时间与空间复杂度\n- 可改进的写法(如有)\n面向能读懂基础语法、但不熟这段逻辑的人,不要逐字复述语法。',
+                starters: ['讲讲这段代码：']
+            },
+            {
+                id: 'math-derive', icon: '∑', name: '公式推导',
+                description: '一步步推导,每步给依据,公式用 LaTeX',
+                instruction: '按用户要求做数学 / 力学推导:\n- 每一步单独成行,注明用到的定义、定理或假设\n- 公式用 $...$ 或 $$...$$ 的 LaTeX 写\n- 关键中间结果用文字点出物理 / 几何含义\n- 最后给出结论式并标注适用条件',
+                starters: ['推导一下：']
+            },
+            {
+                id: 'brainstorm', icon: '💡', name: '结构化头脑风暴',
+                description: '围绕一个问题给出分类清晰、可执行的想法清单',
+                instruction: '就用户提出的问题做结构化发散:\n- 先给 3~5 个思考角度(维度)\n- 每个维度下 2~4 条具体、可执行的想法,避免空话\n- 末尾给一个「如果只做一件事」的建议\n必要时指出前提假设或信息缺口。',
+                starters: ['帮我想想：']
+            }
+        ];
+
+        /* 每个内置技能一枚线性图标(24×24 描边,跟侧栏图标同风格),放进淡色小方块里显示。
+           自建技能没有映射时回退到用户填的 emoji。 */
+        const _skIco = (d) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
+        const SKILL_ICON_SVG = {
+            'paper-polish': _skIco('<path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/>'),
+            'sci-translate': _skIco('<path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/>'),
+            'review-reply': _skIco('<path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/><path d="m8.5 11.5 2 2 4-4"/>'),
+            'paper-digest': _skIco('<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/>'),
+            'code-explain': _skIco('<path d="m16 18 6-6-6-6"/><path d="m8 6-6 6 6 6"/>'),
+            'math-derive': _skIco('<path d="M18 4H7l5.5 8L7 20h11"/>'),
+            'brainstorm': _skIco('<path d="M15 14c.2-1 .7-1.7 1.5-2.5A5 5 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.8.8 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/>'),
+        };
+        function skillIconHTML(skill) {
+            return SKILL_ICON_SVG[skill.id] || `<span class="skill-ico-emoji">${escapeHtml(skill.icon || '⚡')}</span>`;
+        }
+
+        let skillsSyncMuted = false; // 把服务端数据写回本地时静音,别反过来又触发上传
+        let skillsPushTimer = null;
+        function skillReadJSON(key, fallback) {
+            try { const v = JSON.parse(localStorage.getItem(key)); return Array.isArray(v) ? v : fallback; }
+            catch (e) { return fallback; }
+        }
+        function getCustomSkills() { return skillReadJSON(SKILL_CUSTOM_KEY, []); }
+        function setCustomSkills(list) { localStorage.setItem(SKILL_CUSTOM_KEY, JSON.stringify(list)); scheduleSkillsPush(); }
+        function getInstalledIds() { return skillReadJSON(SKILL_INSTALLED_KEY, []); }
+        function setInstalledIds(ids) { localStorage.setItem(SKILL_INSTALLED_KEY, JSON.stringify([...new Set(ids)])); scheduleSkillsPush(); }
+        function getGlobalSkill() { return localStorage.getItem(SKILL_GLOBAL_KEY) || ''; }
+        function setGlobalSkill(t) { localStorage.setItem(SKILL_GLOBAL_KEY, t || ''); scheduleSkillsPush(); }
+
+        // 改过的内置技能会以「同 id 的自建记录」存在 localStorage 里,这里让它盖住原版
+        function allSkills() {
+            const custom = getCustomSkills();
+            const over = new Set(custom.map(c => c.id));
+            return [...BUILTIN_SKILLS.filter(b => !over.has(b.id)), ...custom];
+        }
+        function isSkillEdited(id) { return isBuiltinSkill(id) && getCustomSkills().some(c => c.id === id); }
+        function skillById(id) { return allSkills().find(s => s.id === id) || null; }
+        function isBuiltinSkill(id) { return BUILTIN_SKILLS.some(s => s.id === id); }
+        function installedSkills() {
+            const ids = new Set(getInstalledIds());
+            const byId = new Map();
+            BUILTIN_SKILLS.forEach(b => { if (ids.has(b.id)) byId.set(b.id, b); });
+            // 自建技能默认就在「我的技能」里;改过的内置技能就地替换掉原版,位置不变
+            getCustomSkills().forEach(c => {
+                if (!isBuiltinSkill(c.id)) byId.set(c.id, c);
+                else if (ids.has(c.id)) byId.set(c.id, c);
+            });
+            return [...byId.values()];
+        }
+
+        // 首次使用预装几个常用的,之后用户自己增删(空数组也尊重,不再自动塞)
+        if (localStorage.getItem(SKILL_INSTALLED_KEY) === null) {
+            setInstalledIds(['paper-polish', 'sci-translate', 'code-explain']);
+        }
+
+        let activeSkillIds = []; // 仅当前 chat 对话
+        let skillDesignMode = false; // 「对话生成技能」进行中:此时对话走技能设计助手的设定
+        function pruneActiveSkills() {
+            const ok = new Set(installedSkills().map(s => s.id));
+            activeSkillIds = activeSkillIds.filter(id => ok.has(id)).slice(0, SKILL_MAX_ACTIVE);
+        }
+
+        function buildSkillPreamble() {
+            const parts = [];
+            const g = getGlobalSkill().trim();
+            if (g) parts.push('【长期偏好】\n' + g);
+            pruneActiveSkills();
+            activeSkillIds.forEach(id => {
+                const s = skillById(id);
+                if (s) parts.push(`【技能 · ${s.name}】\n${s.instruction}`);
+            });
+            return parts.join('\n\n');
+        }
+        // 发给后端的 messages:有设定就在最前面插一段 user/assistant 对
+        function buildChatOutbound() {
+            if (skillDesignMode) {
+                return [
+                    { role: 'user', content: skillDesignPreamble() },
+                    { role: 'assistant', content: '好的,我来当技能设计助手。' },
+                    ...chatMessages,
+                ];
+            }
+            // 界面切到 EN 时顺带让模型也说英文,否则界面英文、回答中文会很割裂
+            const langPre = (window.__lang === 'en')
+                ? [{ role: 'user', content: 'Please reply in English from now on, whatever language I ask in.' },
+                   { role: 'assistant', content: 'Understood, I will reply in English.' }]
+                : [];
+            const pre = buildSkillPreamble();
+            if (!pre) return [...langPre, ...chatMessages];
+            return [
+                ...langPre,
+                { role: 'user', content: '(以下是本次对话的设定,请全程遵循;回复时不要复述这段设定。)\n\n' + pre },
+                { role: 'assistant', content: '明白,我会按上述设定来。' },
+                ...chatMessages,
+            ];
+        }
+
+        /* ---------- 渲染:输入框上方的激活技能 chips + 空状态开场白 ---------- */
+        const skillActiveBar = document.getElementById('skill-active-bar');
+        const skillOpenBtn = document.getElementById('skill-open-btn');
+        const CHAT_SUGGEST_DEFAULT = Array.from(document.querySelectorAll('#chat-empty .suggestion-chip')).map(b => b.textContent.trim());
+
+        function currentChatSuggestions() {
+            const starters = [];
+            activeSkillIds.forEach(id => { const s = skillById(id); (s && s.starters || []).forEach(t => starters.push(t)); });
+            return starters.length ? starters.slice(0, 4) : CHAT_SUGGEST_DEFAULT;
+        }
+        function updateChatSuggestions() {
+            const box = document.querySelector('#chat-empty .empty-suggestions');
+            if (!box) return;
+            box.innerHTML = currentChatSuggestions()
+                .map(t => `<button class="suggestion-chip" type="button">${escapeHtml(t)}</button>`).join('');
+        }
+        const skillCountBadge = document.getElementById('skill-count-badge');
+        function renderSkillActiveBar() {
+            pruneActiveSkills();
+            skillCountBadge.textContent = activeSkillIds.length;
+            skillCountBadge.hidden = activeSkillIds.length === 0;
+            // 输入框上方不再显示技能 chips,激活情况只体现在侧栏「技能市场」按钮的徽标上
+            skillActiveBar.hidden = true;
+            skillActiveBar.innerHTML = '';
+            updateChatSuggestions();
+        }
+        skillActiveBar.addEventListener('click', (e) => {
+            const x = e.target.closest('.skill-chip-x');
+            if (x) { activeSkillIds = activeSkillIds.filter(id => id !== x.dataset.id); renderSkillActiveBar(); return; }
+            if (e.target.closest('#skill-chip-add')) openSkillPanel('mine');
+        });
+
+        /* ---------- 技能面板 ---------- */
+        // 技能商店现在是个页面,进出就是切 mode;函数名保留,调用点不用改
+        function openSkillPanel(tab) { switchMode('skill'); switchSkillTab(tab || 'mine'); }
+        function closeSkillPanel() { switchMode('chat'); }
+        skillOpenBtn.addEventListener('click', () => openSkillPanel('market'));
+
+        function switchSkillTab(tab) {
+            document.querySelectorAll('.skill-tab').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+            document.querySelectorAll('.skill-tabpane').forEach(p => p.classList.toggle('active', p.dataset.tab === tab));
+            if (tab === 'mine') renderMySkills();
+            if (tab === 'market') renderMarket();
+            if (tab === 'mine' || tab === 'market') loadMarket();
+            if (tab === 'create') resetMakeTab();
+        }
+        document.querySelectorAll('.skill-tab').forEach(b => b.addEventListener('click', () => switchSkillTab(b.dataset.tab)));
+
+        const skillGlobalInput = document.getElementById('skill-global-input');
+        skillGlobalInput.addEventListener('input', () => setGlobalSkill(skillGlobalInput.value));
+
+        const skillMineList = document.getElementById('skill-mine-list');
+        function renderMySkills() {
+            if (skillGlobalInput.value !== getGlobalSkill()) skillGlobalInput.value = getGlobalSkill();
+            const list = installedSkills();
+            if (!list.length) {
+                skillMineList.innerHTML = `<div class="skill-empty">还没有技能。去「技能市场」添加,或在「创建技能」里自己写一个。</div>`;
+                return;
+            }
+            const cnt = activeSkillIds.length;
+            const editedIds = new Set(getCustomSkills().map(c => c.id));
+            skillMineList.innerHTML = list.map(s => {
+                const on = activeSkillIds.includes(s.id);
+                const disabled = !on && cnt >= SKILL_MAX_ACTIVE;
+                return `<div class="skill-row">
+                    <span class="skill-row-ico">${skillIconHTML(s)}</span>
+                    <span class="skill-row-meta">
+                        <span class="skill-row-name">${escapeHtml(s.name)}${isBuiltinSkill(s.id) ? (editedIds.has(s.id) ? ' <em>已改</em>' : '') : ((s.market ? ' <em>商店</em>' : ' <em>自建</em>') + (s.marketId ? ' <em>已发布</em>' : ''))}</span>
+                        <span class="skill-row-desc">${escapeHtml(s.description || '')}</span>
+                    </span>
+                    <label class="skill-switch ${disabled ? 'is-disabled' : ''}" title="${disabled ? '最多同时启用 ' + SKILL_MAX_ACTIVE + ' 个' : '在当前对话启用'}">
+                        <input type="checkbox" data-id="${s.id}" ${on ? 'checked' : ''} ${disabled ? 'disabled' : ''}><span></span>
+                    </label>
+                    ${pubBtnHtml(s)}<button class="skill-row-edit" data-id="${s.id}" title="用对话修改"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
+                    <button class="skill-row-x" data-id="${s.id}" title="${isBuiltinSkill(s.id) ? (editedIds.has(s.id) ? '移除(并丢弃修改)' : '从我的技能移除') : '删除这个自建技能'}">✕</button>
+                </div>`;
+            }).join('');
+        }
+        skillMineList.addEventListener('change', (e) => {
+            const cb = e.target.closest('input[type=checkbox]');
+            if (!cb) return;
+            if (cb.checked) {
+                if (activeSkillIds.length >= SKILL_MAX_ACTIVE) { cb.checked = false; return; }
+                if (!activeSkillIds.includes(cb.dataset.id)) activeSkillIds.push(cb.dataset.id);
+            } else {
+                activeSkillIds = activeSkillIds.filter(id => id !== cb.dataset.id);
+            }
+            renderSkillActiveBar();
+            renderMySkills();
+        });
+        skillMineList.addEventListener('click', (e) => {
+            const pub = e.target.closest('.skill-row-pub');
+            if (pub) { publishSkill(pub.dataset.id, pub); return; }
+            const ed = e.target.closest('.skill-row-edit');
+            if (ed) { const sk = skillById(ed.dataset.id); if (sk) startSkillDesign(sk); return; }
+            const x = e.target.closest('.skill-row-x');
+            if (!x) return;
+            const id = x.dataset.id;
+            activeSkillIds = activeSkillIds.filter(a => a !== id);
+            if (isBuiltinSkill(id)) setInstalledIds(getInstalledIds().filter(i => i !== id));
+            setCustomSkills(getCustomSkills().filter(s => s.id !== id)); // 内置技能:连同你的修改一起清掉,回到原版
+            renderSkillActiveBar();
+            renderMySkills();
+        });
+
+        const skillMarketSearch = document.getElementById('skill-market-search');
+        const skillMarketGrid = document.getElementById('skill-market-grid');
+        /* ---------- 技能商店:内置技能(写死在页面里) + 服务端商店(游客可读、白名单发布) ----------
+           从商店装的技能,就是往「自建技能」列表里存一份副本(带 market 标记),
+           所以它天然跟账号同步、天然出现在「我的技能」里、天然能被启用,不需要另一套机制。 */
+        let marketCache = { items: [], canPublish: false, ok: null, at: 0, forToken: null };
+        const marketDetailCache = new Map(); // "id@updated_at" -> 详情,展开过一次就不再请求
+        const skillMarketStatus = document.getElementById('skill-market-status');
+
+        async function loadMarket(force) {
+            const tk = AUTH_TOKEN || null;
+            // 登录状态变了(canPublish 会变)或者超过 30 秒才重拉;先占位,防止并发重复请求
+            if (!force && marketCache.forToken === tk && Date.now() - marketCache.at < 30000) return;
+            marketCache.at = Date.now();
+            marketCache.forToken = tk;
+            try {
+                const d = await callBackend({ mode: 'list_market_skills', token: tk || undefined });
+                if (d.error) throw new Error(d.error);
+                marketCache = { items: d.skills || [], canPublish: !!d.canPublish, ok: true, at: Date.now(), forToken: tk };
+            } catch (e) {
+                marketCache.ok = false; // 连不上就只显示内置的,不拦着别的功能
+                marketCache.canPublish = false;
+            }
+            renderMarket();
+            renderMySkills();
+        }
+
+        function skillRecordFromMarket(s) {
+            return {
+                id: s.id, icon: (s.icon || '').slice(0, 2), name: s.name, description: s.description || '',
+                instruction: s.instruction, starters: (s.starters || []).slice(0, 4), custom: true,
+                market: true, marketUpdatedAt: s.updated_at || 0, author: s.author || '',
+            };
+        }
+        function renderMarket() {
+            const q = (skillMarketSearch.value || '').trim().toLowerCase();
+            const installed = new Set(getInstalledIds());
+            const local = new Map(getCustomSkills().map(c => [c.id, c]));
+            const match = s => !q || (s.name + ' ' + (s.description || '') + ' ' + (s.author || '')).toLowerCase().includes(q);
+
+            const builtinCards = BUILTIN_SKILLS.filter(match).map(s => {
+                const added = installed.has(s.id);
+                return `<div class="skill-card">
+                        <div class="skill-card-ico">${skillIconHTML(s)}</div>
+                        <div class="skill-card-name">${escapeHtml(s.name)}</div>
+                        <div class="skill-card-desc">${escapeHtml(s.description || '')}</div>
+                        <button class="skill-card-btn ${added ? 'is-added' : ''}" data-id="${s.id}" type="button">${added ? '✓ 已添加' : '＋ 添加'}</button>
+                    </div>`;
+            });
+
+            const marketCards = marketCache.items.filter(s => !isBuiltinSkill(s.id) && match(s)).map(s => {
+                const rec = local.get(s.id);
+                const stale = !!(rec && rec.market && (rec.marketUpdatedAt || 0) < (s.updated_at || 0));
+                const act = !rec ? 'install' : (stale ? 'update' : 'remove');
+                const label = !rec ? '＋ 添加' : (stale ? '更新' : '✓ 已添加');
+                const id = escapeHtml(s.id);
+                return `<div class="skill-card">
+                        <div class="skill-card-ico">${skillIconHTML(s)}</div>
+                        <div class="skill-card-name">${escapeHtml(s.name)}</div>
+                        <div class="skill-card-desc">${escapeHtml(s.description || '')}</div>
+                        <div class="skill-card-meta">@${escapeHtml(s.author || '')}</div>
+                        <div class="skill-card-actions">
+                            <button class="skill-card-btn ${rec && !stale ? 'is-added' : ''}" data-src="market" data-act="${act}" data-id="${id}" type="button">${label}</button>
+                            <button class="skill-card-link" data-src="market" data-act="detail" data-id="${id}" type="button">查看指令</button>
+                            ${marketCache.canPublish ? `<button class="skill-card-link is-danger" data-src="market" data-act="unpublish" data-id="${id}" type="button">下架</button>` : ''}
+                        </div>
+                        <div class="skill-card-detail" hidden></div>
+                    </div>`;
+            });
+
+            skillMarketGrid.innerHTML = [...builtinCards, ...marketCards].join('') || `<div class="skill-empty">没有匹配的技能</div>`;
+            skillMarketStatus.hidden = marketCache.ok !== false;
+        }
+        skillMarketSearch.addEventListener('input', renderMarket);
+
+        async function installMarketSkill(id, btn) {
+            btn.disabled = true;
+            try {
+                const d = await callBackend({ mode: 'get_market_skill', id });
+                if (d.error) throw new Error(d.error);
+                const rec = skillRecordFromMarket(d.skill);
+                setCustomSkills([...getCustomSkills().filter(c => c.id !== rec.id), rec]);
+                renderSkillActiveBar();
+            } catch (e) { alert('安装失败:' + e.message); }
+            renderMarket();
+        }
+        async function toggleMarketDetail(btn) {
+            const box = btn.closest('.skill-card').querySelector('.skill-card-detail');
+            if (!box.hidden) { box.hidden = true; btn.textContent = '查看指令'; return; }
+            const id = btn.dataset.id;
+            const meta = marketCache.items.find(m => m.id === id);
+            const key = id + '@' + (meta ? meta.updated_at : '');
+            btn.disabled = true;
+            try {
+                if (!marketDetailCache.has(key)) {
+                    const d = await callBackend({ mode: 'get_market_skill', id });
+                    if (d.error) throw new Error(d.error);
+                    marketDetailCache.set(key, d.skill);
+                }
+                box.textContent = marketDetailCache.get(key).instruction; // 指令是别人写的,只当纯文本显示
+                box.hidden = false;
+                btn.textContent = '收起';
+            } catch (e) { alert('加载失败:' + e.message); }
+            btn.disabled = false;
+        }
+        async function unpublishMarketSkill(id) {
+            const meta = marketCache.items.find(m => m.id === id);
+            if (!confirm('从商店下架「' + (meta ? meta.name : id) + '」?已经安装的人会保留他们那份副本。')) return;
+            try {
+                const d = await callBackend({ mode: 'unpublish_market_skill', token: AUTH_TOKEN, id });
+                if (d.error) throw new Error(d.error);
+                // 我自己那份"已发布"标记也一起清掉,以后再发布就是新条目
+                setCustomSkills(getCustomSkills().map(c => { if (c.marketId !== id) return c; const { marketId, ...rest } = c; return rest; }));
+            } catch (e) { alert('下架失败:' + e.message); return; }
+            marketDetailCache.clear();
+            await loadMarket(true);
+        }
+        skillMarketGrid.addEventListener('click', async (e) => {
+            const btn = e.target.closest('.skill-card-btn, .skill-card-link');
+            if (!btn) return;
+            const id = btn.dataset.id;
+            if (btn.dataset.src !== 'market') { // 内置技能:装 / 卸 切换
+                const ids = getInstalledIds();
+                setInstalledIds(ids.includes(id) ? ids.filter(i => i !== id) : [...ids, id]);
+                renderMarket();
+                return;
+            }
+            const act = btn.dataset.act;
+            if (act === 'detail') return toggleMarketDetail(btn);
+            if (act === 'unpublish') return unpublishMarketSkill(id);
+            if (act === 'remove') {
+                const rec = getCustomSkills().find(c => c.id === id);
+                if (rec && !rec.market && !confirm('这份技能你改过,移除会一并丢掉你的修改。继续吗?')) return;
+                activeSkillIds = activeSkillIds.filter(a => a !== id);
+                setCustomSkills(getCustomSkills().filter(c => c.id !== id));
+                renderSkillActiveBar();
+                renderMarket();
+                return;
+            }
+            await installMarketSkill(id, btn); // install / update
+        });
+
+        // 「我的技能」里自建技能行上的"发布"按钮:只有白名单账号(canPublish)才会渲染出来
+        function pubBtnHtml(s) {
+            if (!marketCache.canPublish || isBuiltinSkill(s.id) || s.market) return '';
+            return `<button class="skill-row-pub" data-id="${s.id}" title="${s.marketId ? '更新商店里的版本' : '发布到技能商店'}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4"/><path d="m6 10 6-6 6 6"/><path d="M4 20h16"/></svg></button>`;
+        }
+        async function publishSkill(id, btn) {
+            const sk = skillById(id);
+            if (!sk || !AUTH_TOKEN) return;
+            const first = !sk.marketId;
+            if (!confirm(first ? `把「${sk.name}」发布到技能商店?所有人都能看到并安装它的指令。` : `把「${sk.name}」的最新内容更新到技能商店?`)) return;
+            btn.disabled = true;
+            try {
+                const d = await callBackend({
+                    mode: 'publish_market_skill', token: AUTH_TOKEN, id: sk.marketId || undefined,
+                    skill: { name: sk.name, icon: sk.icon || '', description: sk.description || '', instruction: sk.instruction, starters: sk.starters || [] },
+                });
+                if (d.error) throw new Error(d.error);
+                setCustomSkills(getCustomSkills().map(c => c.id === id ? { ...c, marketId: d.skill.id } : c));
+                marketDetailCache.clear();
+                await loadMarket(true);
+            } catch (e) {
+                const gone = /不存在/.test(e.message); // 商店里的旧版本被下架了:清掉过期的 marketId,下次就当新技能发布
+                if (gone) setCustomSkills(getCustomSkills().map(c => { if (c.id !== id) return c; const { marketId, ...rest } = c; return rest; }));
+                alert('发布失败:' + e.message + (gone ? '\n商店里的旧版本已经没了,再点一次会当成新技能发布。' : ''));
+                renderMySkills();
+            }
+        }
+
+        /* ---------- 导入技能:本地文件 / GitHub ---------- */
+        function parseFrontmatter(text) {
+            if (!/^---\r?\n/.test(text)) return { fm: {}, body: text };
+            const end = text.indexOf('\n---', 4);
+            if (end < 0) return { fm: {}, body: text };
+            const fm = {};
+            text.slice(4, end).split(/\r?\n/).forEach(line => {
+                const m = line.match(/^([A-Za-z0-9_-]+)\s*:\s*(.*)$/);
+                if (m) fm[m[1].toLowerCase()] = m[2].trim().replace(/^["']|["']$/g, '');
+            });
+            return { fm, body: text.slice(end + 4).replace(/^\r?\n/, '') };
+        }
+        function parseStarters(v) {
+            if (Array.isArray(v)) return v.map(String).map(s => s.trim()).filter(Boolean).slice(0, 4);
+            if (!v) return [];
+            v = String(v).trim();
+            if (v.startsWith('[') && v.endsWith(']')) {
+                try { const a = JSON.parse(v); if (Array.isArray(a)) return a.map(String).slice(0, 4); } catch (e) {}
+                v = v.slice(1, -1);
+            }
+            return v.split(/[,;\n]/).map(s => s.trim().replace(/^["']|["']$/g, '')).filter(Boolean).slice(0, 4);
+        }
+        function parseSkillText(text, filename) {
+            text = (text || '').replace(/^﻿/, '').trim();
+            const fence = text.match(/^```[a-zA-Z]*\s*\n([\s\S]*?)\n?```$/); // 去掉 ```json ... ``` 包裹(对话生成常带)
+            if (fence) text = fence[1].trim();
+            const base = (filename || '').replace(/\.[^.]+$/, '');
+            let s;
+            if (text.trim().startsWith('{')) {
+                let o;
+                try { o = JSON.parse(text.trim()); } catch (e) { throw new Error('JSON 解析失败:' + e.message); }
+                s = {
+                    name: o.name || o.title || base,
+                    description: o.description || o.desc || '',
+                    instruction: o.instruction || o.prompt || o.body || o.content || '',
+                    starters: parseStarters(o.starters || o.examples || o.conversation_starters),
+                    icon: (o.icon || '').toString().slice(0, 2),
+                };
+            } else {
+                const { fm, body } = parseFrontmatter(text);
+                let name = fm.name || fm.title || '';
+                if (!name) { const h = body.match(/^#\s+(.+)$/m); name = h ? h[1].trim() : base; }
+                s = {
+                    name,
+                    description: fm.description || fm.desc || '',
+                    instruction: (body || text).trim(),
+                    starters: parseStarters(fm.starters || fm['conversation-starters']),
+                    icon: (fm.icon || '').slice(0, 2),
+                };
+            }
+            s.name = (s.name || '导入的技能').trim().slice(0, 40);
+            s.description = (s.description || '').trim().slice(0, 200);
+            s.instruction = (s.instruction || '').trim();
+            if (!s.instruction) throw new Error('没找到「指令正文」内容');
+            if (s.instruction.length > 8000) s.instruction = s.instruction.slice(0, 8000);
+            return s;
+        }
+        /* URL 归一化:GitHub 友好,也接受任意 http(s) raw 链接 */
+        function importUrlCandidates(url) {
+            let u;
+            try { u = new URL(url.trim()); } catch (e) { throw new Error('不是合法的链接'); }
+            if (!/^https?:$/.test(u.protocol)) throw new Error('只支持 http(s) 链接');
+            if (u.hostname === 'github.com') {
+                const p = u.pathname.split('/').filter(Boolean);
+                if (p.length < 2) throw new Error('GitHub 链接里看不出仓库');
+                const [owner, repo] = p;
+                const raw = (b, path) => `https://raw.githubusercontent.com/${owner}/${repo}/${b}/${path}`;
+                if (p[2] === 'blob' || p[2] === 'raw') return [raw(p[3], p.slice(4).join('/'))];
+                let branch = 'main', dir = '';
+                if (p[2] === 'tree') { branch = p[3] || 'main'; dir = p.slice(4).join('/'); }
+                const out = [];
+                [branch, 'master'].filter((b, i, a) => a.indexOf(b) === i).forEach(b =>
+                    ['SKILL.md', 'skill.md', 'SKILL.json', 'skill.json'].forEach(n =>
+                        out.push(raw(b, (dir ? dir + '/' : '') + n))));
+                return out;
+            }
+            return [u.href]; // 其它站点:直接抓,可能被 CORS 挡
+        }
+        async function importSkillFromUrl(url) {
+            const cands = importUrlCandidates(url);
+            let lastErr = '';
+            for (const c of cands) {
+                let res;
+                try { res = await fetch(c); }
+                catch (e) { lastErr = '请求失败(可能被 CORS 拦了,换个 raw 直链试试)'; continue; }
+                if (!res.ok) { lastErr = 'HTTP ' + res.status; continue; }
+                return { skill: parseSkillText(await res.text(), c.split('/').pop()), from: c };
+            }
+            throw new Error(cands.length > 1 ? `没找到 SKILL.md / skill.json(试了 ${cands.length} 个路径)` : (lastErr || '拉取失败'));
+        }
+
+        /* ---------- 创建技能:三种方式 → 预览 → 保存 ---------- */
+        const skImpStatus = document.getElementById('skill-import-status');
+        const skPreview = document.getElementById('skill-preview');
+        let pendingSkill = null;
+        let pendingEditId = null; // 非空 = 这份预览是要覆盖回这个已有技能
+        const skPreviewSave = document.getElementById('skill-preview-save');
+        function setImpStatus(msg, err) {
+            skImpStatus.hidden = !msg;
+            skImpStatus.textContent = msg || '';
+            skImpStatus.classList.toggle('is-err', !!err);
+        }
+        function resetMakeTab() {
+            setImpStatus('');
+            skPreview.hidden = true;
+            pendingSkill = null;
+            pendingEditId = null;
+            const url = document.getElementById('skill-import-url'); if (url) url.value = '';
+        }
+        function showSkillPreview(s, editId) {
+            pendingSkill = s;
+            pendingEditId = editId || null;
+            skPreviewSave.textContent = pendingEditId ? '保存修改' : '保存到我的技能';
+            document.getElementById('skill-preview-ico').innerHTML = skillIconHTML(s);
+            document.getElementById('skill-preview-name').textContent = s.name;
+            const d = document.getElementById('skill-preview-desc');
+            d.textContent = s.description || ''; d.hidden = !s.description;
+            document.getElementById('skill-preview-inst').textContent = s.instruction;
+            document.getElementById('skill-preview-starters').innerHTML =
+                (s.starters || []).map(t => `<span>${escapeHtml(t)}</span>`).join('');
+            skPreview.hidden = false;
+        }
+
+        document.querySelectorAll('.skill-make-tab').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const m = btn.dataset.method;
+                document.querySelectorAll('.skill-make-tab').forEach(b => b.classList.toggle('active', b === btn));
+                document.querySelectorAll('.skill-make-body').forEach(b => b.hidden = b.dataset.method !== m);
+                resetMakeTab();
+            });
+        });
+
+        // 1) 本地导入
+        const skImpFile = document.getElementById('skill-import-file');
+        document.getElementById('skill-import-file-btn').addEventListener('click', () => skImpFile.click());
+        skImpFile.addEventListener('change', async () => {
+            const f = skImpFile.files[0];
+            if (!f) return;
+            if (f.size > 200 * 1024) { setImpStatus('文件太大(> 200KB)', true); skImpFile.value = ''; return; }
+            setImpStatus('读取中…');
+            try {
+                showSkillPreview(parseSkillText(await f.text(), f.name));
+                setImpStatus(`已解析「${f.name}」,确认后点保存`);
+            } catch (e) { setImpStatus('导入失败:' + e.message, true); }
+            skImpFile.value = '';
+        });
+
+        // 2) 链接导入
+        const skImpUrl = document.getElementById('skill-import-url');
+        async function doUrlImport() {
+            const url = skImpUrl.value.trim();
+            if (!url) { setImpStatus('先粘贴一个链接', true); return; }
+            setImpStatus('拉取中…');
+            try {
+                const { skill, from } = await importSkillFromUrl(url);
+                showSkillPreview(skill);
+                setImpStatus('已拉取 ' + from.replace(/^https:\/\/(raw\.githubusercontent\.com\/)?/, ''));
+            } catch (e) { setImpStatus('导入失败:' + e.message, true); }
+        }
+        document.getElementById('skill-import-url-btn').addEventListener('click', doUrlImport);
+        skImpUrl.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); doUrlImport(); } });
+
+        // 3) 对话生成:新开一个对话,跟 AI 多轮打磨,再存下来
+        const SKILL_DESIGNER_PREAMBLE =
+            '你现在是「技能设计助手」,帮用户设计一个可复用的 AI 技能(prompt 模板)。\n' +
+            '- 先用一两个问题问清用途、典型输入、输出要求,别一上来就写一大段\n' +
+            '- 每次给草稿时:先一两句自然语言说明,再附一个 ```json 代码块,含 ' +
+            '{"name":"≤12字","description":"≤30字","instruction":"第二人称「你是…」,写清角色/规则/输出格式,150~400字","starters":["1~3条,尽量以冒号结尾"],"icon":"emoji"}\n' +
+            '- 按用户反馈只改需要改的部分,并重新给出完整 json\n' +
+            '- 用户说「就这样 / 存」时,只回一个最终 ```json 代码块,不要多余文字';
+        // 全局技能的「对话生成」走同一条流水线,只是只要 instruction 一个字段,不需要 name/starters 那一套
+        const GLOBAL_DESIGNER_PREAMBLE =
+            '你现在是「全局设定设计助手」,帮用户写一段「全局技能」说明——这段文字会在每一轮对话里都被当成系统设定注入,\n' +
+            '内容通常是用户的身份/背景、领域、语言、回答风格、格式偏好(比如公式用 LaTeX、先结论后展开)等。\n' +
+            '- 先用一两个问题问清背景,别一上来就写一大段\n' +
+            '- 每次给草稿时:先一两句自然语言说明,再附一个 ```json 代码块,只含 {"instruction":"第二人称「你是…」,180字以内,直接可用"}\n' +
+            '- 按用户反馈只改需要改的部分,并重新给出完整 json\n' +
+            '- 用户说「就这样 / 存」时,只回一个最终 ```json 代码块,不要多余文字';
+        const skillDesignBar = document.getElementById('skill-design-bar');
+        const skillDesignSaveBtn = document.getElementById('skill-design-save');
+        const skillDesignLabel = document.getElementById('skill-design-label');
+        let skillDesignSeed = null; // 非空 = 这轮是在改某个已有技能,存的时候写回同一个 id
+        let skillDesignTarget = 'skill'; // 'skill' = 设计/改一个技能卡;'global' = 写全局技能那段自由文本
+
+        // 改已有技能时,把它的当前内容塞进设定里(不进对话气泡),模型才知道在什么基础上改
+        function skillDesignPreamble() {
+            if (skillDesignTarget === 'global') return GLOBAL_DESIGNER_PREAMBLE;
+            if (!skillDesignSeed) return SKILL_DESIGNER_PREAMBLE;
+            const cur = {
+                name: skillDesignSeed.name, description: skillDesignSeed.description || '',
+                instruction: skillDesignSeed.instruction || '', starters: skillDesignSeed.starters || [],
+                icon: skillDesignSeed.icon || '',
+            };
+            return SKILL_DESIGNER_PREAMBLE
+                + '\n\n注意:这次不是从零设计,而是修改下面这个已有技能。请在它的基础上改,'
+                + '没被要求动的部分原样保留,每次都输出同样格式的完整 json:\n```json\n'
+                + JSON.stringify(cur, null, 2) + '\n```';
+        }
+
+        function exitSkillDesign() {
+            skillDesignMode = false;
+            skillDesignSeed = null;
+            skillDesignTarget = 'skill';
+            skillDesignBar.hidden = true;
+        }
+        // seed 为空 = 从零设计一个新技能;传入一个技能 = 用对话来改它;target='global' = 写全局技能那段自由文本
+        async function startSkillDesign(seed, target) {
+            if (!requireLogin()) return;
+            closeSkillPanel();
+            if (AUTH_EMAIL && document.querySelector('.chat-thread.active')?.dataset.mode === 'chat') {
+                await saveConversation('chat'); // 先存掉当前这轮,再开新的
+            }
+            currentConvId.chat = null;
+            chatScroll.innerHTML = chatScrollPristineHTML;
+            chatMessages = [];
+            activeSkillIds = [];
+            renderSkillActiveBar();
+            skillDesignMode = true;
+            skillDesignSeed = seed || null;
+            skillDesignTarget = target === 'global' ? 'global' : 'skill';
+            skillDesignLabel.textContent = skillDesignTarget === 'global'
+                ? '🛠 全局设定设计中'
+                : (seed ? '🛠 技能修改中' : '🛠 技能设计中');
+            skillDesignSaveBtn.textContent = skillDesignTarget === 'global' ? '存为全局设定' : '存为技能';
+            skillDesignBar.hidden = false;
+            switchMode('chat');
+            const opener = skillDesignTarget === 'global'
+                ? '我们来设计你的全局设定 —— 比如你的身份、领域、回答风格、语言、格式偏好之类,想到什么说什么,我帮你整理成一段可用的说明,你随时可以让我改。'
+                : (seed
+                    ? '我们来改「' + seed.name + '」。说说哪里不满意 —— 要加什么规则、输出格式怎么调、语气要不要变,我改完给你完整版。'
+                    : '我们来设计一个技能。先说说它是干嘛的 —— 用途、典型输入、你想要的输出风格,随便描述,我给草稿你再让我改。');
+            appendMessage(chatScroll, 'bot', { html: renderMarkdown(opener) });
+            chatMessages.push({ role: 'assistant', content: opener });
+            setTimeout(() => chatInput.focus(), 60);
+        }
+        document.getElementById('skill-design-start').addEventListener('click', () => startSkillDesign(null));
+        document.getElementById('skill-design-exit').addEventListener('click', exitSkillDesign);
+        skillDesignSaveBtn.addEventListener('click', async () => {
+            if (!skillDesignMode) return;
+            skillDesignSaveBtn.disabled = true;
+            const original = skillDesignSaveBtn.textContent;
+            skillDesignSaveBtn.textContent = '提取中…';
+            try {
+                const ask = { role: 'user', content: '就这样。请只回一个最终技能的 ```json 代码块,不要任何其它文字。' };
+                const data = await callBackend({ mode: 'chat', token: AUTH_TOKEN, messages: [...buildChatOutbound(), ask] });
+                if (data.error) throw new Error(data.error);
+                const skill = parseSkillText(data.answer, '');
+                if (skillDesignTarget === 'global') {
+                    exitSkillDesign();
+                    openSkillPanel('mine');
+                    applyGlobalSkillText(skill.instruction);
+                    setGlobalImpStatus('从对话里提取好了,已经填进去,你还能接着改');
+                } else {
+                    const editId = skillDesignSeed ? skillDesignSeed.id : null;
+                    exitSkillDesign();
+                    openSkillPanel('create');
+                    document.querySelector('.skill-make-tab[data-method=chat]').click();
+                    showSkillPreview(skill, editId);
+                    setImpStatus('从对话里提取好了,确认后点保存');
+                }
+            } catch (e) {
+                alert('提取失败:' + e.message + '\n可以在对话里让它「只输出最终 json」再试。');
+            } finally {
+                skillDesignSaveBtn.disabled = false;
+                skillDesignSaveBtn.textContent = original;
+            }
+        });
+
+        // 保存 / 放弃
+        skPreviewSave.addEventListener('click', () => {
+            if (!pendingSkill) return;
+            const s = pendingSkill;
+            const id = pendingEditId || ('custom-' + Date.now().toString(36));
+            const rec = {
+                id,
+                icon: (s.icon || '').slice(0, 2),
+                name: s.name, description: s.description, instruction: s.instruction,
+                starters: (s.starters || []).slice(0, 4),
+                custom: true,
+            };
+            const prevRec = getCustomSkills().find(c => c.id === id);
+            if (prevRec && prevRec.marketId) rec.marketId = prevRec.marketId; // 改的是已发布的技能:仍对应同一条商店记录
+            // 改已有技能就按 id 就地替换(内置技能则写一条同 id 的覆盖记录),否则追加一条新的
+            setCustomSkills([...getCustomSkills().filter(c => c.id !== id), rec]);
+            if (pendingEditId && isBuiltinSkill(pendingEditId)) setInstalledIds([...getInstalledIds(), pendingEditId]);
+            resetMakeTab();
+            switchSkillTab('mine');
+            renderSkillActiveBar();
+        });
+        document.getElementById('skill-preview-cancel').addEventListener('click', resetMakeTab);
+
+        /* ---------- 全局技能:同样的三种方式,结果直接填进上面那个文本框 ---------- */
+        const skGlobalImpStatusEl = document.getElementById('skill-global-import-status');
+        function setGlobalImpStatus(msg, err) {
+            skGlobalImpStatusEl.hidden = !msg;
+            skGlobalImpStatusEl.textContent = msg || '';
+            skGlobalImpStatusEl.classList.toggle('is-err', !!err);
+        }
+        function applyGlobalSkillText(text) {
+            skillGlobalInput.value = text || '';
+            setGlobalSkill(skillGlobalInput.value);
+        }
+
+        document.querySelectorAll('.skill-gmake-tab').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const m = btn.dataset.gmethod;
+                document.querySelectorAll('.skill-gmake-tab').forEach(b => b.classList.toggle('active', b === btn));
+                document.querySelectorAll('.skill-gmake-body').forEach(b => b.hidden = b.dataset.gmethod !== m);
+                setGlobalImpStatus('');
+            });
+        });
+
+        // 1) 本地导入
+        const skGlobalImpFile = document.getElementById('skill-global-import-file');
+        document.getElementById('skill-global-import-file-btn').addEventListener('click', () => skGlobalImpFile.click());
+        skGlobalImpFile.addEventListener('change', async () => {
+            const f = skGlobalImpFile.files[0];
+            if (!f) return;
+            if (f.size > 200 * 1024) { setGlobalImpStatus('文件太大(> 200KB)', true); skGlobalImpFile.value = ''; return; }
+            setGlobalImpStatus('读取中…');
+            try {
+                const skill = parseSkillText(await f.text(), f.name);
+                applyGlobalSkillText(skill.instruction);
+                setGlobalImpStatus(`已从「${f.name}」填入,你还能接着改`);
+            } catch (e) { setGlobalImpStatus('导入失败:' + e.message, true); }
+            skGlobalImpFile.value = '';
+        });
+
+        // 2) 链接导入
+        const skGlobalImpUrl = document.getElementById('skill-global-import-url');
+        async function doGlobalUrlImport() {
+            const url = skGlobalImpUrl.value.trim();
+            if (!url) { setGlobalImpStatus('先粘贴一个链接', true); return; }
+            setGlobalImpStatus('拉取中…');
+            try {
+                const { skill, from } = await importSkillFromUrl(url);
+                applyGlobalSkillText(skill.instruction);
+                setGlobalImpStatus('已拉取 ' + from.replace(/^https:\/\/(raw\.githubusercontent\.com\/)?/, ''));
+            } catch (e) { setGlobalImpStatus('导入失败:' + e.message, true); }
+        }
+        document.getElementById('skill-global-import-url-btn').addEventListener('click', doGlobalUrlImport);
+        skGlobalImpUrl.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); doGlobalUrlImport(); } });
+
+        // 3) 对话生成:和创建技能共用 startSkillDesign,只是 target 传 'global'
+        document.getElementById('skill-global-design-start').addEventListener('click', () => startSkillDesign(null, 'global'));
+
+        /* ---------- 技能跟账号同步 ----------
+           localStorage 依旧是即时读写的缓存;登录后再跟服务端 users/<uid>/skills.json 同步,
+           这样换浏览器 / 清缓存不会丢。整份 last-write-wins,后端只收白名单字段并限长。
+           这台浏览器第一次登录某账号时做一次「并集合并」(避免游客期间建的技能被服务端盖掉),
+           之后一律以服务端为准(这样在别的设备上删掉的技能才不会被这里又传回去)。 */
+        const SKILL_SYNC_MARK_KEY = 'hqds-skill-sync-mark';
+        const SKILL_HINT_GUEST = { global: '自动保存在本机浏览器。', custom: '自建技能只存在本机浏览器。' };
+        const skillGlobalHintEl = document.getElementById('skill-global-hint');
+        const skillCustomHintEl = document.getElementById('skill-custom-hint');
+        function refreshSkillHints(state) {
+            if (!AUTH_TOKEN) {
+                skillGlobalHintEl.textContent = SKILL_HINT_GUEST.global;
+                skillCustomHintEl.textContent = SKILL_HINT_GUEST.custom;
+            } else if (state === 'err') {
+                skillGlobalHintEl.textContent = '同步失败,已先存在本机浏览器。';
+                skillCustomHintEl.textContent = '同步失败,已先存在本机浏览器。';
+            } else {
+                skillGlobalHintEl.textContent = '自动保存,并同步到你的账号。';
+                skillCustomHintEl.textContent = '自建技能会同步到你的账号。';
+            }
+        }
+        function skillsSnapshot() {
+            return { globalSkill: getGlobalSkill(), installedIds: getInstalledIds(), customSkills: getCustomSkills() };
+        }
+        function scheduleSkillsPush() {
+            if (skillsSyncMuted || !AUTH_TOKEN) return;
+            clearTimeout(skillsPushTimer);
+            skillsPushTimer = setTimeout(pushUserSkills, 1200);
+        }
+        async function pushUserSkills() {
+            if (!AUTH_TOKEN) return;
+            try {
+                const data = await callBackend({ mode: 'save_user_skills', token: AUTH_TOKEN, skills: skillsSnapshot() });
+                if (data.error) throw new Error(data.error);
+                refreshSkillHints('ok');
+            } catch (e) { refreshSkillHints('err'); } // 上传失败不影响本地使用,下次改动会再试
+        }
+        function mergeSkills(remote, local) {
+            const byId = new Map();
+            (remote.customSkills || []).forEach(c => byId.set(c.id, c));       // 同 id 以服务端为准
+            (local.customSkills || []).forEach(c => { if (!byId.has(c.id)) byId.set(c.id, c); });
+            return {
+                globalSkill: remote.globalSkill || local.globalSkill || '',
+                installedIds: [...new Set([...(remote.installedIds || []), ...(local.installedIds || [])])],
+                customSkills: [...byId.values()],
+            };
+        }
+        function applySkillsLocally(doc) {
+            skillsSyncMuted = true;
+            try {
+                setGlobalSkill(doc.globalSkill || '');
+                setInstalledIds(doc.installedIds || []);
+                setCustomSkills(doc.customSkills || []);
+            } finally { skillsSyncMuted = false; }
+            pruneActiveSkills();
+            renderSkillActiveBar();
+            renderMySkills();
+            renderMarket();
+        }
+        async function pullUserSkills() {
+            if (!AUTH_TOKEN) return;
+            try {
+                const data = await callBackend({ mode: 'get_user_skills', token: AUTH_TOKEN });
+                if (data.error) throw new Error(data.error);
+                const remote = data.skills;
+                const local = skillsSnapshot();
+                const hasLocal = !!(local.globalSkill.trim() || local.installedIds.length || local.customSkills.length);
+                let next = remote, needPush = false;
+                if (!remote) { next = local; needPush = hasLocal; }                         // 账号首次同步:把本机已有的传上去
+                else if (localStorage.getItem(SKILL_SYNC_MARK_KEY) !== AUTH_EMAIL) {        // 这台浏览器第一次登录这个账号:并集合并
+                    next = mergeSkills(remote, local); needPush = true;
+                }
+                if (next !== local) applySkillsLocally(next);
+                localStorage.setItem(SKILL_SYNC_MARK_KEY, AUTH_EMAIL);
+                if (needPush) await pushUserSkills(); else refreshSkillHints('ok');
+            } catch (e) { refreshSkillHints('err'); }
+        }
+        refreshSkillHints('ok');
+        if (AUTH_TOKEN) pullUserSkills();
+
+        renderSkillActiveBar();
+
+        /* ================= 语言切换(中文 / EN)- 只管界面文案 =================
+           做法:不给每个元素挂 data-i18n,而是维护一张「中文原文 -> 英文」对照表,
+           加载时扫一遍 DOM,之后用 MutationObserver 接住后续动态渲染出来的节点。
+           - 现有 HTML / JS 一行都不用改,技能卡片、历史列表、状态提示这些 JS 生成的文案自动被接住
+           - 只做「整段完全匹配」的替换:发给模型的 prompt 从不进 DOM,永远不会被误翻;
+             对话气泡里用户和模型的正文也跳过,不会被动到
+           - 正查/反查同一张表,来回切换是幂等的 */
+        const LANG_KEY = 'hqds-lang';
+        const LANG_TO_EN = {
+                    "新对话": "New chat",
+                    "技能市场": "Skill store",
+                    "高质量数据集问答": "Dataset Q&A",
+                    "问答": "Q&A",
+                    "自测": "Quiz",
+                    "登录后可以查看过往的对话记录": "Sign in to see past conversations",
+                    "还没有历史对话": "No conversations yet",
+                    "未命名对话": "Untitled",
+                    "更多功能": "More",
+                    "开发中": "Soon",
+                    "访": "G",
+                    "访客模式": "Guest",
+                    "点击登录,保存对话历史": "Sign in to save your history",
+                    "点击查看账号": "View account",
+                    "登录": "Sign in",
+                    "需要登录才能使用功能,登录后的对话历史也会同步保存,换设备也能看到": "Sign in to use AI-Lab. Your conversations are synced, so you can pick them up on any device.",
+                    "对话历史已同步保存": "Conversations are synced",
+                    "退出登录": "Sign out",
+                    "完成": "Done",
+                    "还没配置 GitHub OAuth App 的 Client ID,登录暂时用不了。": "The GitHub OAuth Client ID isn't configured yet, so sign-in is unavailable.",
+                    "登录校验失败(state不匹配),请重新登录。": "Sign-in check failed (state mismatch). Please sign in again.",
+                    "登录中…": "Signing in…",
+                    "登录失败：": "Sign-in failed: ",
+                    "刚刚": "Just now",
+                    "资料问答": "Material Q&A",
+                    "PPT草稿": "Slide draft",
+                    "问答对话": "Q&A chat",
+                    "自测练习": "Quiz practice",
+                    "技能": "Skills",
+                    "我的技能": "My skills",
+                    "创建技能": "Create",
+                    "全局技能 · 对每一个对话都生效": "Global skill · Applies to every conversation",
+                    "自动保存在本机浏览器。": "Saved in this browser.",
+                    "自动保存,并同步到你的账号。": "Saved automatically and synced to your account.",
+                    "同步失败,已先存在本机浏览器。": "Sync failed — saved in this browser for now.",
+                    "已装技能 · 勾选后在当前对话启用（最多 3 个）": "Installed · Switch on to use in this chat (up to 3)",
+                    "本地导入": "From file",
+                    "链接导入": "From URL",
+                    "对话生成": "Design in chat",
+                    "选择文件…": "Choose a file…",
+                    "支持 SKILL.md（带 name / description 的 frontmatter，或纯正文）和 .json": "Supports SKILL.md (with name / description frontmatter, or plain body) and .json",
+                    "拉取": "Fetch",
+                    "开一个新对话，跟 AI 一起把技能打磨到满意，再存下来。": "Open a new chat, shape the skill together with the AI, then save it.",
+                    "开一个新对话，跟 AI 一起把你的全局设定打磨到满意，再存下来。": "Open a new chat, shape your global setup together with the AI, then save it.",
+                    "开始设计对话": "Start designing",
+                    "放弃": "Discard",
+                    "保存到我的技能": "Save to my skills",
+                    "自建技能只存在本机浏览器。": "Custom skills live only in this browser.",
+                    "自建技能会同步到你的账号。": "Custom skills sync to your account.",
+                    "更新": "Update",
+                    "查看指令": "View instructions",
+                    "收起": "Hide",
+                    "下架": "Unpublish",
+                    "商店": "Store",
+                    "已发布": "Published",
+                    "发布到技能商店": "Publish to the skill store",
+                    "更新商店里的版本": "Update the store version",
+                    "技能商店暂时连不上,先显示内置技能": "Can't reach the store right now \u2014 showing built-in skills",
+                    "在当前对话启用": "Use in this chat",
+                    "从我的技能移除": "Remove from my skills",
+                    "删除这个自建技能": "Delete this custom skill",
+                    "✓ 已添加": "✓ Added",
+                    "＋ 添加": "+ Add",
+                    "没有匹配的技能": "No matching skills",
+                    "还没有技能。去「技能市场」添加,或在「创建技能」里自己写一个。": "No skills yet. Add one from the Skill store, or write your own under Create.",
+                    "自建": "Custom",
+                    "先粘贴一个链接": "Paste a link first",
+                    "拉取中…": "Fetching…",
+                    "读取中…": "Reading…",
+                    "提取中…": "Extracting…",
+                    "导入失败:": "Import failed: ",
+                    "拉取失败": "Fetch failed",
+                    "提取失败:": "Extraction failed: ",
+                    "JSON 解析失败:": "Couldn't parse JSON: ",
+                    "导入的技能": "Imported skill",
+                    "没找到「指令正文」内容": "No instruction body found",
+                    "不是合法的链接": "Not a valid URL",
+                    "只支持 http(s) 链接": "Only http(s) links are supported",
+                    "GitHub 链接里看不出仓库": "Can't tell which repo this GitHub link points to",
+                    "请求失败(可能被 CORS 拦了,换个 raw 直链试试)": "Request failed (possibly blocked by CORS — try a direct raw link)",
+                    "文件太大(> 200KB)": "File too large (> 200KB)",
+                    "从对话里提取好了,确认后点保存": "Extracted from the chat — check it, then save",
+                    "🛠 技能设计中": "🛠 Designing a skill",
+                    "🛠 全局设定设计中": "🛠 Designing your global setup",
+                    "🛠 技能修改中": "🛠 Editing a skill",
+                    "用对话修改": "Edit in a conversation",
+                    "已改": "Edited",
+                    "移除(并丢弃修改)": "Remove (discards your edits)",
+                    "保存修改": "Save changes",
+                    "存为技能": "Save as skill",
+                    "存为全局设定": "Save as global setup",
+                    "退出": "Exit",
+                    "我们来设计一个技能。先说说它是干嘛的 —— 用途、典型输入、你想要的输出风格,随便描述,我给草稿你再让我改。": "Let's design a skill. Tell me what it's for — the purpose, a typical input, the output style you want. Describe it loosely and I'll draft something for you to refine.",
+                    "我们来设计你的全局设定 —— 比如你的身份、领域、回答风格、语言、格式偏好之类的，想到什么说什么，我帮你整理成一段可用的说明，你随时可以让我改。": "Let's design your global setup — your identity, field, answer style, language, formatting preferences and the like. Say whatever comes to mind and I'll turn it into a usable instruction you can keep refining.",
+                    "论文润色": "Paper Polishing",
+                    "把中式英文 / 生硬表达改写成地道、简洁的期刊英文,保留术语": "Rewrites stilted or Chinglish prose into idiomatic, concise journal English, keeping the terminology",
+                    "润色这段摘要：": "Polish this abstract: ",
+                    "把这段改写得更简洁、地道：": "Rewrite this to be more concise and idiomatic: ",
+                    "中英学术互译": "EN-ZH Academic Translation",
+                    "工程 / 岩土 / AI 领域的中英互译,术语一致、不漏信息": "Chinese–English translation for engineering / geotechnics / AI, consistent terms, nothing dropped",
+                    "翻译成英文：": "Translate into English: ",
+                    "翻译成中文：": "Translate into Chinese: ",
+                    "审稿意见回复": "Reviewer Response",
+                    "按期刊 response-to-reviewers 格式,逐条起草回复草稿": "Drafts point-by-point replies in the journal response-to-reviewers format",
+                    "帮我回复这条审稿意见：": "Help me answer this reviewer comment: ",
+                    "文献速读": "Paper Digest",
+                    "把一篇论文 / 一段材料压成结构化笔记": "Condenses a paper or passage into structured notes",
+                    "速读这篇：": "Digest this paper: ",
+                    "把这段材料整理成笔记：": "Turn this material into notes: ",
+                    "代码逐行讲解": "Code Walkthrough",
+                    "逐段解释代码在做什么,点出坑和复杂度": "Explains code block by block, flagging pitfalls and complexity",
+                    "讲讲这段代码：": "Walk me through this code: ",
+                    "公式推导": "Derivations",
+                    "一步步推导,每步给依据,公式用 LaTeX": "Step-by-step derivations with a justification for each step, formulas in LaTeX",
+                    "推导一下：": "Derive this: ",
+                    "结构化头脑风暴": "Structured Brainstorm",
+                    "围绕一个问题给出分类清晰、可执行的想法清单": "Gives a clearly grouped, actionable list of ideas around a question",
+                    "帮我想想：": "Help me think through: ",
+                    "问我任何问题": "Ask me anything",
+                    "用大白话讲讲 Transformer 里的 Attention 机制": "Explain attention in Transformers in plain language",
+                    "帮我列一份隧道工程毕业论文的写作提纲": "Draft an outline for a tunneling engineering thesis",
+                    "DeepSeek 和 GPT 系列的技术路线有什么区别": "How do DeepSeek and the GPT series differ technically?",
+                    "问答模式": "Q&A mode",
+                    "问点什么，比如「质量评测规范的三个维度是什么」": "Ask something — e.g. what are the three dimensions of the quality evaluation spec?",
+                    "高质量数据集常见的评测维度有哪些？": "What dimensions are commonly used to evaluate a high-quality dataset?",
+                    "数据去重和数据清洗分别解决什么问题？": "What problems do deduplication and data cleaning each solve?",
+                    "这份资料里提到了哪些代表性的数据集？": "Which representative datasets does this material mention?",
+                    "自测模式": "Quiz mode",
+                    "随机抽一段内容出题考你，答完给你点评和参考答案": "Picks a random passage, quizzes you, then gives feedback and a reference answer",
+                    "出一道题": "Give me a question",
+                    "再来一题": "Another question",
+                    "出题中…": "Writing a question…",
+                    "出题失败：": "Couldn't write a question: ",
+                    "批改失败：": "Grading failed: ",
+                    "题目": "Question",
+                    "点评": "Feedback",
+                    "重试": "Retry",
+                    "出错了：": "Something went wrong: ",
+                    "加载失败：": "Failed to load: ",
+                    "清空当前模式": "Clear this mode",
+                    "复制": "Copy",
+                    "删除": "Delete",
+                    "边聊边改  所见即所得": "Refine by chatting\nWhat You See Is What You Get",
+                    "说一个主题,比如「盾构隧道施工风险管理」…": "Name a topic, e.g. risk management in shield tunneling…",
+                    "生成PPT": "Generate slides",
+                    "主题": "Topic",
+                    "页数(不含封面)": "Slides (excluding cover)",
+                    "5 页": "5 slides",
+                    "7 页": "7 slides",
+                    "9 页": "9 slides",
+                    "12 页": "12 slides",
+                    "限定在本页\"高质量数据集\"资料范围内(取消勾选可以做任意主题)": "Restrict to the high-quality datasets material on this page (uncheck for any topic)",
+                    "取消": "Cancel",
+                    "生成大纲": "Generate outline",
+                    "正在生成大纲…": "Generating outline…",
+                    "生成失败：": "Generation failed: ",
+                    "修改失败：": "Edit failed: ",
+                    "导出失败：": "Export failed: ",
+                    "正在拼装…": "Assembling…",
+                    "PPT 预览": "Slide preview",
+                    "还没有内容,先在左边生成一份大纲": "Nothing yet — generate an outline on the left first",
+                    "下载 PPTX": "Download PPTX",
+                    "正在修改：": "Editing: ",
+                    "封面": "Cover",
+                    "标题": "Title",
+                    "正文": "Body",
+                    "待补全": "TBD",
+                    "高质量数据集 · 自动生成": "High-quality datasets · Auto-generated",
+                    "查看预览": "Open preview",
+                    "左上角": "Top left",
+                    "右上角": "Top right",
+                    "左下角": "Bottom left",
+                    "右下角": "Bottom right",
+                    "居中": "Center",
+                    "插图 ✓": "Image ✓",
+                    "插图": "Image",
+                    "已设置Logo(点击更换,本地处理,不上传)": "Logo set (click to change · processed locally, never uploaded)",
+                    "每页加个Logo(只在本地处理,不会上传)": "Add a logo to every slide (processed locally, never uploaded)",
+                    "调大了一些": "made it a bit bigger",
+                    "调小了一些": "made it a bit smaller",
+                    "已经按你的意思更新了大纲。": "Updated the outline as you asked.",
+                    "还没设置Logo——先点右侧画布顶部的\"Logo\"按钮选一张本地图片。": "No logo set yet — click the Logo button at the top of the canvas on the right to pick a local image.",
+                    "发消息…": "Message…",
+                    "在这里作答…": "Type your answer…",
+                    "说说怎么改,比如「第3页精简成3条要点」…": "Say what to change, e.g. trim slide 3 to three bullets…",
+                    "搜索技能…": "Search skills…",
+                    "https://…  GitHub 的 SKILL.md / .json / 仓库地址，或任意 raw 链接": "https://…  a GitHub SKILL.md / .json / repo URL, or any raw link",
+                    "例如:高质量数据集的分类维度与评测方法": "e.g. Taxonomy and evaluation methods for high-quality datasets",
+                    "例如：我是隧道工程方向的博士生，回答偏工程实践，中文，公式用 LaTeX，先给结论再展开。": "e.g. I'm a PhD student in tunneling engineering. Keep answers practice-oriented, in English, formulas in LaTeX, conclusion first.",
+                    "拖动调节宽度，双击复位": "Drag to resize, double-click to reset",
+                    "返回首页": "Back to home",
+                    "切换深色/浅色模式": "Toggle dark / light mode",
+                    "收起/展开侧边栏": "Collapse / expand sidebar",
+                    "账号": "Account",
+                    "关闭": "Close",
+                    "关闭预览": "Close preview",
+                    "退出单页修改": "Stop editing this slide"
+        };
+        const LANG_TO_ZH = {};
+        Object.keys(LANG_TO_EN).forEach(z => { const e = LANG_TO_EN[z]; if (!(e in LANG_TO_ZH)) LANG_TO_ZH[e] = z; });
+
+        /* 带数字的动态文案走正则:[中文正则, 英文模板, 英文正则, 中文模板] */
+        const LANG_RULES = [
+            [/^(\d+)\s*分钟前$/, '$1 min ago', /^(\d+) min ago$/, '$1分钟前'],
+            [/^(\d+)\s*小时前$/, '$1 h ago', /^(\d+) h ago$/, '$1小时前'],
+            [/^(\d+)\s*天前$/, '$1 d ago', /^(\d+) d ago$/, '$1天前'],
+            [/^第\s*(\d+)\s*页$/, 'Slide $1', /^Slide (\d+)$/, '第 $1 页'],
+            [/^最多同时启用\s*(\d+)\s*个$/, 'Up to $1 at a time', /^Up to (\d+) at a time$/, '最多同时启用 $1 个'],
+        ];
+
+        let LANG = localStorage.getItem(LANG_KEY);
+        if (LANG !== 'zh' && LANG !== 'en') LANG = (navigator.language || '').toLowerCase().indexOf('zh') === 0 ? 'zh' : 'en';
+        window.__lang = LANG;
+
+        function langTr(str) {
+            const key = (str || '').trim();
+            if (!key) return str;
+            const map = LANG === 'en' ? LANG_TO_EN : LANG_TO_ZH;
+            if (Object.prototype.hasOwnProperty.call(map, key)) return str.replace(key, map[key]);
+            for (let i = 0; i < LANG_RULES.length; i++) {
+                const r = LANG_RULES[i];
+                const re = LANG === 'en' ? r[0] : r[2];
+                if (re.test(key)) return str.replace(key, key.replace(re, LANG === 'en' ? r[1] : r[3]));
+            }
+            return str;
+        }
+
+        const LANG_ATTRS = ['placeholder', 'title', 'aria-label'];
+        function langTrAttrs(el) {
+            if (!el || el.nodeType !== 1 || !el.hasAttribute) return;
+            LANG_ATTRS.forEach(a => {
+                if (!el.hasAttribute(a)) return;
+                const v = el.getAttribute(a), t = langTr(v);
+                if (t !== v) el.setAttribute(a, t);
+            });
+        }
+        function langSkipText(node) {
+            const p = node.parentElement;
+            if (!p) return true;
+            const tag = p.tagName;
+            if (tag === 'SCRIPT' || tag === 'STYLE' || tag === 'TEXTAREA') return true;
+            if (p.closest('#lang-switch')) return true;                              // 切换按钮自己的「中文 / EN」不翻
+            if (p.closest('.msg-bubble') && !p.closest('.quiz-label')) return true;  // 对话正文不翻
+            return false;
+        }
+        function langApplyTo(root) {
+            if (!root) return;
+            if (root.nodeType === 3) {
+                if (!langSkipText(root)) { const t = langTr(root.nodeValue); if (t !== root.nodeValue) root.nodeValue = t; }
+                return;
+            }
+            if (root.nodeType !== 1) return;
+            langTrAttrs(root);
+            root.querySelectorAll('[' + LANG_ATTRS.join('],[') + ']').forEach(langTrAttrs);
+            const tw = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+            const nodes = [];
+            let n; while ((n = tw.nextNode())) nodes.push(n);
+            nodes.forEach(tn => { if (langSkipText(tn)) return; const t = langTr(tn.nodeValue); if (t !== tn.nodeValue) tn.nodeValue = t; });
+        }
+
+        const langSwitchEl = document.getElementById('lang-switch');
+        function applyLang(lang) {
+            LANG = (lang === 'en') ? 'en' : 'zh';
+            window.__lang = LANG;
+            localStorage.setItem(LANG_KEY, LANG);
+            document.documentElement.lang = LANG === 'en' ? 'en' : 'zh-CN';
+            langApplyTo(document.body);
+            langSwitchEl.querySelectorAll('button').forEach(b => b.classList.toggle('active', b.dataset.lang === LANG));
+        }
+        langSwitchEl.addEventListener('click', e => {
+            const b = e.target.closest('button[data-lang]');
+            if (b) applyLang(b.dataset.lang);
+        });
+
+        /* 之后 JS 再渲染出来的节点(技能卡片、历史列表、状态条…)也接住 */
+        new MutationObserver(muts => {
+            muts.forEach(m => {
+                if (m.type === 'characterData') {
+                    if (!langSkipText(m.target)) { const t = langTr(m.target.nodeValue); if (t !== m.target.nodeValue) m.target.nodeValue = t; }
+                } else if (m.type === 'attributes') {
+                    langTrAttrs(m.target);
+                } else {
+                    m.addedNodes.forEach(langApplyTo);
+                }
+            });
+        }).observe(document.body, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: LANG_ATTRS });
+
+        applyLang(LANG);
+
+        /* ---------- 主张那句话的鼠标跟随聚光 ---------- */
+        (function spotlightTagline() {
+            // 样式全在 CSS 的 @supports 里(ppt 那一屏会重建 DOM,JS 加的 class 会丢),
+            // 这里只负责每帧把光斑坐标写进两个 CSS 变量
+            let px = 0, py = 0, queued = false;
+            function paint() {
+                queued = false;
+                // 同一时刻最多只有一屏空状态可见,只算它
+                const wrap = document.querySelector(".chat-thread.active .chat-empty");
+                if (!wrap) return;
+                const el = wrap.querySelector(".empty-sub");
+                const logoEl = wrap.querySelector(".empty-logo");
+                if (!el && !logoEl) return;
+                // 把光斑夹在这句话周围一小圈内:鼠标跑远了也只是光偏到一端,
+                // 不会整句都掉进暗色里(它是这一屏的主标题,任何时候都得看得清)
+                const cl = (v, lo, hi) => v < lo ? lo : (v > hi ? hi : v);
+                if (el) {
+                    const r = el.getBoundingClientRect();
+                    if (r.width) {
+                        el.style.setProperty("--sx", cl(px - r.left, -70, r.width + 70) + "px");
+                        el.style.setProperty("--sy", cl(py - r.top, -50, r.height + 50) + "px");
+                    }
+                }
+                if (logoEl) {
+                    const lr = logoEl.getBoundingClientRect();
+                    if (lr.width) {
+                        logoEl.style.setProperty("--lx", cl(px - lr.left, -55, lr.width + 55) + "px");
+                        logoEl.style.setProperty("--ly", cl(py - lr.top, -55, lr.height + 55) + "px");
+                    }
+                }
+            }
+            addEventListener("mousemove", (e) => {
+                px = e.clientX; py = e.clientY;
+                if (!queued) { queued = true; requestAnimationFrame(paint); }  // 每帧最多算一次
+            }, { passive: true });
+        })();
 
     </script>
 </body>
