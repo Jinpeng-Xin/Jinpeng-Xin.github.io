@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI4PPT 排版试用</title>
+<style>
+  body { margin: 0; font-family: "Microsoft YaHei", sans-serif; background: #f3f4f6; color: #1f2937; }
+  header { display: flex; align-items: center; gap: 12px; padding: 14px 20px; background: #fff; border-bottom: 1px solid #e5e7eb; position: sticky; top: 0; z-index: 5; }
+  header h1 { font-size: 16px; margin: 0; flex: 1; }
+  button { border: 0; border-radius: 8px; padding: 8px 14px; font-size: 13px; cursor: pointer; background: #0b3a75; color: #fff; font-family: inherit; }
+  button.ghost { background: #fff; color: #374151; border: 1px solid #d1d5db; }
+  main { display: grid; grid-template-columns: 380px 1fr; gap: 16px; padding: 16px; align-items: start; }
+  textarea { width: 100%; height: 78vh; box-sizing: border-box; font: 12px/1.5 Consolas, monospace; padding: 10px; border: 1px solid #d1d5db; border-radius: 8px; resize: vertical; }
+  #slides { display: grid; grid-template-columns: repeat(auto-fill, minmax(560px, 1fr)); gap: 16px; }
+  .wysiwyg-slide { position: relative; width: 100%; aspect-ratio: 10 / 5.625; container-type: inline-size; border-radius: 8px; overflow: hidden; background: #fff; border: 1px solid #e5e7eb; box-shadow: 0 2px 10px rgba(0,0,0,.06); }
+  .ws-shape { position: absolute; box-sizing: border-box; }
+  .ws-shape.arrow-right { clip-path: polygon(0 22%, 55% 22%, 55% 0, 100% 50%, 55% 100%, 55% 78%, 0 78%); }
+  .ws-shape.arrow-up { clip-path: polygon(50% 0, 100% 45%, 78% 45%, 78% 100%, 22% 100%, 22% 45%, 0 45%); }
+  .ws-shape.arrow-down { clip-path: polygon(22% 0, 78% 0, 78% 55%, 100% 55%, 50% 100%, 0 55%, 22% 55%); }
+  .ws-txt { position: absolute; box-sizing: border-box; display: flex; flex-direction: column; font-weight: 700; line-height: 1.35; white-space: pre; }
+  .ws-slide-index { position: absolute; left: 8px; bottom: 6px; font-size: 10px; color: #c9c9ce; }
+  #msg { font-size: 12px; color: #6b7280; }
+  @media (max-width: 1000px) { main { grid-template-columns: 1fr; } #slides { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>AI4PPT 排版试用(本地,不连后端)</h1>
+  <span id="msg"></span>
+  <input id="cover" placeholder="封面信息:姓名/单位/日期(可空)" style="width:260px;padding:7px 10px;border:1px solid #d1d5db;border-radius:8px;font:13px inherit">
+  <button class="ghost" id="reset">恢复示例</button>
+  <button id="render">重新渲染</button>
+  <button id="download">下载 PPTX</button>
+</header>
+<main>
+  <div>
+    <textarea id="json" spellcheck="false"></textarea>
+    <p style="font-size:12px;color:#6b7280;line-height:1.6">左边是每页的数据,直接改字或把 <b>layout</b> 换成 flow / loop / cards / compare / layers / bullets,点「重新渲染」就能看排版怎么变。</p>
+  </div>
+  <div id="slides"></div>
+</main>
+<script src="pptxgen.bundle.js"></script>
+<script src="ppt-layout.js"></script>
+<script>
+const SAMPLE = {
+  title: '盾构隧道施工风险管理',
+  slides: [
+    { title: '建设背景', section: '背景与问题', intro: ['城市地下空间开发加速;', '盾构施工风险叠加'], layout: 'cards',
+      cards: [{ head: '地层复杂', body: ['软硬不均', '富水砂层'] }, { head: '环境敏感', body: ['邻近建筑物密集', '管线众多', '沉降控制严'] }, { head: '工期紧', body: ['连续掘进'] }],
+      conclusion: '风险来自地层、环境与工期的叠加', bullets: ['x'] },
+    { title: '核心问题', section: '背景与问题', intro: ['现有做法依赖经验;', '缺少统一的数据链条。'], layout: 'compare', relation: '导致',
+      cards: [{ head: '现状', body: ['人工巡检', '数据分散在各系统'] }, { head: '后果', body: ['预警滞后', '难以追溯'], warn: true }],
+      conclusion: '数据割裂让风险发现变慢', bullets: ['x'] },
+    { title: '技术路线', section: '方法', intro: ['从采集到决策四步闭环;', '每一步产出可交付数据。'], layout: 'flow',
+      cards: [{ head: '采集', body: ['盾构参数', '地表监测'] }, { head: '融合', body: ['时空对齐', '清洗'] }, { head: '预测', body: ['沉降预测模型'] }, { head: '决策', body: ['参数推荐', '预警分级'] }],
+      conclusion: '四步闭环把数据变成掘进决策', bullets: ['x'] },
+    { title: '系统架构', section: '方法', intro: ['三层结构解耦;', '上层只依赖下层接口。'], layout: 'layers',
+      cards: [{ head: '应用层', body: ['风险看板', '预警推送'] }, { head: '模型层', body: ['沉降预测', '参数优化', '异常检测'] }, { head: '数据层', body: ['实时接入与治理'] }],
+      conclusion: '分层让模型可以独立迭代', bullets: ['x'] },
+    { title: '动态反馈', section: '方法', intro: ['监测结果反过来修正模型;', '每个循环都收紧预测误差。'], layout: 'loop', loop: { name: '误差回流', note: '实测沉降回到采集,修正预测参数' },
+      cards: [{ head: '监测', body: ['地表沉降', '盾构参数'] }, { head: '分析', body: ['偏差识别'] }, { head: '调整', body: ['掘进参数优化'] }, { head: '预测', body: ['沉降趋势更新'] }],
+      conclusion: '闭环让预测越用越准', bullets: ['x'] },
+    { title: '总结', section: '结论', intro: ['方法可行;', '后续扩展到多工地。'], layout: 'bullets', cards: [],
+      conclusion: '', bullets: ['提出四步闭环的风险管理流程', '构建三层架构支撑模型迭代', 'FEM 验证了 PINN 沉降预测的可行性,误差低于 5%'] },
+  ],
+};
+
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+const UW = 960, UH = 540, CANVAS_W_IN = 10;
+const pct = (v, t) => (v / t * 100).toFixed(3) + '%';
+const coverInfo = () => $('cover').value.split(/[\/,，、;；\n]/).map(x => x.trim()).filter(Boolean).slice(0, 4);
+
+function shapesHTML(shapes) {
+  return shapes.map(s => {
+    const pos = `left:${pct(s.x, UW)};top:${pct(s.y, UH)};width:${pct(s.w, UW)};height:${pct(s.h, UH)};`;
+    if (s.k === 'rect') {
+      return `<div class="ws-shape" style="${pos}background:#${s.fill || 'fff'};` + (s.line ? `border:${s.lw >= 1 ? 1.5 : 1}px solid #${s.line};` : '')
+        + (s.r ? `border-radius:${(s.r / 9.6).toFixed(2)}cqw;` : '') + (s.shadow ? 'box-shadow:0 1px 4px rgba(11,58,117,.10);' : '') + '"></div>';
+    }
+    if (s.k === 'arrow') return `<div class="ws-shape arrow-${s.dir}" style="${pos}background:#${s.fill};"></div>`;
+    const jc = { top: 'flex-start', middle: 'center', bottom: 'flex-end' }[s.valign] || 'center';
+    const paras = s.paras.map((lines, i) => `<div style="color:#${s.pcolors ? s.pcolors[i] : s.color};margin-bottom:${i < s.paras.length - 1 ? (s.gap / 9.6).toFixed(3) : 0}cqw;">${lines.map(esc).join('\n')}</div>`).join('');
+    return `<div class="ws-txt" style="${pos}font-size:${(s.fs / 9.6).toFixed(3)}cqw;text-align:${s.align};justify-content:${jc};color:#${s.color};">${paras}</div>`;
+  }).join('');
+}
+function itemShapes(it) {
+  if (it.kind === 'cover') return PptLayout.buildCover(it.title, coverInfo()).shapes;
+  if (it.kind === 'toc') return PptLayout.buildToc(it.sections, it.active).shapes;
+  return PptLayout.buildSlide(it.slide).shapes;
+}
+
+let data = null;
+function parse() {
+  try { data = JSON.parse($('json').value); if (!data.slides || !data.slides.length) throw new Error('slides 为空'); $('msg').textContent = ''; return true; }
+  catch (e) { $('msg').textContent = 'JSON 有误:' + e.message; return false; }
+}
+function render() {
+  if (!parse()) return;
+  const items = PptLayout.expand(data);
+  let warn = 0;
+  $('slides').innerHTML = items.map((it, i) => {
+    const sh = itemShapes(it);
+    warn += PptLayout.lint(sh).length;
+    const label = it.kind === 'cover' ? '封面' : it.kind === 'toc' ? '目录' : it.num;
+    return `<div class="wysiwyg-slide">${shapesHTML(sh)}<div class="ws-slide-index">${label}</div></div>`;
+  }).join('');
+  $('msg').textContent = `共 ${items.length} 页,排版自检${warn ? '发现 ' + warn + ' 处问题' : '通过'}`;
+}
+
+async function download() {
+  if (!parse()) return;
+  const pptx = new PptxGenJS();
+  pptx.defineLayout({ name: 'HQDS', width: CANVAS_W_IN, height: 5.625 }); pptx.layout = 'HQDS';
+  const U = CANVAS_W_IN / UW, PT = 0.75, FONT = 'Microsoft YaHei', navy = PptLayout.C.navy;
+  pptx.defineSlideMaster({ title: 'MASTER_COVER', background: { color: 'FFFFFF' }, objects: [] });
+  pptx.defineSlideMaster({ title: 'MASTER_CONTENT', background: { color: 'FFFFFF' }, objects: [
+    { placeholder: { options: { name: 'title', type: 'title', x: 24 * U, y: 4 * U, w: 900 * U, h: 46 * U, fontSize: 28 * PT, bold: true, color: navy, fontFace: FONT, valign: 'middle', align: 'left', margin: 0 }, text: '标题' } }] });
+  for (const it of PptLayout.expand(data)) {
+    const slide = pptx.addSlide({ masterName: it.kind === 'slide' ? 'MASTER_CONTENT' : 'MASTER_COVER' });
+    for (const sh of itemShapes(it)) {
+      const box = { x: sh.x * U, y: sh.y * U, w: sh.w * U, h: sh.h * U };
+      if (sh.k === 'rect') {
+        slide.addShape(sh.r ? pptx.ShapeType.roundRect : pptx.ShapeType.rect, { ...box, fill: { color: sh.fill }, line: sh.line ? { color: sh.line, width: sh.lw || 0.75 } : { type: 'none' },
+          ...(sh.r ? { rectRadius: 0.05 } : {}), ...(sh.shadow ? { shadow: { type: 'outer', color: navy, opacity: 0.12, blur: 4, offset: 1.5, angle: 90 } } : {}) });
+      } else if (sh.k === 'arrow') {
+        slide.addShape({ down: pptx.ShapeType.downArrow, up: pptx.ShapeType.upArrow }[sh.dir] || pptx.ShapeType.rightArrow, { ...box, fill: { color: sh.fill }, line: { type: 'none' } });
+      } else if (sh.role === 'title') {
+        slide.addText(sh.paras[0][0], { placeholder: 'title' });
+      } else {
+        const runs = [];
+        sh.paras.forEach((lines, pi) => { const last = pi === sh.paras.length - 1;
+          lines.forEach((ln, li) => { const o = { color: sh.pcolors ? sh.pcolors[pi] : sh.color, bold: true, fontSize: sh.fs * PT, fontFace: FONT };
+            if (li > 0) o.softBreakBefore = true; if (!last) o.paraSpaceAfter = sh.gap * PT; if (li === lines.length - 1 && !last) o.breakLine = true; runs.push({ text: ln, options: o }); }); });
+        slide.addText(runs, { ...box, align: sh.align, valign: sh.valign, margin: 0, fontFace: FONT });
+      }
+    }
+  }
+  await pptx.writeFile({ fileName: (data.title || 'demo').replace(/[\\/:*?"<>|]/g, '') + '.pptx' });
+}
+
+$('json').value = JSON.stringify(SAMPLE, null, 2);
+$('render').onclick = render;
+$('cover').oninput = render;
+$('reset').onclick = () => { $('json').value = JSON.stringify(SAMPLE, null, 2); render(); };
+$('download').onclick = download;
+render();
+</script>
+</body>
+</html>

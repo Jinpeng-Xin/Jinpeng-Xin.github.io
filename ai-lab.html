@@ -796,6 +796,29 @@
         }
         .auth-account-email { font-size: 0.92rem; font-weight: 500; color: #1d1d1f; word-break: break-all; }
         .auth-account-sub { font-size: 0.76rem; color: #9c9ca2; margin-top: 2px; }
+
+        /* ===== 使用说明:分步引导(聚光灯 + 说明卡片)。z-index 高于所有弹窗 ===== */
+        .tour-root { position: fixed; inset: 0; z-index: 3000; animation: pptFade 0.25s ease; }
+        .tour-spot {
+            position: fixed; border-radius: 14px; pointer-events: none;
+            box-shadow: 0 0 0 9999px rgba(15,15,17,0.55), 0 0 0 2px rgba(255,255,255,0.9);
+            transition: left 0.28s cubic-bezier(.2,.8,.2,1), top 0.28s cubic-bezier(.2,.8,.2,1), width 0.28s cubic-bezier(.2,.8,.2,1), height 0.28s cubic-bezier(.2,.8,.2,1);
+        }
+        .tour-card {
+            position: fixed; width: 300px; max-width: calc(100vw - 24px); box-sizing: border-box;
+            padding: 16px 18px 14px; border-radius: 16px; background: #fff; color: #3a3a3e;
+            box-shadow: 0 18px 50px rgba(0,0,0,0.30);
+            transition: left 0.28s cubic-bezier(.2,.8,.2,1), top 0.28s cubic-bezier(.2,.8,.2,1);
+        }
+        .tour-title { font-size: 0.98rem; font-weight: 600; color: #1d1d1f; margin-bottom: 6px; }
+        .tour-text { font-size: 0.84rem; line-height: 1.6; }
+        .tour-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 14px; }
+        .tour-count { font-size: 0.74rem; color: #9c9ca2; font-variant-numeric: tabular-nums; }
+        .tour-actions { display: flex; align-items: center; gap: 8px; }
+        .tour-btn { padding: 6px 14px; font-size: 0.82rem; }
+        .tour-skip { border: none; background: transparent; color: #9c9ca2; font-size: 0.78rem; cursor: pointer; padding: 4px 6px; }
+        .tour-skip:hover { color: #1d1d1f; }
+        @media (prefers-reduced-motion: reduce) { .tour-root, .tour-spot, .tour-card { animation: none; transition: none; } }
         /* 登录出错的提示:居中,别像普通表单提示那样左对齐贴着按钮 */
         #auth-status { text-align: center; margin-top: 22px; }
         /* 正在登录:居中转圈 + 两行字,单色,和整站的黑白气质一致 */
@@ -1044,11 +1067,11 @@
             transition: width 0.28s cubic-bezier(.2,.8,.2,1), margin 0.28s cubic-bezier(.2,.8,.2,1), box-shadow 0.28s ease;
         }
         .ppt-canvas.open {
-            width: 460px;
+            width: 600px;
             margin: 12px 12px 12px 0;
             box-shadow: 0 8px 32px rgba(31,38,135,0.10);
         }
-        .ppt-canvas-head, .ppt-canvas-body, .ppt-canvas-foot { width: 460px; } /* 收起过程中内容不跟着width一起压扁换行 */
+        .ppt-canvas-head, .ppt-canvas-body, .ppt-canvas-foot { width: 600px; } /* 收起过程中内容不跟着width一起压扁换行 */
         /* 窄屏放不下"压缩布局",退回原来盖在上面的浮层模式 */
         @media (max-width: 900px) {
             .ppt-canvas {
@@ -1087,7 +1110,7 @@
             border: 1px solid #ececef; box-shadow: 0 2px 10px rgba(0,0,0,0.06);
             flex-shrink: 0; /* 纵向flex容器里默认会把它压扁去凑总高度,必须锁住,靠外层滚动而不是压缩比例 */
         }
-        .wysiwyg-slide.cover { background: linear-gradient(135deg, var(--accent-dark), var(--accent) 60%, #6b6b70); }
+        .wysiwyg-slide.cover:not(.v4) { background: linear-gradient(135deg, var(--accent-dark), var(--accent) 60%, #6b6b70); }
         .ws-el { position: absolute; overflow: hidden; }
         .ws-title { left: 5.5%; top: 7.1%; width: 89%; height: 12.4%; font-weight: 700; color: var(--accent-dark); font-size: clamp(14px, 3.1cqw, 999px); line-height: 1.25; }
         .ws-bar { left: 5.5%; top: 18.7%; width: 5%; height: 0.9%; background: var(--accent); border-radius: 2px; }
@@ -1098,8 +1121,15 @@
         .ws-cover-sub { left: 7%; top: 62.2%; width: 86%; height: 8.9%; color: #f0dce0; font-size: clamp(11px, 1.8cqw, 999px); }
         .ws-slide-index { position: absolute; left: 8px; bottom: 6px; font-size: 10px; color: #c9c9ce; }
         .wysiwyg-slide:not(.cover) .ws-slide-index { color: #c9c9ce; }
-        .wysiwyg-slide.cover .ws-slide-index { color: rgba(255,255,255,0.55); }
+        
 
+        /* 自动布局引擎(ppt-layout.js)输出的图元:坐标按 960×540 换算成百分比,字号用 cqw,和导出的pptx同比例 */
+        .wysiwyg-slide.v4 { background: #fff; }
+        .ws-shape { position: absolute; box-sizing: border-box; }
+        .ws-shape.arrow-right { clip-path: polygon(0 22%, 55% 22%, 55% 0, 100% 50%, 55% 100%, 55% 78%, 0 78%); }
+        .ws-shape.arrow-up { clip-path: polygon(50% 0, 100% 45%, 78% 45%, 78% 100%, 22% 100%, 22% 45%, 0 45%); }
+        .ws-shape.arrow-down { clip-path: polygon(22% 0, 78% 0, 78% 55%, 100% 55%, 50% 100%, 0 55%, 22% 55%); }
+        .ws-txt { position: absolute; box-sizing: border-box; display: flex; flex-direction: column; font-family: "Microsoft YaHei", "PingFang SC", sans-serif; font-weight: 700; line-height: 1.35; white-space: pre; overflow: visible; }
         .ppt-canvas-empty { margin: auto; text-align: center; color: #9c9ca2; font-size: 0.85rem; padding: 20px; }
         .ppt-canvas-link { color: var(--accent); font-weight: 500; text-decoration: none; white-space: nowrap; }
         .ppt-canvas-link:hover { text-decoration: underline; }
@@ -1277,6 +1307,9 @@
             html:not([data-theme="light"]) #auth-github-login-btn { color: #f2f2f4 !important; border-color: rgba(255,255,255,0.16) !important; }
             html:not([data-theme="light"]) .auth-account-email { color: #f2f2f4; }
             html:not([data-theme="light"]) .auth-account-sub { color: #8a8a90; }
+            html:not([data-theme="light"]) .tour-card { background: #2a2a2e; color: #b8b8c0; box-shadow: 0 18px 50px rgba(0,0,0,0.6); }
+            html:not([data-theme="light"]) .tour-title { color: #f2f2f4; }
+            html:not([data-theme="light"]) .tour-skip:hover { color: #f2f2f4; }
             html:not([data-theme="light"]) .auth-spinner { border-color: rgba(255,255,255,0.14); border-top-color: #f2f2f4; }
             html:not([data-theme="light"]) .auth-busy-title { color: #f2f2f4; }
             html:not([data-theme="light"]) .auth-busy-sub { color: #8a8a90; }
@@ -1429,6 +1462,9 @@
             html[data-theme="dark"] #auth-github-login-btn { color: #f2f2f4 !important; border-color: rgba(255,255,255,0.16) !important; }
             html[data-theme="dark"] .auth-account-email { color: #f2f2f4; }
             html[data-theme="dark"] .auth-account-sub { color: #8a8a90; }
+            html[data-theme="dark"] .tour-card { background: #2a2a2e; color: #b8b8c0; box-shadow: 0 18px 50px rgba(0,0,0,0.6); }
+            html[data-theme="dark"] .tour-title { color: #f2f2f4; }
+            html[data-theme="dark"] .tour-skip:hover { color: #f2f2f4; }
             html[data-theme="dark"] .auth-spinner { border-color: rgba(255,255,255,0.14); border-top-color: #f2f2f4; }
             html[data-theme="dark"] .auth-busy-title { color: #f2f2f4; }
             html[data-theme="dark"] .auth-busy-sub { color: #8a8a90; }
@@ -1581,6 +1617,23 @@
                         <button class="ppt-btn-ghost" id="auth-logout-btn">退出登录</button>
                         <button class="ppt-btn-primary" id="auth-account-close-btn">完成</button>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== 使用说明:分步引导。只有点侧栏「使用说明」才会出现,不会自动弹给新用户 ===== -->
+        <div class="tour-root" id="tour-root" hidden>
+            <div class="tour-spot" id="tour-spot"></div>
+            <div class="tour-card" id="tour-card" role="dialog" aria-live="polite" aria-labelledby="tour-title">
+                <div class="tour-title" id="tour-title"></div>
+                <div class="tour-text" id="tour-text"></div>
+                <div class="tour-foot">
+                    <span class="tour-count" id="tour-count"></span>
+                    <span class="tour-actions">
+                        <button type="button" class="tour-skip" id="tour-skip">跳过</button>
+                        <button type="button" class="ppt-btn-ghost tour-btn" id="tour-back">上一步</button>
+                        <button type="button" class="ppt-btn-primary tour-btn" id="tour-next">下一步</button>
+                    </span>
                 </div>
             </div>
         </div>
@@ -1819,6 +1872,7 @@
     </div>
 
     <script src="pptxgen.bundle.js"></script>
+    <script src="ppt-layout.js"></script>
     <script>
         // 支持 ?endpoint=http://127.0.0.1:8787 临时指向本地测试后端,不传就用线上地址
         const CHAT_ENDPOINT = new URLSearchParams(location.search).get('endpoint')
@@ -1904,6 +1958,147 @@
         }
 
         document.getElementById('sidebar-user-btn').addEventListener('click', openAuthDialog);
+
+        /* ---------- 使用说明:分步引导。用户点侧栏「使用说明」才开始,高亮一个入口,点「下一步」逐个介绍;从不自动弹出 ---------- */
+        const TOUR_STEPS = [
+        {
+                "sel": "#new-chat-btn",
+                "title": "新对话",
+                "text": "随便聊:写作、翻译、写代码、解题都行。想换个话题,点这里重新开始。",
+                "maxH": 0
+        },
+        {
+                "sel": "#ppt-open-btn",
+                "title": "AI4PPT",
+                "text": "说一个主题,先得到一份大纲,接着说「第 3 页精简成 3 条要点」就能改。右侧实时预览,满意后可以下载 PPTX。",
+                "maxH": 0
+        },
+        {
+                "sel": "#skill-open-btn",
+                "title": "技能市场",
+                "text": "一键添加现成的「技能」,比如论文润色、中英学术互译。你也可以在这里设置对每个对话都生效的「全局技能」,或者自己创建技能。",
+                "maxH": 0
+        },
+        {
+                "sel": "#qa-group-btn",
+                "title": "高质量数据集问答",
+                "text": "只根据本站收录的资料回答。可以切到「自测」,让 AI 出题考你。",
+                "maxH": 0
+        },
+        {
+                "sel": "#history-group",
+                "title": "对话历史",
+                "text": "登录后,你的对话会保存在这里,点一下就能接着聊,换设备也能看到。",
+                "maxH": 110
+        },
+        {
+                "sel": "#sidebar-user-btn",
+                "title": "账号",
+                "text": "核心功能需要登录后才能用。点这里用 GitHub 账号登录,不需要密码。",
+                "maxH": 0
+        },
+        {
+                "sel": "#lang-switch",
+                "title": "语言",
+                "text": "在这里切换中文 / EN,只改界面文字;切到 EN 后 AI 也会用英文回答。",
+                "maxH": 0
+        }
+];
+        const tourRoot = document.getElementById('tour-root');
+        const tourSpot = document.getElementById('tour-spot');
+        const tourCard = document.getElementById('tour-card');
+        const tourTitle = document.getElementById('tour-title');
+        const tourText = document.getElementById('tour-text');
+        const tourCount = document.getElementById('tour-count');
+        const tourBack = document.getElementById('tour-back');
+        const tourNext = document.getElementById('tour-next');
+        const tourSkip = document.getElementById('tour-skip');
+        let tourList = [], tourIdx = -1;
+
+        function tourTarget(sel) {
+            const el = document.querySelector(sel);
+            if (!el) return null;
+            const r = el.getBoundingClientRect();
+            return (r.width > 0 && r.height > 0) ? el : null; // 侧栏收起等情况下看不见的入口,这一步直接跳过
+        }
+        function startTour() {
+            tourList = TOUR_STEPS.filter(s => tourTarget(s.sel));
+            if (tourList.length < 3) return;   // 侧栏收起等原因看不到几个入口时,引导没意义,别开(也不算"看过")
+            markTourSeen();                    // 一开始就记下"看过了":最多自动出现这一次,中途刷新/关掉也不会再来
+            tourIdx = 0;
+            tourRoot.hidden = false;
+            showTourStep();
+        }
+        function endTour() { tourRoot.hidden = true; tourIdx = -1; }
+        function showTourStep() {
+            const s = tourList[tourIdx], last = tourIdx === tourList.length - 1;
+            tourTarget(s.sel).scrollIntoView({ block: 'nearest' });
+            tourTitle.textContent = s.title;
+            tourText.textContent = s.text;
+            tourCount.textContent = (tourIdx + 1) + ' / ' + tourList.length;
+            tourBack.hidden = tourIdx === 0;
+            tourSkip.hidden = last;
+            tourNext.textContent = last ? '完成' : '下一步';
+            positionTour();
+            requestAnimationFrame(positionTour); // 英文翻译落地后卡片高度可能变,再摆一次
+            tourNext.focus({ preventScroll: true });
+        }
+        function positionTour() {
+            if (tourIdx < 0) return;
+            const s = tourList[tourIdx], el = tourTarget(s.sel);
+            if (!el) { endTour(); return; }
+            const r = el.getBoundingClientRect(), h = s.maxH ? Math.min(r.height, s.maxH) : r.height, pad = 6;
+            tourSpot.style.left = (r.left - pad) + 'px';
+            tourSpot.style.top = (r.top - pad) + 'px';
+            tourSpot.style.width = (r.width + pad * 2) + 'px';
+            tourSpot.style.height = (h + pad * 2) + 'px';
+            const cw = tourCard.offsetWidth, ch = tourCard.offsetHeight, gap = 18, m = 12;
+            let left = r.right + gap + pad, top = r.top + h / 2 - ch / 2;               // 首选:目标右边
+            if (left + cw > innerWidth - m) {                                              // 右边放不下(比如右上角的语言开关):放下面,再不行放上面
+                left = Math.min(r.left, innerWidth - cw - m);
+                top = r.top + h + gap;
+                if (top + ch > innerHeight - m) top = r.top - ch - gap;
+            }
+            tourCard.style.left = Math.max(m, left) + 'px';
+            tourCard.style.top = Math.max(m, Math.min(top, innerHeight - ch - m)) + 'px';
+        }
+        tourNext.addEventListener('click', () => { if (tourIdx >= tourList.length - 1) endTour(); else { tourIdx++; showTourStep(); } });
+        tourBack.addEventListener('click', () => { if (tourIdx > 0) { tourIdx--; showTourStep(); } });
+        tourSkip.addEventListener('click', endTour);
+        document.addEventListener('keydown', (e) => {
+            if (tourIdx < 0) return;
+            if (e.key === 'Escape') endTour();
+            else if (e.key === 'ArrowRight') tourNext.click();
+            else if (e.key === 'ArrowLeft') tourBack.click();
+        });
+        addEventListener('resize', positionTour);
+
+        /* 自动判断新老用户:只对"这个浏览器从没用过"的新访客自动引导一次;老用户不打扰,也没有任何按钮。
+           "用过"的痕迹 = 登录过 / 主动切过主题、语言、侧栏 / 建过技能或设过全局技能 / 已经看过引导。
+           注意 hqds-lang 页面一加载就会自己写入,hqds-skill-installed 也是首次加载自己写的默认值,这两个不能当依据。
+           想手动再看一遍:在地址后面加 ?tour=1 */
+        const TOUR_DONE_KEY = 'hqds-tour-done';
+        const TOUR_QS = new URLSearchParams(location.search);       // 趁地址栏里的 code 还没被清掉先读
+        const TOUR_FROM_OAUTH = TOUR_QS.has('code');                 // 正在从 GitHub 授权页跳回来登录:别去打断
+        const TOUR_FORCED = TOUR_QS.get('tour') === '1';
+        function markTourSeen() { try { localStorage.setItem(TOUR_DONE_KEY, '1'); } catch (e) {} }
+        function tourCanRemember() {
+            try { localStorage.setItem('hqds-tour-probe', '1'); localStorage.removeItem('hqds-tour-probe'); return true; }
+            catch (e) { return false; }
+        }
+        function tourIsReturningUser() {
+            try {
+                const filled = (k) => { const v = localStorage.getItem(k); return v !== null && v !== '' && v !== '[]'; };
+                return filled(TOUR_DONE_KEY) || filled('hqds-auth-token') || filled('hqds-auth-email') || filled('hqds-theme')
+                    || filled('hqds-sidebar-collapsed') || filled('hqds-skill-custom') || filled('hqds-skill-global')
+                    || filled('hqds-skill-sync-mark') || localStorage.getItem('hqds-lang') === 'en';
+            } catch (e) { return true; }                             // 读不了存储:当老用户,宁可不引导也不要每次都弹
+        }
+        setTimeout(() => {
+            if (!TOUR_FORCED && (TOUR_FROM_OAUTH || tourIsReturningUser() || !tourCanRemember())) return;
+            if (authBackdrop.style.display !== 'none') return;       // 登录框正开着,别叠上去
+            startTour();
+        }, 1200);
         document.getElementById('auth-close-btn').addEventListener('click', closeAuthDialog);
         document.getElementById('auth-account-close-btn').addEventListener('click', closeAuthDialog);
         authBackdrop.addEventListener('click', (e) => { if (e.target === authBackdrop) closeAuthDialog(); });
@@ -2598,7 +2793,7 @@
            没聚焦/聚焦封面 = 传的是Logo(套所有页);聚焦某一内容页 = 传的是插到那一页里的图。
            同样是纯本地处理,base64存着,预览摆<img>,导出时pptxgenjs.addImage()吃同一个data URL。 */
         const pptSlideImages = {}; // { [num]: { dataUrl, aspect } },num=内容页页码(1..N,不含封面)
-        const PPT_SLIDE_IMG_W = 3.4; // 插图固定宽度(in),高度按原图比例算,不会被拉伸
+        const PPT_SLIDE_IMG_W = 2.9; // 插图固定宽度(in),高度按原图比例算,不会被拉伸
 
         function pptLogoCornerLabel(corner) {
             return { 'top-left': '左上角', 'top-right': '右上角', 'bottom-left': '左下角', 'bottom-right': '右下角', 'center': '居中' }[corner] || corner;
@@ -2647,10 +2842,14 @@
         function pptSlideImageBoxIn(num) {
             const img = pptSlideImages[num];
             if (!img) return null;
-            const bodyBox = { x: 0.55, y: 1.35, w: 8.9, h: 3.9 };
+            const region = { x: 0.55, y: 1.55, w: 8.9, h: 3.3 }; // 大致对应布局引擎里的正文区(标题说明之下、结论之上)
             const w = PPT_SLIDE_IMG_W;
-            const h = Math.min(w / img.aspect, bodyBox.h);
-            return { x: bodyBox.x + bodyBox.w - w, y: bodyBox.y + (bodyBox.h - h) / 2, w, h };
+            const h = Math.min(w / img.aspect, region.h);
+            return { x: region.x + region.w - w, y: region.y + (region.h - h) / 2, w, h };
+        }
+        /* 有插图的页:布局引擎把正文区右边让出这么多单位(单位=960×540坐标) */
+        function pptSlideImageReserveU(num) {
+            return pptSlideImages[num] ? Math.round((PPT_SLIDE_IMG_W + 0.25) * PPT_UW / PPT_CANVAS_W_IN) : 0;
         }
         function pptSlideImageHTML(num) {
             const box = pptSlideImageBoxIn(num);
@@ -2708,28 +2907,81 @@
             pptLogoInput.value = ''; // 允许连续选同一个文件也能再次触发change
         });
 
-        /* 按 downloadPptx() 实际导出坐标换算的WYSIWYG单页标记,和真实pptx一一对应,不是随便排的卡片 */
-        function renderSlideHTML(slide) {
-            const num = slide.cover ? 0 : slide.num;
-            const focusedCls = pptFocusNum === num ? ' focused' : '';
-            if (slide.cover) {
+        /* ---------- 图元 → 预览HTML:图元由 ppt-layout.js 算出,导出pptx用的是同一份 ---------- */
+        const PPT_UW = 960, PPT_UH = 540; // 布局引擎的坐标单位(16:9,等价于960×540pt)
+        const pptPct = (v, total) => (v / total * 100).toFixed(3) + '%';
+        function pptShapesHTML(shapes) {
+            return shapes.map(s => {
+                const pos = `left:${pptPct(s.x, PPT_UW)};top:${pptPct(s.y, PPT_UH)};width:${pptPct(s.w, PPT_UW)};height:${pptPct(s.h, PPT_UH)};`;
+                if (s.k === 'rect') {
+                    const st = `${pos}background:#${s.fill || 'fff'};`
+                        + (s.line ? `border:${s.lw >= 1 ? 1.5 : 1}px solid #${s.line};` : '')
+                        + (s.r ? `border-radius:${(s.r / 9.6).toFixed(2)}cqw;` : '')
+                        + (s.shadow ? 'box-shadow:0 1px 4px rgba(11,58,117,0.10);' : '');
+                    return `<div class="ws-shape" style="${st}"></div>`;
+                }
+                if (s.k === 'arrow') {
+                    return `<div class="ws-shape arrow-${s.dir}" style="${pos}background:#${s.fill};"></div>`;
+                }
+                const jc = { top: 'flex-start', middle: 'center', bottom: 'flex-end' }[s.valign] || 'center';
+                const paras = s.paras.map((lines, i) => {
+                    const color = s.pcolors ? s.pcolors[i] : s.color;
+                    const mb = i < s.paras.length - 1 ? (s.gap / 9.6).toFixed(3) : 0;
+                    return `<div style="color:#${color};margin-bottom:${mb}cqw;">${lines.map(escapeHtml).join('\n')}</div>`;
+                }).join('');
+                return `<div class="ws-txt" style="${pos}font-size:${(s.fs / 9.6).toFixed(3)}cqw;text-align:${s.align};justify-content:${jc};color:#${s.color};">${paras}</div>`;
+            }).join('');
+        }
+
+        /* 封面下方的署名行(姓名/单位/日期…):完全由用户自己设,默认没有。
+           只存在本浏览器的 localStorage,不上传;在对话里说「封面信息:姓名/单位/日期」设置。 */
+        const PPT_COVER_KEY = 'hqds-ppt-cover';
+        let pptCoverLines = [];
+        try { const v = JSON.parse(localStorage.getItem(PPT_COVER_KEY) || '[]'); if (Array.isArray(v)) pptCoverLines = v.map(String).filter(Boolean).slice(0, 4); } catch (e) {}
+        function pptCoverInfo() { return pptCoverLines; }
+        function setPptCoverLines(lines) {
+            pptCoverLines = lines.map(l => l.trim()).filter(Boolean).slice(0, 4);
+            try { localStorage.setItem(PPT_COVER_KEY, JSON.stringify(pptCoverLines)); } catch (e) {}
+        }
+        /* 「封面信息:张三/某某大学/2026年9月」→ 设置;「清除封面信息」→ 清空。不是这类话返回 null */
+        function parsePptCoverCommand(text) {
+            if (/(清除|清空|去掉|删除|不要)(封面)?(信息|署名)/.test(text)) return { clear: true };
+            const m = text.match(/(?:封面信息|封面署名|署名|作者信息)\s*[:：]\s*([\s\S]+)/);
+            if (!m) return null;
+            const lines = m[1].split(/[\/,，、;；\n]/).map(x => x.trim()).filter(Boolean);
+            return lines.length ? { lines } : null;
+        }
+        function pptItemShapes(item) {
+            if (item.kind === 'cover') return PptLayout.buildCover(item.title, pptCoverInfo()).shapes;
+            if (item.kind === 'toc') return PptLayout.buildToc(item.sections, item.active).shapes;
+            return PptLayout.buildSlide(item.slide, { reserveRight: pptSlideImageReserveU(item.num) }).shapes;
+        }
+
+        function renderSlideHTML(item) {
+            const shapes = pptItemShapes(item);
+            if (item.kind === 'cover') {
+                const focusedCls = pptFocusNum === 0 ? ' focused' : '';
                 return `
-                    <div class="wysiwyg-slide cover${focusedCls}" data-num="0">
-                        <div class="ws-el ws-cover-title">${escapeHtml(slide.title)}</div>
-                        <div class="ws-el ws-cover-sub">高质量数据集 · 自动生成</div>
+                    <div class="wysiwyg-slide v4 cover${focusedCls}" data-num="0">
+                        ${pptShapesHTML(shapes)}
                         <div class="ws-slide-index">封面</div>
                         ${pptLogoHTML()}
                     </div>`;
             }
-            const hasImageCls = pptSlideImages[slide.num] ? ' has-image' : '';
+            if (item.kind === 'toc') {
+                return `
+                    <div class="wysiwyg-slide v4 toc">
+                        ${pptShapesHTML(shapes)}
+                        <div class="ws-slide-index">目录</div>
+                    </div>`;
+            }
+            const focusedCls = pptFocusNum === item.num ? ' focused' : '';
             return `
-                <div class="wysiwyg-slide${focusedCls}${hasImageCls}" data-num="${slide.num}">
-                    <div class="ws-el ws-title">${escapeHtml(slide.title)}</div>
-                    <div class="ws-el ws-bar"></div>
-                    <div class="ws-el ws-bullets"><ul>${slide.bullets.map(b => `<li>${escapeHtml(b)}</li>`).join('')}</ul></div>
-                    ${pptSlideImageHTML(slide.num)}
+                <div class="wysiwyg-slide v4${focusedCls}" data-num="${item.num}">
+                    ${pptShapesHTML(shapes)}
+                    ${pptSlideImageHTML(item.num)}
                     ${pptLogoHTML()}
-                    <div class="ws-slide-index">${slide.num}</div>
+                    <div class="ws-slide-index">${item.num}</div>
                 </div>`;
         }
 
@@ -2794,10 +3046,7 @@
 
         function renderPptCanvas(data) {
             pptCanvasTitle.textContent = data.title;
-            pptAllSlides = [
-                { cover: true, title: data.title },
-                ...data.slides.map((s, i) => ({ ...s, num: i + 1 })),
-            ];
+            pptAllSlides = PptLayout.expand(data); // 封面 + 章节目录页 + 内容页
             pptPageStart = 0;
             renderPptPage();
         }
@@ -2851,7 +3100,7 @@
                 if (data.error) throw new Error(data.error);
                 pptData = data;
                 loadingRow.remove();
-                appendPptConfirm(`已经生成《${pptData.title}》的大纲,共 ${pptData.slides.length} 页。`);
+                appendPptConfirm(`已经生成《${pptData.title}》的大纲,共 ${pptData.slides.length} 页。封面下方想加署名,可以说「封面信息:姓名/单位/日期」。`);
                 renderPptCanvas(pptData);
                 openPptCanvas();
                 pptEditInput.placeholder = pptPlaceholder();
@@ -2873,6 +3122,18 @@
             if (!instruction || pptBusy) return;
             // 还没有大纲 = 这句话是主题
             if (!pptData) { generatePptOutline(instruction); return; }
+
+            // 封面署名同样是纯本地状态
+            const coverCmd = parsePptCoverCommand(instruction);
+            if (coverCmd) {
+                pptEditInput.value = '';
+                pptEditInput.style.height = 'auto';
+                appendMessage(pptScroll, 'user', { html: escapeHtml(instruction) });
+                setPptCoverLines(coverCmd.clear ? [] : coverCmd.lines);
+                renderPptPage();
+                appendPptConfirm(coverCmd.clear ? '已清除封面下方的署名信息。' : `封面信息已设为:${pptCoverLines.join(' / ')}`);
+                return;
+            }
 
             // logo的位置/大小是纯本地状态,不属于DeepSeek管的大纲内容——命中了就地处理,不打后端
             const logoCmd = parsePptLogoCommand(instruction);
@@ -2944,60 +3205,67 @@
                 pptx.defineLayout({ name: 'HQDS', width: PPT_CANVAS_W_IN, height: PPT_CANVAS_H_IN });
                 pptx.layout = 'HQDS';
                 const logoBox = pptLogoBoxIn(); // null 或 {x,y,w,h},跟预览用的是同一个算法,不会对不上
+                const U = PPT_CANVAS_W_IN / PPT_UW; // 布局单位 → 英寸
+                const PT = 0.75;                    // 布局单位 → pt(960单位 = 720pt)
+                const FONT = 'Microsoft YaHei';
 
-                /* 真正的PPT母版:用defineSlideMaster生成OOXML层面的slideMaster/slideLayout,
-                   而不是每页重复画一遍形状。在PowerPoint里"视图→幻灯片母版"能看到这两版母版,
-                   改母版上的配色/logo位置/字体,所有用它的页面会跟着变——这才是"母版"的本意。 */
-                const coverObjects = [
-                    { placeholder: {
-                        options: { name: 'title', type: 'title', x: 0.7, y: 2.2, w: 8.6, h: 1.4, fontSize: 30, bold: true, color: 'FFFFFF', fontFace: 'Microsoft YaHei' },
-                        text: '标题',
-                    } },
-                    { text: {
-                        text: '高质量数据集 · 自动生成',
-                        options: { x: 0.7, y: 3.5, w: 8.6, h: 0.5, fontSize: 13, color: 'C7C7CC', fontFace: 'Microsoft YaHei' },
-                    } },
-                ];
+                /* 真正的PPT母版:defineSlideMaster 生成OOXML层面的slideMaster/slideLayout。
+                   内容页母版带标题占位符(大纲视图里能看到标题),封面/目录页母版只有背景和logo。
+                   所有形状的坐标/字号来自 ppt-layout.js,和网页预览是同一份图元。 */
+                const coverObjects = [];
                 if (logoBox) coverObjects.push({ image: { data: pptLogoDataUrl, ...logoBox } });
-                pptx.defineSlideMaster({
-                    title: 'MASTER_COVER',
-                    background: { color: PPT_ACCENT },
-                    objects: coverObjects,
-                });
+                pptx.defineSlideMaster({ title: 'MASTER_COVER', background: { color: 'FFFFFF' }, objects: coverObjects });
 
                 const contentObjects = [
                     { placeholder: {
-                        options: { name: 'title', type: 'title', x: 0.55, y: 0.4, w: 8.9, h: 0.7, fontSize: 22, bold: true, color: PPT_ACCENT_DARK, fontFace: 'Microsoft YaHei' },
+                        options: { name: 'title', type: 'title', x: 24 * U, y: 4 * U, w: 900 * U, h: 46 * U, fontSize: 28 * PT, bold: true, color: PptLayout.C.navy, fontFace: FONT, valign: 'middle', align: 'left', margin: 0 },
                         text: '标题',
-                    } },
-                    { rect: { x: 0.55, y: 1.05, w: 0.5, h: 0.045, fill: { color: PPT_ACCENT } } },
-                    { placeholder: {
-                        options: { name: 'body', type: 'body', x: 0.55, y: 1.35, w: 8.9, h: 3.9, fontSize: 15, color: '333333', fontFace: 'Microsoft YaHei', valign: 'top' },
-                        text: '正文',
                     } },
                 ];
                 if (logoBox) contentObjects.push({ image: { data: pptLogoDataUrl, ...logoBox } });
-                pptx.defineSlideMaster({
-                    title: 'MASTER_CONTENT',
-                    background: { color: 'FFFFFF' },
-                    objects: contentObjects,
-                    slideNumber: { x: 9.55, y: 5.3, fontSize: 10, color: '999999' },
-                });
+                pptx.defineSlideMaster({ title: 'MASTER_CONTENT', background: { color: 'FFFFFF' }, objects: contentObjects });
 
-                const cover = pptx.addSlide({ masterName: 'MASTER_COVER' });
-                cover.addText(data.title, { placeholder: 'title' });
+                const addShapes = (slide, shapes) => {
+                    for (const sh of shapes) {
+                        const box = { x: sh.x * U, y: sh.y * U, w: sh.w * U, h: sh.h * U };
+                        if (sh.k === 'rect') {
+                            slide.addShape(sh.r ? pptx.ShapeType.roundRect : pptx.ShapeType.rect, {
+                                ...box,
+                                fill: { color: sh.fill },
+                                line: sh.line ? { color: sh.line, width: sh.lw || 0.75 } : { type: 'none' },
+                                ...(sh.r ? { rectRadius: 0.05 } : {}),
+                                ...(sh.shadow ? { shadow: { type: 'outer', color: PptLayout.C.navy, opacity: 0.12, blur: 4, offset: 1.5, angle: 90 } } : {}),
+                            });
+                        } else if (sh.k === 'arrow') {
+                            slide.addShape({ down: pptx.ShapeType.downArrow, up: pptx.ShapeType.upArrow }[sh.dir] || pptx.ShapeType.rightArrow, {
+                                ...box, fill: { color: sh.fill }, line: { type: 'none' },
+                            });
+                        } else if (sh.role === 'title') {
+                            slide.addText(sh.paras[0][0], { placeholder: 'title' });
+                        } else {
+                            // 换行已在布局引擎里算好:同一段内用软换行,段与段之间用段落间距
+                            const runs = [];
+                            sh.paras.forEach((lines, pi) => {
+                                const isLastPara = pi === sh.paras.length - 1;
+                                lines.forEach((ln, li) => {
+                                    const o = { color: sh.pcolors ? sh.pcolors[pi] : sh.color, bold: true, fontSize: sh.fs * PT, fontFace: FONT };
+                                    if (li > 0) o.softBreakBefore = true;
+                                    if (!isLastPara) o.paraSpaceAfter = sh.gap * PT;
+                                    if (li === lines.length - 1 && !isLastPara) o.breakLine = true;
+                                    runs.push({ text: ln, options: o });
+                                });
+                            });
+                            slide.addText(runs, { ...box, align: sh.align, valign: sh.valign, margin: 0, fontFace: FONT });
+                        }
+                    }
+                };
 
-                for (const s of data.slides) {
-                    const slide = pptx.addSlide({ masterName: 'MASTER_CONTENT' });
-                    slide.addText(s.title, { placeholder: 'title' });
-                    const bulletRuns = s.bullets.map(b => ({ text: b, options: { bullet: { code: '25AA' }, breakLine: true, paraSpaceAfter: 10 } }));
-                    const slideImg = pptSlideImages[s.num];
-                    if (slideImg) {
-                        // 这一页有插图:不用母版的body占位符(那是全宽的),改成显式坐标,文字收窄给插图让出右边位置
-                        slide.addText(bulletRuns, { x: 0.55, y: 1.35, w: 4.5, h: 3.9, fontSize: 15, color: '333333', fontFace: 'Microsoft YaHei', valign: 'top' });
-                        slide.addImage({ data: slideImg.dataUrl, ...pptSlideImageBoxIn(s.num) });
-                    } else {
-                        slide.addText(bulletRuns, { placeholder: 'body' });
+                for (const item of PptLayout.expand(data)) {
+                    const slide = pptx.addSlide({ masterName: item.kind === 'slide' ? 'MASTER_CONTENT' : 'MASTER_COVER' });
+                    addShapes(slide, pptItemShapes(item));
+                    if (item.kind === 'slide') {
+                        const slideImg = pptSlideImages[item.num];
+                        if (slideImg) slide.addImage({ data: slideImg.dataUrl, ...pptSlideImageBoxIn(item.num) });
                     }
                 }
 
@@ -3901,6 +4169,18 @@
                     "登录中…": "Signing in…",
                     "正在登录…": "Signing you in…",
                     "正在通过 GitHub 确认你的身份": "Confirming your identity with GitHub",
+                    "对话历史": "History",
+                    "语言": "Language",
+                    "随便聊:写作、翻译、写代码、解题都行。想换个话题,点这里重新开始。": "Just talk — writing, translating, coding and problem solving all work. Click here to start a fresh topic.",
+                    "说一个主题,先得到一份大纲,接着说「第 3 页精简成 3 条要点」就能改。右侧实时预览,满意后可以下载 PPTX。": "Name a topic to get an outline, then keep chatting to refine it, for example \"cut slide 3 to three bullet points\". The preview updates on the right, and you can download a PPTX when you are happy.",
+                    "一键添加现成的「技能」,比如论文润色、中英学术互译。你也可以在这里设置对每个对话都生效的「全局技能」,或者自己创建技能。": "Add ready-made skills in one click, such as paper polishing or academic translation. You can also set a \"global skill\" that applies to every conversation, or create your own.",
+                    "只根据本站收录的资料回答。可以切到「自测」,让 AI 出题考你。": "Answers only from the material collected on this site. Switch to \"Quiz\" and the AI will test you.",
+                    "登录后,你的对话会保存在这里,点一下就能接着聊,换设备也能看到。": "Once you sign in, your conversations are saved here — click one to pick it up again, on any device.",
+                    "核心功能需要登录后才能用。点这里用 GitHub 账号登录,不需要密码。": "The main features need you to sign in. Click here to sign in with GitHub — no password needed.",
+                    "在这里切换中文 / EN,只改界面文字;切到 EN 后 AI 也会用英文回答。": "Switch between Chinese and EN here. It changes the interface text, and in EN the AI answers in English too.",
+                    "跳过": "Skip",
+                    "上一步": "Back",
+                    "下一步": "Next",
                     "登录失败：": "Sign-in failed: ",
                     "刚刚": "Just now",
                     "资料问答": "Material Q&A",
