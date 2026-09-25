@@ -298,16 +298,17 @@
 
         /* AI4PPT 这一屏的背景图:用伪元素铺,靠 opacity 跟页面底色混合,
            这样浅色/深色两个主题各自会把它压成对应色调的一层氛围,不用准备两张图。 */
-        .chat-thread[data-mode="ppt"] { position: relative; }
-        .chat-thread[data-mode="ppt"]::before {
+        .app-shell::before {
+            content: none;
+        }
+        .app-shell.ppt-mode::before {
             content: "";
             position: absolute; inset: 0;
             background: url("https://jinpeng-assets.oss-cn-beijing.aliyuncs.com/%E4%B8%AA%E4%BA%BA%E4%B8%BB%E9%A1%B5/%E5%9F%BA%E6%9C%AC%E5%9B%BE%E7%89%87/ppt-bg.jpg") center / cover no-repeat;
             opacity: 0.45;
             pointer-events: none;
-            z-index: 0;
+            z-index: -1; /* .app-shell 是 fixed,自成层叠上下文:图夹在shell底色和所有子元素之间 */
         }
-        .chat-thread[data-mode="ppt"] > * { position: relative; z-index: 1; }
 
         /* .chat-scroll 自己带 display:flex,会盖过浏览器默认的 [hidden]{display:none},这里补一条 */
         .chat-scroll[hidden] { display: none; }
@@ -1233,7 +1234,7 @@
             /* 空状态 + 示例问题芯片 */
             html:not([data-theme="light"]) .chat-empty .empty-sub { color: #f2f2f4; }
             html:not([data-theme="light"]) .chat-empty .empty-logo { filter: invert(1); }
-            html:not([data-theme="light"]) .chat-thread[data-mode="ppt"]::before { opacity: 0.5; }
+            html:not([data-theme="light"]) .app-shell.ppt-mode::before { opacity: 0.5; }
             html:not([data-theme="light"]) { --spot-hi: #ffffff; --spot-lo: #56565f; }
             html:not([data-theme="light"]) .empty-suggestions { border-top-color: rgba(255,255,255,0.1); }
             html:not([data-theme="light"]) .suggestion-chip { background: transparent; border-bottom-color: rgba(255,255,255,0.1); color: #9a9aa2; }
@@ -1388,7 +1389,7 @@
             /* 空状态 + 示例问题芯片 */
             html[data-theme="dark"] .chat-empty .empty-sub { color: #f2f2f4; }
             html[data-theme="dark"] .chat-empty .empty-logo { filter: invert(1); }
-            html[data-theme="dark"] .chat-thread[data-mode="ppt"]::before { opacity: 0.5; }
+            html[data-theme="dark"] .app-shell.ppt-mode::before { opacity: 0.5; }
             html[data-theme="dark"] { --spot-hi: #ffffff; --spot-lo: #56565f; }
             html[data-theme="dark"] .empty-suggestions { border-top-color: rgba(255,255,255,0.1); }
             html[data-theme="dark"] .suggestion-chip { background: transparent; border-bottom-color: rgba(255,255,255,0.1); color: #9a9aa2; }
@@ -2469,6 +2470,7 @@
             document.getElementById('new-chat-btn').classList.toggle('active', mode === 'chat');
             document.getElementById('skill-open-btn').classList.toggle('active', mode === 'skill');
             document.getElementById('ppt-open-btn').classList.toggle('active', mode === 'ppt');
+            document.querySelector('.app-shell').classList.toggle('ppt-mode', mode === 'ppt');
             if (mode === 'chat') {
                 setTimeout(() => document.getElementById('chat-input').focus(), 50);
             } else if (mode === 'ask') {
