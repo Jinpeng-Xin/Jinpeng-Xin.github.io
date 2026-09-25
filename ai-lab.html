@@ -58,31 +58,29 @@
             height: 100%;
         }
 
-        /* ===== 右上角语言切换胶囊(中文 / EN) ===== */
-        .lang-switch {
-            position: absolute; top: 16px; right: 20px; z-index: 60;
-            display: inline-flex; align-items: center; gap: 2px;
-            padding: 3px; border-radius: 999px;
-            background: rgba(255,255,255,0.55);
+        /* ===== 语言切换:左栏顶部一个地球图标,点开是小气泡(中文 / English) ===== */
+        .lang-menu { position: relative; display: inline-flex; }
+        .lang-pop {
+            position: absolute; top: calc(100% + 6px); right: 0; z-index: 80;
+            display: none; flex-direction: column; gap: 2px; min-width: 104px;
+            padding: 4px; border-radius: 12px;
+            background: rgba(255,255,255,0.92);
             border: 1px solid rgba(0,0,0,0.07);
             backdrop-filter: blur(20px) saturate(180%);
             -webkit-backdrop-filter: blur(20px) saturate(180%);
-            box-shadow: 0 2px 10px rgba(31,38,135,0.07);
+            box-shadow: 0 8px 24px rgba(31,38,135,0.14);
         }
-        .lang-switch button {
-            border: none; background: transparent;
-            padding: 5px 14px; border-radius: 999px;
-            font-family: inherit; font-size: 0.78rem; line-height: 1.2; color: #77777d;
-            transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+        .lang-menu.open .lang-pop { display: flex; }
+        .lang-pop button {
+            border: none; background: transparent; text-align: left;
+            padding: 7px 10px; border-radius: 8px; cursor: pointer;
+            font-family: inherit; font-size: 0.82rem; line-height: 1.2; color: #55555b;
         }
-        .lang-switch button:hover { color: #1d1d1f; }
-        .lang-switch button.active {
-            background: #fff; color: #1d1d1f; font-weight: 500;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.10);
-        }
+        .lang-pop button:hover { background: rgba(0,0,0,0.05); color: #1d1d1f; }
+        .lang-pop button.active { color: #1d1d1f; font-weight: 600; }
+        .lang-pop button.active::after { content: " ✓"; }
         @media (max-width: 640px) {
-            .lang-switch { top: 10px; right: 12px; padding: 2px; }
-            .lang-switch button { padding: 4px 10px; font-size: 0.72rem; }
+            .lang-pop { right: auto; left: 0; }
         }
 
         /* ===== 左侧栏:logo + 收起/返回 + 切换胶囊 + 新对话/更多,悬浮玻璃卡片,可收缩 ===== */
@@ -162,7 +160,7 @@
             border: none;
             border-radius: 8px;
             background: transparent;
-            color: #8a8a92;
+            color: #1d1d1f;
             display: flex; align-items: center; justify-content: center;
             cursor: pointer;
             transition: background 0.15s ease, color 0.15s ease;
@@ -171,7 +169,7 @@
         .sidebar-icon-btn svg { width: 15px; height: 15px; }
         .app-sidebar.collapsed .back-to-blog-btn { display: none; }
         .app-sidebar.collapsed #theme-toggle-btn { display: none; } /* 收起时只留收/展按钮 */
-        .app-sidebar.collapsed .sidebar-topline-actions { width: 100%; justify-content: center; margin-left: 0; gap: 0; }
+        .app-sidebar.collapsed .sidebar-topline-actions { width: 100%; justify-content: center; margin-left: 0; gap: 0; flex-wrap: wrap; }
 
         .mode-switch {
             display: inline-flex;
@@ -241,7 +239,7 @@
         /* 操作按钮组整体往下挪一点,跟顶栏拉开距离 */
         #new-chat-btn { margin-top: 14px; }
         /* style.css 里有个全局 .icon{margin-right:10px},会漏进来把折叠态图标顶偏、把展开态间距撑大;这里清掉,间距交给 gap */
-        .sidebar-action-btn .icon { display: flex; flex-shrink: 0; margin: 0; }
+        .sidebar-action-btn .icon { display: flex; flex-shrink: 0; margin: 0; color: #1d1d1f; }
         .mode-switch-btn .icon { margin: 0; }
         .sidebar-action-btn .icon svg { width: 16px; height: 16px; }
         .app-sidebar.collapsed .sidebar-action-btn .label,
@@ -706,6 +704,7 @@
             .app-sidebar .sidebar-logo,
             .app-sidebar .sidebar-collapse-btn { display: none; }
             .app-sidebar .sidebar-topline { justify-content: center; }
+            .app-sidebar .sidebar-topline-actions { flex-wrap: wrap; justify-content: center; }
             .app-sidebar .mode-switch {
                 flex-direction: column;
                 background: transparent;
@@ -1068,35 +1067,49 @@
             transition: width 0.28s cubic-bezier(.2,.8,.2,1), margin 0.28s cubic-bezier(.2,.8,.2,1), box-shadow 0.28s ease;
         }
         .ppt-canvas.open {
-            width: 600px;
+            width: var(--ppt-w, 480px);
             margin: 12px 12px 12px 0;
             box-shadow: 0 8px 32px rgba(31,38,135,0.10);
         }
-        .ppt-canvas-head, .ppt-canvas-body, .ppt-canvas-foot { width: 600px; } /* 收起过程中内容不跟着width一起压扁换行 */
+        .ppt-canvas-head, .ppt-canvas-body, .ppt-canvas-foot { width: var(--ppt-w, 480px); } /* 收起过程中内容不跟着width一起压扁换行 */
         /* 窄屏放不下"压缩布局",退回原来盖在上面的浮层模式 */
         @media (max-width: 900px) {
             .ppt-canvas {
                 position: fixed; top: 0; right: 0; bottom: 0; width: 0; max-width: 92vw;
                 z-index: 500; transform: none;
             }
-            .ppt-canvas.open { width: 420px; box-shadow: -14px 0 36px rgba(0,0,0,0.14); }
-            .ppt-canvas-head, .ppt-canvas-body, .ppt-canvas-foot { width: 420px; }
+            .ppt-canvas.open { width: 420px; --ppt-w: 420px; box-shadow: -14px 0 36px rgba(0,0,0,0.14); }
+            .ppt-canvas-resize { display: none; }
+            .ppt-canvas-head, .ppt-canvas-body, .ppt-canvas-foot, .ppt-canvas-tools, .ppt-tools-hint { width: 420px; }
         }
-        .ppt-canvas-head { display: flex; align-items: center; gap: 10px; padding: 16px 18px; border-bottom: 1px solid #ececef; flex-shrink: 0; }
+        .ppt-canvas-head { display: flex; align-items: center; gap: 10px; padding: 16px 18px 6px; flex-shrink: 0; }
         .ppt-canvas-head-icon {
             width: 30px; height: 30px; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
             color: var(--accent-dark);
         }
         .ppt-canvas-head-icon svg { width: 18px; height: 18px; }
         .ppt-canvas-title { font-size: 0.92rem; font-weight: 600; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .ppt-canvas-close { flex-shrink: 0; width: 28px; height: 28px; border: none; border-radius: 8px; background: transparent; color: #8a8a90; cursor: pointer; font-size: 14px; }
+        .ppt-canvas-close { flex-shrink: 0; width: 28px; height: 28px; border: none; border-radius: 8px; background: transparent; color: #1d1d1f; cursor: pointer; font-size: 14px; }
         .ppt-canvas-close:hover { background: rgba(0,0,0,0.06); }
+        .ppt-canvas-dl { display: flex; align-items: center; justify-content: center; }
+        .ppt-canvas-dl svg { width: 16px; height: 16px; }
+        .ppt-canvas-dl:disabled { cursor: progress; opacity: 0.6; }
         .ppt-canvas-logo-btn {
             flex-shrink: 0; border: 1px solid #e2e2e6; border-radius: 8px; padding: 5px 10px;
             font-size: 0.72rem; background: #fff; color: #55555b; cursor: pointer;
         }
         .ppt-canvas-logo-btn:hover { background: rgba(0,0,0,0.04); }
         .ppt-canvas-logo-btn.set { border-color: var(--accent); color: var(--accent-dark); background: color-mix(in srgb, var(--accent) 8%, transparent); }
+        .ppt-canvas-tools, .ppt-tools-hint { width: var(--ppt-w, 480px); }
+        .ppt-canvas-tools { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; padding: 10px 18px 0; flex-shrink: 0; }
+        .ppt-tools-tag { font-size: 0.7rem; color: #8a8a90; border: 1px solid #d9d9de; border-radius: 6px; padding: 2px 6px; }
+        .ppt-tool { display: inline-flex; align-items: center; gap: 2px; }
+        .ppt-tool-x { border: none; background: transparent; color: #1d1d1f; cursor: pointer; font-size: 12px; width: 22px; height: 22px; border-radius: 6px; }
+        .ppt-tool-x:hover { background: rgba(0,0,0,0.07); color: #444; }
+        .ppt-tools-hint { padding: 6px 18px 0; font-size: 0.72rem; line-height: 1.5; color: #77777d; flex-shrink: 0; }
+        .ppt-tools-hint:empty { display: none; }
+        .ppt-canvas-tools { padding-bottom: 10px; border-bottom: 1px solid #ececef; }
+        .ppt-tools-hint.flash { color: var(--accent-dark); font-weight: 600; }
         .ws-logo { object-fit: contain; }
         .ws-slide-image { object-fit: contain; border-radius: 6px; }
         /* 插图占了右边一块,要点文字收窄到左边45%,留出中间的间距,数值要跟JS里PPT_SLIDE_IMG_W算出来的box对得上 */
@@ -1131,6 +1144,24 @@
         .ws-shape.arrow-up { clip-path: polygon(50% 0, 100% 45%, 78% 45%, 78% 100%, 22% 100%, 22% 45%, 0 45%); }
         .ws-shape.arrow-down { clip-path: polygon(22% 0, 78% 0, 78% 55%, 100% 55%, 50% 100%, 0 55%, 22% 55%); }
         .ws-txt { position: absolute; box-sizing: border-box; display: flex; flex-direction: column; font-family: "Microsoft YaHei", "PingFang SC", sans-serif; font-weight: 700; line-height: 1.35; white-space: pre; overflow: visible; }
+        @keyframes pptFlipNext { from { opacity: 0.2; transform: translateX(36px); } to { opacity: 1; transform: none; } }
+        @keyframes pptFlipPrev { from { opacity: 0.2; transform: translateX(-36px); } to { opacity: 1; transform: none; } }
+        .ppt-canvas-body.flip-next > * { animation: pptFlipNext 0.28s cubic-bezier(.2,.8,.2,1); }
+        .ppt-canvas-body.flip-prev > * { animation: pptFlipPrev 0.28s cubic-bezier(.2,.8,.2,1); }
+        /* 左缘拖拽手柄:平时隐形,hover/拖动时露一条竖条,和左侧栏的手柄同一套做法 */
+        .ppt-canvas-resize { position: absolute; top: 0; bottom: 0; left: 0; width: 12px; cursor: col-resize; z-index: 6; touch-action: none; }
+        .ppt-canvas-resize::after { content: ''; position: absolute; top: 50%; left: 4px; width: 3px; height: 44px; transform: translateY(-50%); border-radius: 3px; background: rgba(0,0,0,0.16); opacity: 0; transition: opacity 0.15s ease; }
+        .ppt-canvas-resize:hover::after, .ppt-canvas.resizing .ppt-canvas-resize::after { opacity: 1; }
+        .ppt-canvas.resizing { transition: none; }
+        body.ppt-resizing, body.ppt-resizing * { cursor: col-resize !important; user-select: none; -webkit-user-select: none; }
+        /* 预览面板被关掉后,右上角出现一个「预览」按钮,点一下就回来 */
+        .ppt-reopen { display: none; position: absolute; top: 16px; right: 20px; z-index: 60; align-items: center; gap: 6px; padding: 7px 14px; border: 1px solid rgba(0,0,0,0.07); border-radius: 999px; background: rgba(255,255,255,0.92); backdrop-filter: blur(20px) saturate(180%); -webkit-backdrop-filter: blur(20px) saturate(180%); box-shadow: 0 2px 10px rgba(31,38,135,0.12); font-family: inherit; font-size: 0.8rem; font-weight: 500; color: #1d1d1f; cursor: pointer; }
+        .ppt-reopen:hover { background: #fff; color: #1d1d1f; }
+        .ppt-reopen svg { width: 14px; height: 14px; }
+        .app-shell.ppt-mode.has-ppt:not(.canvas-open) .ppt-reopen { display: inline-flex; }
+        .app-sidebar.collapsed .lang-menu { display: none; } /* 收起时只留收/展按钮,和深色模式图标一样 */
+        html:not([data-theme="light"]) .ppt-reopen { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.14); color: #d4d4d8; }
+        html[data-theme="dark"] .ppt-reopen { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.14); color: #d4d4d8; }
         .ppt-canvas-empty { margin: auto; text-align: center; color: #9c9ca2; font-size: 0.85rem; padding: 20px; }
         .ppt-canvas-link { color: var(--accent); font-weight: 500; text-decoration: none; white-space: nowrap; }
         .ppt-canvas-link:hover { text-decoration: underline; }
@@ -1149,17 +1180,25 @@
         .wysiwyg-slide { cursor: pointer; transition: box-shadow 0.15s ease, border-color 0.15s ease; }
         .wysiwyg-slide:hover { box-shadow: 0 2px 14px rgba(122,48,66,0.18); }
         .wysiwyg-slide.focused { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent); }
+        /* 「正在修改第N页」:做成输入框里的小标签(在文字前面),点 ✕ / 退格 / Esc 都能退出 */
         .ppt-focus-chip {
-            display: flex; align-items: center; justify-content: space-between; gap: 8px;
-            margin: 0 0 8px; padding: 6px 10px; border-radius: 8px;
-            background: color-mix(in srgb, var(--accent) 10%, transparent); color: var(--accent-dark);
-            font-size: 0.78rem;
+            position: absolute; left: 9px; top: 9px; z-index: 3;
+            display: none; align-items: center; gap: 2px;
+            height: 26px; padding: 0 4px 0 10px; border-radius: 999px;
+            background: color-mix(in srgb, var(--accent) 12%, #fff); color: var(--accent-dark);
+            font-size: 0.78rem; font-weight: 600; white-space: nowrap;
         }
         .ppt-focus-chip button {
             border: none; background: transparent; color: var(--accent-dark); cursor: pointer;
-            font-size: 12px; padding: 2px 4px; border-radius: 4px; flex-shrink: 0;
+            font-size: 11px; line-height: 1; width: 18px; height: 18px; border-radius: 50%; flex-shrink: 0; opacity: 0.7;
         }
-        .ppt-focus-chip button:hover { background: rgba(0,0,0,0.08); }
+        .ppt-focus-chip button:hover { background: rgba(0,0,0,0.1); opacity: 1; }
+        .ws-editing-badge {
+            display: none; position: absolute; top: 2.2%; right: 2%; z-index: 5;
+            padding: 0.4% 1.6%; border-radius: 999px; background: var(--accent-dark); color: #fff;
+            font-size: 11px; font-weight: 600; line-height: 1.6; pointer-events: none;
+        }
+        .wysiwyg-slide.focused .ws-editing-badge { display: block; }
         .ppt-spin {
             display: inline-block; width: 13px; height: 13px; border-radius: 50%;
             border: 2px solid rgba(0,0,0,0.15); border-top-color: var(--accent);
@@ -1196,6 +1235,7 @@
             html:not([data-theme="light"]) .sidebar-history-list { scrollbar-color: rgba(255,255,255,0.22) transparent; }
             html:not([data-theme="light"]) .sidebar-history-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); }
             html:not([data-theme="light"]) .sidebar-history-list::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.34); }
+            html:not([data-theme="light"]) .sidebar-action-btn .icon { color: inherit; }
             html:not([data-theme="light"]) .sidebar-icon-btn { color: #9a9aa2; }
             html:not([data-theme="light"]) .sidebar-icon-btn:hover { background: rgba(255,255,255,0.08); color: #f2f2f4; }
             html:not([data-theme="light"]) .mode-switch { background: rgba(255,255,255,0.06); }
@@ -1209,10 +1249,6 @@
             html:not([data-theme="light"]) .sidebar-action-btn.soon { color: #5a5a60; }
             html:not([data-theme="light"]) .sidebar-action-btn .badge { background: rgba(255,255,255,0.09); }
             html:not([data-theme="light"]) .sidebar-footer { border-top-color: rgba(255,255,255,0.1); }
-            html:not([data-theme="light"]) .lang-switch { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.12); box-shadow: none; }
-            html:not([data-theme="light"]) .lang-switch button { color: #9a9aa2; }
-            html:not([data-theme="light"]) .lang-switch button:hover { color: #f2f2f4; }
-            html:not([data-theme="light"]) .lang-switch button.active { background: #45454c; color: #fff; box-shadow: none; }
             html:not([data-theme="light"]) .sidebar-user-btn:hover { background: rgba(255,255,255,0.07); }
             html:not([data-theme="light"]) .sidebar-user-name { color: #e8e8ec; }
             html:not([data-theme="light"]) .sidebar-user-sub { color: #8a8a90; }
@@ -1232,6 +1268,10 @@
             html:not([data-theme="light"]) .quiz-label { color: #b8b8c0; }
 
             /* 空状态 + 示例问题芯片 */
+            html:not([data-theme="light"]) .lang-pop { background: rgba(40,40,44,0.94); border-color: rgba(255,255,255,0.12); box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+            html:not([data-theme="light"]) .lang-pop button { color: #b4b4bb; }
+            html:not([data-theme="light"]) .lang-pop button:hover { background: rgba(255,255,255,0.08); color: #f2f2f4; }
+            html:not([data-theme="light"]) .lang-pop button.active { color: #f2f2f4; }
             html:not([data-theme="light"]) .chat-empty .empty-sub { color: #f2f2f4; }
             html:not([data-theme="light"]) .chat-empty .empty-logo { filter: invert(1); }
             html:not([data-theme="light"]) .app-shell.ppt-mode::before { opacity: 0.5; }
@@ -1351,6 +1391,7 @@
             html[data-theme="dark"] .sidebar-history-list { scrollbar-color: rgba(255,255,255,0.22) transparent; }
             html[data-theme="dark"] .sidebar-history-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); }
             html[data-theme="dark"] .sidebar-history-list::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.34); }
+            html[data-theme="dark"] .sidebar-action-btn .icon { color: inherit; }
             html[data-theme="dark"] .sidebar-icon-btn { color: #9a9aa2; }
             html[data-theme="dark"] .sidebar-icon-btn:hover { background: rgba(255,255,255,0.08); color: #f2f2f4; }
             html[data-theme="dark"] .mode-switch { background: rgba(255,255,255,0.06); }
@@ -1364,10 +1405,6 @@
             html[data-theme="dark"] .sidebar-action-btn.soon { color: #5a5a60; }
             html[data-theme="dark"] .sidebar-action-btn .badge { background: rgba(255,255,255,0.09); }
             html[data-theme="dark"] .sidebar-footer { border-top-color: rgba(255,255,255,0.1); }
-            html[data-theme="dark"] .lang-switch { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.12); box-shadow: none; }
-            html[data-theme="dark"] .lang-switch button { color: #9a9aa2; }
-            html[data-theme="dark"] .lang-switch button:hover { color: #f2f2f4; }
-            html[data-theme="dark"] .lang-switch button.active { background: #45454c; color: #fff; box-shadow: none; }
             html[data-theme="dark"] .sidebar-user-btn:hover { background: rgba(255,255,255,0.07); }
             html[data-theme="dark"] .sidebar-user-name { color: #e8e8ec; }
             html[data-theme="dark"] .sidebar-user-sub { color: #8a8a90; }
@@ -1387,6 +1424,10 @@
             html[data-theme="dark"] .quiz-label { color: #b8b8c0; }
 
             /* 空状态 + 示例问题芯片 */
+            html[data-theme="dark"] .lang-pop { background: rgba(40,40,44,0.94); border-color: rgba(255,255,255,0.12); box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+            html[data-theme="dark"] .lang-pop button { color: #b4b4bb; }
+            html[data-theme="dark"] .lang-pop button:hover { background: rgba(255,255,255,0.08); color: #f2f2f4; }
+            html[data-theme="dark"] .lang-pop button.active { color: #f2f2f4; }
             html[data-theme="dark"] .chat-empty .empty-sub { color: #f2f2f4; }
             html[data-theme="dark"] .chat-empty .empty-logo { filter: invert(1); }
             html[data-theme="dark"] .app-shell.ppt-mode::before { opacity: 0.5; }
@@ -1516,6 +1557,16 @@
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
                     </a>
                     <button class="sidebar-icon-btn" id="theme-toggle-btn" title="切换深色/浅色模式" aria-label="切换深色/浅色模式"></button>
+                    <!-- 语言切换:只切界面文案,状态存 localStorage(hqds-lang),首次按浏览器语言自动选 -->
+                    <div class="lang-menu" id="lang-menu">
+                        <button class="sidebar-icon-btn" id="lang-btn" type="button" title="语言 / Language" aria-label="语言 / Language" aria-haspopup="true" aria-expanded="false">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.6 2.7 3.9 5.7 3.9 9s-1.3 6.3-3.9 9c-2.6-2.7-3.9-5.7-3.9-9S9.4 5.7 12 3z"/></svg>
+                        </button>
+                        <div class="lang-pop" id="lang-switch" role="menu">
+                            <button type="button" role="menuitem" data-lang="zh">中文</button>
+                            <button type="button" role="menuitem" data-lang="en">English</button>
+                        </div>
+                    </div>
                     <button class="sidebar-icon-btn sidebar-collapse-btn" id="sidebar-collapse-btn" title="收起/展开侧边栏" aria-label="收起/展开侧边栏">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="3"/><line x1="12" y1="4" x2="12" y2="20"/></svg>
                     </button>
@@ -1640,11 +1691,10 @@
         </div>
 
         <div class="app-main">
-            <!-- 语言切换:只切界面文案,状态存 localStorage(hqds-lang) -->
-            <div class="lang-switch" id="lang-switch">
-                <button type="button" data-lang="zh">中文</button>
-                <button type="button" data-lang="en">EN</button>
-            </div>
+            <button class="ppt-reopen" id="ppt-reopen" type="button" title="打开预览" aria-label="打开预览">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>
+                <span>预览</span>
+            </button>
             <!-- 通用问答线程:不检索、不限定语料,DeepSeek直接回答任意问题,"新对话"按钮进的就是这里 -->
             <div class="chat-thread active" data-mode="chat">
                 <div class="chat-scroll" id="chat-scroll">
@@ -1842,12 +1892,14 @@
                     </div>
                 </div>
                 <div class="chat-inputbar" id="ppt-inputbar">
-                    <div class="ppt-focus-chip" id="ppt-focus-chip" style="display:none;">
-                        <span>正在修改：<b id="ppt-focus-chip-label"></b></span>
-                        <button id="ppt-focus-chip-clear" aria-label="退出单页修改" title="退出单页修改">✕</button>
-                    </div>
                     <div class="chat-inputbar-inner">
-                        <div class="chat-input-wrap"><textarea id="ppt-edit-input" placeholder="说一个主题,比如「盾构隧道施工风险管理」…" rows="1"></textarea></div>
+                        <div class="chat-input-wrap">
+                            <textarea id="ppt-edit-input" placeholder="说一个主题,比如「盾构隧道施工风险管理」…" rows="1"></textarea>
+                            <span class="ppt-focus-chip" id="ppt-focus-chip">
+                                <span id="ppt-focus-chip-label"></span>
+                                <button type="button" id="ppt-focus-chip-clear" aria-label="退出单页修改" title="退出单页修改">✕</button>
+                            </span>
+                        </div>
                         <button class="chat-send-btn" id="ppt-edit-send"><svg><use href="#icon-send"></use></svg></button>
                     </div>
                 </div>
@@ -1856,18 +1908,30 @@
 
         <!-- 右侧PPT画布:所见即所得预览,始终显示"当前这一版",生成/修改后自动弹出 -->
         <div class="ppt-canvas" id="ppt-canvas">
+            <div class="ppt-canvas-resize" id="ppt-canvas-resize" title="拖动调节宽度,双击复位"></div>
             <div class="ppt-canvas-head">
                 <div class="ppt-canvas-head-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg></div>
                 <div class="ppt-canvas-title" id="ppt-canvas-title">PPT 预览</div>
-                <button class="ppt-canvas-logo-btn" id="ppt-logo-btn" title="每页加个Logo(只在本地处理,不会上传)">Logo</button>
-                <input type="file" accept="image/*" id="ppt-logo-input" style="display:none;">
+                <button class="ppt-canvas-close ppt-canvas-dl" id="ppt-canvas-download" type="button" title="下载 PPTX" aria-label="下载 PPTX">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></svg>
+                </button>
                 <button class="ppt-canvas-close" id="ppt-canvas-close" aria-label="关闭预览">✕</button>
             </div>
+            <div class="ppt-canvas-tools">
+                <span class="ppt-tool">
+                    <button class="ppt-canvas-logo-btn" id="ppt-logo-btn">＋ 每页加 Logo</button>
+                    <button class="ppt-tool-x" id="ppt-logo-clear" aria-label="去掉Logo" title="去掉Logo" style="display:none;">✕</button>
+                </span>
+                <span class="ppt-tool">
+                    <button class="ppt-canvas-logo-btn" id="ppt-img-btn">＋ 给某一页插图</button>
+                    <button class="ppt-tool-x" id="ppt-img-clear" aria-label="去掉这一页的插图" title="去掉这一页的插图" style="display:none;">✕</button>
+                </span>
+                <input type="file" accept="image/*" id="ppt-logo-input" style="display:none;">
+                <input type="file" accept="image/*" id="ppt-img-input" style="display:none;">
+            </div>
+            <div class="ppt-tools-hint" id="ppt-tools-hint"></div>
             <div class="ppt-canvas-body" id="ppt-canvas-body">
                 <div class="ppt-canvas-empty">还没有内容,先在左边生成一份大纲</div>
-            </div>
-            <div class="ppt-canvas-foot">
-                <button class="ppt-btn-primary" id="ppt-canvas-download" style="width:100%;">下载 PPTX</button>
             </div>
         </div>
     </div>
@@ -1999,9 +2063,9 @@
                 "maxH": 0
         },
         {
-                "sel": "#lang-switch",
+                "sel": "#lang-btn",
                 "title": "语言",
-                "text": "在这里切换中文 / EN,只改界面文字;切到 EN 后 AI 也会用英文回答。",
+                "text": "点地球图标切换中文 / English,只改界面文字;切到 English 后 AI 也会用英文回答。",
                 "maxH": 0
         }
 ];
@@ -2775,8 +2839,14 @@
         const pptCanvasBody = document.getElementById('ppt-canvas-body');
         const pptCanvasDownloadBtn = document.getElementById('ppt-canvas-download');
 
-        function openPptCanvas() { pptCanvas.classList.add('open'); }
-        function closePptCanvas() { pptCanvas.classList.remove('open'); }
+        const appShellEl = document.querySelector('.app-shell');
+        function openPptCanvas() {
+            pptCanvas.classList.add('open');
+            appShellEl.classList.add('canvas-open');
+            if (typeof pptAllSlides !== 'undefined' && pptAllSlides.length) setTimeout(renderPptPage, 300); // 展开动画结束后,按实际高度重算一组放几页
+        }
+        function closePptCanvas() { pptCanvas.classList.remove('open'); appShellEl.classList.remove('canvas-open'); }
+        document.getElementById('ppt-reopen').addEventListener('click', openPptCanvas);
         document.getElementById('ppt-canvas-close').addEventListener('click', closePptCanvas);
         pptCanvasDownloadBtn.addEventListener('click', () => {
             if (pptData) downloadPptx(pptData, pptCanvasDownloadBtn);
@@ -2863,50 +2933,76 @@
 
         const pptLogoBtn = document.getElementById('ppt-logo-btn');
         const pptLogoInput = document.getElementById('ppt-logo-input');
+        const pptLogoClear = document.getElementById('ppt-logo-clear');
+        const pptImgBtn = document.getElementById('ppt-img-btn');
+        const pptImgInput = document.getElementById('ppt-img-input');
+        const pptImgClear = document.getElementById('ppt-img-clear');
+        const pptToolsHint = document.getElementById('ppt-tools-hint');
 
-        /* 按钮的文字/状态跟着"有没有聚焦某一内容页"切换,点之前就知道现在传的是Logo还是插图 */
+        /* Logo(套在每一页上)和插图(只放在选中的那一页)是两件独立的可选功能,各有各的按钮,
+           不再共用一个会变字的按钮。没选页面时点「插图」不会弹文件框,而是提示先点选一页。 */
+        function pptImgTargetNum() { return (pptFocusNum !== null && pptFocusNum !== 0) ? pptFocusNum : null; }
         function updatePptUploadBtn() {
-            const targetNum = (pptFocusNum !== null && pptFocusNum !== 0) ? pptFocusNum : null;
-            if (targetNum !== null) {
-                const has = !!pptSlideImages[targetNum];
-                pptLogoBtn.textContent = has ? '插图 ✓' : '插图';
-                pptLogoBtn.classList.toggle('set', has);
-                pptLogoBtn.title = has
-                    ? `第${targetNum}页已插图(点击更换,本地处理,不上传)`
-                    : `给第${targetNum}页插入一张图(本地处理,不上传)`;
-            } else {
-                pptLogoBtn.textContent = pptLogoDataUrl ? 'Logo ✓' : 'Logo';
-                pptLogoBtn.classList.toggle('set', !!pptLogoDataUrl);
-                pptLogoBtn.title = pptLogoDataUrl
-                    ? '已设置Logo(点击更换,本地处理,不上传)'
-                    : '每页加个Logo(只在本地处理,不会上传)';
-            }
-        }
+            pptLogoBtn.textContent = pptLogoDataUrl ? 'Logo ✓ 点击更换' : '＋ 每页加 Logo';
+            pptLogoBtn.classList.toggle('set', !!pptLogoDataUrl);
+            pptLogoClear.style.display = pptLogoDataUrl ? '' : 'none';
 
+            const n = pptImgTargetNum();
+            const has = n !== null && !!pptSlideImages[n];
+            pptImgBtn.textContent = n === null ? '＋ 给某一页插图' : (has ? `第${n}页插图 ✓ 点击更换` : `＋ 给第${n}页插图`);
+            pptImgBtn.classList.toggle('set', has);
+            pptImgClear.style.display = has ? '' : 'none';
+
+            pptToolsHint.classList.remove('flash');
+            pptToolsHint.textContent = '';
+        }
         pptLogoBtn.addEventListener('click', () => pptLogoInput.click());
-        pptLogoInput.addEventListener('change', () => {
-            const file = pptLogoInput.files && pptLogoInput.files[0];
+        pptImgBtn.addEventListener('click', () => {
+            if (pptImgTargetNum() === null) {
+                updatePptUploadBtn();
+                pptToolsHint.textContent = '先点一下下面要插图的那一页(封面除外),再点这个按钮。';
+                pptToolsHint.classList.add('flash');
+                return;
+            }
+            pptImgInput.click();
+        });
+        pptLogoClear.addEventListener('click', () => {
+            pptLogoDataUrl = null;
+            updatePptUploadBtn();
+            if (pptAllSlides.length) renderPptPage();
+        });
+        pptImgClear.addEventListener('click', () => {
+            const n = pptImgTargetNum();
+            if (n === null) return;
+            delete pptSlideImages[n];
+            updatePptUploadBtn();
+            if (pptAllSlides.length) renderPptPage();
+        });
+
+        function readPptImage(input, onReady) {
+            const file = input.files && input.files[0];
             if (!file) return;
-            // 点按钮那一刻是什么状态,就决定这张图传给谁——跟按钮当时显示的文字是同一个判断
-            const targetNum = (pptFocusNum !== null && pptFocusNum !== 0) ? pptFocusNum : null;
             const reader = new FileReader();
             reader.onload = () => {
                 const img = new Image();
                 img.onload = () => {
-                    const aspect = img.naturalWidth / img.naturalHeight || 1;
-                    if (targetNum === null) {
-                        pptLogoAspect = aspect;
-                        pptLogoDataUrl = reader.result;
-                    } else {
-                        pptSlideImages[targetNum] = { dataUrl: reader.result, aspect };
-                    }
+                    onReady(reader.result, img.naturalWidth / img.naturalHeight || 1);
                     updatePptUploadBtn();
                     if (pptAllSlides.length) renderPptPage(); // 已经有预览的话,立刻补上
                 };
                 img.src = reader.result;
             };
             reader.readAsDataURL(file);
-            pptLogoInput.value = ''; // 允许连续选同一个文件也能再次触发change
+            input.value = ''; // 允许连续选同一个文件也能再次触发change
+        }
+        pptLogoInput.addEventListener('change', () => readPptImage(pptLogoInput, (url, aspect) => {
+            pptLogoAspect = aspect;
+            pptLogoDataUrl = url;
+        }));
+        pptImgInput.addEventListener('change', () => {
+            const n = pptImgTargetNum(); // 点按钮那一刻选中的页
+            if (n === null) return;
+            readPptImage(pptImgInput, (url, aspect) => { pptSlideImages[n] = { dataUrl: url, aspect }; });
         });
 
         /* ---------- 图元 → 预览HTML:图元由 ppt-layout.js 算出,导出pptx用的是同一份 ---------- */
@@ -2966,6 +3062,7 @@
                 return `
                     <div class="wysiwyg-slide v4 cover${focusedCls}" data-num="0">
                         ${pptShapesHTML(shapes)}
+                        <div class="ws-editing-badge">修改中</div>
                         <div class="ws-slide-index">封面</div>
                         ${pptLogoHTML()}
                     </div>`;
@@ -2981,6 +3078,7 @@
             return `
                 <div class="wysiwyg-slide v4${focusedCls}" data-num="${item.num}">
                     ${pptShapesHTML(shapes)}
+                    <div class="ws-editing-badge">修改中</div>
                     ${pptSlideImageHTML(item.num)}
                     ${pptLogoHTML()}
                     <div class="ws-slide-index">${item.num}</div>
@@ -3001,11 +3099,13 @@
             });
             if (num === null) {
                 pptFocusChip.style.display = 'none';
+                pptEditInput.style.paddingLeft = '';
                 pptEditInput.placeholder = '说说怎么改,比如「第3页精简成3条要点」…';
             } else {
-                pptFocusChip.style.display = 'flex';
+                pptFocusChip.style.display = 'inline-flex';
                 pptFocusChipLabel.textContent = pptFocusLabel(num);
-                pptEditInput.placeholder = `只针对${pptFocusLabel(num)}说说怎么改…`;
+                pptEditInput.style.paddingLeft = (pptFocusChip.offsetWidth + 18) + 'px'; // 给标签让出位置
+                pptEditInput.placeholder = '说说怎么改…';
             }
             updatePptUploadBtn();
         }
@@ -3019,14 +3119,27 @@
         document.getElementById('ppt-focus-chip-clear').addEventListener('click', () => setPptFocus(null));
 
         /* 画布一次只显示PPT_PAGE_SIZE页,靠翻页看其余的——而不是把所有页堆成一个长列表压扁比例 */
-        const PPT_PAGE_SIZE = 3;
+        let pptPageSize = 3; // 一组放几页:每次渲染时按面板宽高重算,见 pptCalcPageSize()
         let pptAllSlides = [];  // 封面 + 内容页展平成一个数组,每项自带展示用的 num/cover 标记
         let pptPageStart = 0;
 
+        /* 幻灯片永远是 16:9(宽度撑满面板),所以面板越宽,单页越高,放得下的页数越少;拖窄则页数变多 */
+        function pptCanvasWidthPx() {
+            return window.innerWidth <= 900 ? Math.min(420, window.innerWidth * 0.92) : pptCanvasWidth;
+        }
+        function pptCalcPageSize() {
+            const h = pptCanvasBody.clientHeight;
+            if (!h) return pptPageSize;
+            const GAP = 16, PAD = 36, PAGER = 32 + GAP;
+            const slideW = Math.max(120, pptCanvasWidthPx() - PAD - 10); // 10:预留滚动条
+            const slideH = slideW * 9 / 16 + 2;
+            return Math.max(1, Math.floor((h - PAD - PAGER + GAP) / (slideH + GAP)));
+        }
         function renderPptPage() {
             const total = pptAllSlides.length;
+            pptPageSize = pptCalcPageSize();
             const start = Math.min(pptPageStart, Math.max(0, total - 1));
-            const end = Math.min(start + PPT_PAGE_SIZE, total);
+            const end = Math.min(start + pptPageSize, total);
             const pageItems = pptAllSlides.slice(start, end);
             pptCanvasBody.innerHTML = `
                 <div class="ppt-pager">
@@ -3036,18 +3149,91 @@
                 </div>
                 ${pageItems.map(renderSlideHTML).join('')}
             `;
-            document.getElementById('ppt-page-prev').addEventListener('click', () => {
-                pptPageStart = Math.max(0, pptPageStart - PPT_PAGE_SIZE);
-                renderPptPage();
-            });
-            document.getElementById('ppt-page-next').addEventListener('click', () => {
-                pptPageStart = Math.min(total - 1, pptPageStart + PPT_PAGE_SIZE);
-                renderPptPage();
-            });
+            document.getElementById('ppt-page-prev').addEventListener('click', () => pptGoPage(-1));
+            document.getElementById('ppt-page-next').addEventListener('click', () => pptGoPage(1));
         }
+
+        /* 翻组:dir=1 下一组(新一组从右边滑入),dir=-1 上一组(从左边滑入)。
+           往回翻时停在上一组的最底部,这样继续往上滚是连贯的。返回是否真的翻了 */
+        function pptGoPage(dir) {
+            const total = pptAllSlides.length;
+            const next = dir > 0 ? pptPageStart + pptPageSize : Math.max(0, pptPageStart - pptPageSize);
+            if (next === pptPageStart || next >= total) return false;
+            pptPageStart = next;
+            renderPptPage();
+            pptCanvasBody.scrollTop = dir > 0 ? 0 : pptCanvasBody.scrollHeight;
+            pptCanvasBody.classList.remove('flip-next', 'flip-prev');
+            void pptCanvasBody.offsetWidth; // 重启动画
+            pptCanvasBody.classList.add(dir > 0 ? 'flip-next' : 'flip-prev');
+            setTimeout(() => pptCanvasBody.classList.remove('flip-next', 'flip-prev'), 320); // 别留着,否则之后任何重绘都会再滑一次
+            return true;
+        }
+
+        /* 左缘拖拽调宽:宽度存在 localStorage,双击复位;拖动时按帧重新计算一组放几页 */
+        const PPT_W_KEY = 'hqds-ppt-canvas-w', PPT_W_DEFAULT = 480, PPT_W_MIN = 340;
+        const pptCanvasMaxW = () => Math.max(PPT_W_MIN, Math.min(1000, window.innerWidth - 224 - 320));
+        let pptCanvasWidth = PPT_W_DEFAULT;
+        try { const v = parseFloat(localStorage.getItem(PPT_W_KEY)); if (v >= PPT_W_MIN) pptCanvasWidth = v; } catch (e) {}
+        function setPptCanvasWidth(w, persist) {
+            pptCanvasWidth = Math.round(Math.max(PPT_W_MIN, Math.min(pptCanvasMaxW(), w)));
+            pptCanvas.style.setProperty('--ppt-w', pptCanvasWidth + 'px');
+            if (persist) { try { localStorage.setItem(PPT_W_KEY, String(pptCanvasWidth)); } catch (e) {} }
+        }
+        setPptCanvasWidth(pptCanvasWidth, false);
+        let pptDragX = 0, pptDragW = 0, pptDragRaf = 0;
+        function onPptDragMove(e) {
+            setPptCanvasWidth(pptDragW + (pptDragX - e.clientX), false);
+            if (!pptDragRaf) pptDragRaf = requestAnimationFrame(() => { pptDragRaf = 0; if (pptAllSlides.length) renderPptPage(); });
+        }
+        function onPptDragEnd() {
+            pptCanvas.classList.remove('resizing');
+            document.body.classList.remove('ppt-resizing');
+            document.removeEventListener('pointermove', onPptDragMove);
+            document.removeEventListener('pointerup', onPptDragEnd);
+            setPptCanvasWidth(pptCanvasWidth, true);
+        }
+        document.getElementById('ppt-canvas-resize').addEventListener('pointerdown', (e) => {
+            e.preventDefault();
+            pptDragX = e.clientX; pptDragW = pptCanvasWidth;
+            pptCanvas.classList.add('resizing');
+            document.body.classList.add('ppt-resizing');
+            document.addEventListener('pointermove', onPptDragMove);
+            document.addEventListener('pointerup', onPptDragEnd);
+        });
+        document.getElementById('ppt-canvas-resize').addEventListener('dblclick', () => {
+            setPptCanvasWidth(PPT_W_DEFAULT, true);
+            if (pptAllSlides.length) renderPptPage();
+        });
+        window.addEventListener('resize', () => {
+            setPptCanvasWidth(pptCanvasWidth, false); // 窗口变小时把面板宽度压回上限
+            if (pptAllSlides.length) renderPptPage();
+        });
+
+        /* 在右侧栏里一直往下滚:滚到这一组的底部后再继续滚,自动翻到下一组;往上同理。
+           惯性滚动会在到边的瞬间还有余量,所以要求"停在边上"一小会儿之后的滚动才算数,
+           并且累积到一定滚动量、翻页后有冷却,避免一下子连翻好几组。 */
+        let pptLastScrollTs = 0, pptFlipCooldownUntil = 0, pptWheelAcc = 0, pptWheelAccTs = 0;
+        pptCanvasBody.addEventListener('scroll', () => { pptLastScrollTs = performance.now(); }, { passive: true });
+        pptCanvasBody.addEventListener('wheel', (e) => {
+            const now = performance.now();
+            if (now < pptFlipCooldownUntil || Math.abs(e.deltaY) < 1) return;
+            const el = pptCanvasBody;
+            const atBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 2;
+            const atTop = el.scrollTop <= 0;
+            const dir = e.deltaY > 0 ? 1 : -1;
+            if ((dir > 0 && !atBottom) || (dir < 0 && !atTop)) { pptWheelAcc = 0; return; }
+            if (now - pptLastScrollTs < 250) return; // 刚滚到边,还是惯性,不算
+            if (now - pptWheelAccTs > 400) pptWheelAcc = 0;
+            pptWheelAccTs = now;
+            pptWheelAcc += e.deltaY;
+            if (Math.abs(pptWheelAcc) < 80) return;
+            pptWheelAcc = 0;
+            if (pptGoPage(dir)) pptFlipCooldownUntil = now + 700;
+        }, { passive: true });
 
         function renderPptCanvas(data) {
             pptCanvasTitle.textContent = data.title;
+            appShellEl.classList.add('has-ppt');
             pptAllSlides = PptLayout.expand(data); // 封面 + 章节目录页 + 内容页
             pptPageStart = 0;
             renderPptPage();
@@ -3076,6 +3262,7 @@
             pptScroll.innerHTML = pptScrollPristineHTML;
             setPptFocus(null);
             closePptCanvas();
+            appShellEl.classList.remove('has-ppt');
             pptEditInput.value = '';
             pptEditInput.style.height = 'auto';
             pptEditInput.placeholder = pptPlaceholder();
@@ -3144,7 +3331,7 @@
                 pptEditInput.style.height = 'auto';
                 appendMessage(pptScroll, 'user', { html: escapeHtml(instruction) });
                 if (!pptLogoDataUrl) {
-                    appendPptConfirm('还没设置Logo——先点右侧画布顶部的"Logo"按钮选一张本地图片。');
+                    appendPptConfirm('还没设置Logo——先点右侧预览上方的「＋ 每页加 Logo」选一张本地图片。');
                 } else if (!logoCmd.corner && !logoCmd.scaleFactor) {
                     appendPptConfirm('没太看懂具体怎么调整——支持"logo挪到左上角/右上角/左下角/右下角/居中"、"logo大一点/小一点"这类说法,换个说法再试试。');
                 } else {
@@ -3194,14 +3381,17 @@
         pptEditSend.addEventListener('click', sendPptEdit);
         pptEditInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendPptEdit(); }
+            else if (e.key === 'Escape' && pptFocusNum !== null) { setPptFocus(null); }
+            else if (e.key === 'Backspace' && pptFocusNum !== null && !pptEditInput.value) { e.preventDefault(); setPptFocus(null); } // 输入框空着时退格 = 摘掉标签
         });
 
         /* 下载:接收明确传入的大纲快照 + 触发它的按钮,而不是读全局状态,
            这样历史上每一轮回复的下载按钮,点了都还是拿到"当时那版"内容 */
         async function downloadPptx(data, triggerBtn) {
-            const original = triggerBtn.textContent;
+            const originalHTML = triggerBtn.innerHTML;
             triggerBtn.disabled = true;
-            triggerBtn.textContent = '正在拼装…';
+            triggerBtn.innerHTML = '<span class="ppt-spin" style="margin:0;"></span>';
+            triggerBtn.title = '正在拼装…';
             try {
                 const pptx = new PptxGenJS();
                 pptx.defineLayout({ name: 'HQDS', width: PPT_CANVAS_W_IN, height: PPT_CANVAS_H_IN });
@@ -3277,7 +3467,8 @@
                 alert('导出失败：' + e.message);
             } finally {
                 triggerBtn.disabled = false;
-                triggerBtn.textContent = original;
+                triggerBtn.innerHTML = originalHTML;
+                triggerBtn.title = '下载 PPTX';
             }
         }
 
@@ -4179,7 +4370,7 @@
                     "只根据本站收录的资料回答。可以切到「自测」,让 AI 出题考你。": "Answers only from the material collected on this site. Switch to \"Quiz\" and the AI will test you.",
                     "登录后,你的对话会保存在这里,点一下就能接着聊,换设备也能看到。": "Once you sign in, your conversations are saved here — click one to pick it up again, on any device.",
                     "核心功能需要登录后才能用。点这里用 GitHub 账号登录,不需要密码。": "The main features need you to sign in. Click here to sign in with GitHub — no password needed.",
-                    "在这里切换中文 / EN,只改界面文字;切到 EN 后 AI 也会用英文回答。": "Switch between Chinese and EN here. It changes the interface text, and in EN the AI answers in English too.",
+                    "点地球图标切换中文 / English,只改界面文字;切到 English 后 AI 也会用英文回答。": "Use the globe icon to switch between Chinese and English. It changes the interface text, and in English the AI answers in English too.",
                     "跳过": "Skip",
                     "上一步": "Back",
                     "下一步": "Next",
@@ -4323,7 +4514,16 @@
                     "PPT 预览": "Slide preview",
                     "还没有内容,先在左边生成一份大纲": "Nothing yet — generate an outline on the left first",
                     "下载 PPTX": "Download PPTX",
-                    "正在修改：": "Editing: ",
+                    "预览": "Preview",
+                    "打开预览": "Open preview",
+                    "拖动调节宽度,双击复位": "Drag to resize, double-click to reset",
+                    "＋ 每页加 Logo": "+ Logo on every slide",
+                    "＋ 给某一页插图": "+ Image on one slide",
+                    "Logo ✓ 点击更换": "Logo ✓ click to replace",
+                    "去掉Logo": "Remove logo",
+                    "去掉这一页的插图": "Remove this slide's image",
+                    "先点一下下面要插图的那一页(封面除外),再点这个按钮。": "First click the slide you want an image on (not the cover), then click this button.",
+                    "修改中": "Editing",
                     "封面": "Cover",
                     "标题": "Title",
                     "正文": "Body",
@@ -4368,6 +4568,8 @@
             [/^(\d+)\s*小时前$/, '$1 h ago', /^(\d+) h ago$/, '$1小时前'],
             [/^(\d+)\s*天前$/, '$1 d ago', /^(\d+) d ago$/, '$1天前'],
             [/^第\s*(\d+)\s*页$/, 'Slide $1', /^Slide (\d+)$/, '第 $1 页'],
+            [/^＋ 给第(\d+)页插图$/, '+ Image on slide $1', /^\+ Image on slide (\d+)$/, '＋ 给第$1页插图'],
+            [/^第(\d+)页插图 ✓ 点击更换$/, 'Slide $1 image ✓ click to replace', /^Slide (\d+) image ✓ click to replace$/, '第$1页插图 ✓ 点击更换'],
             [/^最多同时启用\s*(\d+)\s*个$/, 'Up to $1 at a time', /^Up to (\d+) at a time$/, '最多同时启用 $1 个'],
         ];
 
@@ -4430,10 +4632,19 @@
             langApplyTo(document.body);
             langSwitchEl.querySelectorAll('button').forEach(b => b.classList.toggle('active', b.dataset.lang === LANG));
         }
+        const langMenuEl = document.getElementById('lang-menu');
+        const langBtnEl = document.getElementById('lang-btn');
+        function setLangMenu(open) {
+            langMenuEl.classList.toggle('open', open);
+            langBtnEl.setAttribute('aria-expanded', open ? 'true' : 'false');
+        }
+        langBtnEl.addEventListener('click', e => { e.stopPropagation(); setLangMenu(!langMenuEl.classList.contains('open')); });
         langSwitchEl.addEventListener('click', e => {
             const b = e.target.closest('button[data-lang]');
-            if (b) applyLang(b.dataset.lang);
+            if (b) { applyLang(b.dataset.lang); setLangMenu(false); }
         });
+        document.addEventListener('click', e => { if (!langMenuEl.contains(e.target)) setLangMenu(false); });
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') setLangMenu(false); });
 
         /* 之后 JS 再渲染出来的节点(技能卡片、历史列表、状态条…)也接住 */
         new MutationObserver(muts => {
