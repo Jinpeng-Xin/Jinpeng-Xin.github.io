@@ -340,9 +340,9 @@
 <div class="modal-mask" id="cfg-modal">
   <div class="modal-box">
     <h3>数据源与远程遥控配置</h3>
-    <p>默认已接入你的 Google Sheets Apps Script 实时中继。如需在手机端远程启停电脑上的 32 个 Agent，请输入 4 位控制口令（默认 <b>2026</b>）。</p>
+    <p>默认已接入你的 Google Sheets Apps Script 实时中继。如需在手机端远程启停电脑上的 32 个 Agent，请输入你的专属远程控制口令。</p>
     <input id="cfg-url" type="text" placeholder="Google Apps Script Web App URL">
-    <input id="cfg-pin" type="password" placeholder="远程控制口令（默认 2026）">
+    <input id="cfg-pin" type="password" placeholder="远程控制口令">
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeConfig()">取消</button>
       <button class="btn-primary" onclick="saveConfig()">保存</button>
@@ -516,9 +516,10 @@ function updateControlBtn() {
 async function toggleRemoteAgent() {
   let pin = getPin();
   if (!pin) {
-    pin = window.prompt('请输入 4 位远程控制口令（默认 2026）：', '2026');
+    pin = window.prompt('请输入远程控制口令：', '');
     if (pin === null) return;
     pin = pin.trim();
+    if (!pin) return;
     localStorage.setItem(LS_PIN, pin);
   }
   const nextRunning = !remoteRunning;

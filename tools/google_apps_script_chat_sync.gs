@@ -1,11 +1,11 @@
 // ============================================================================
 // Google Apps Script：X-PHS 32 Agent 实时对话与远程启停云端中继
-// 支持：大群/小群/私聊分频道存储 + 手机端远程 Start/Stop 控制（口令 2026）
+// 支持：大群/小群/私聊分频道存储 + 手机端远程 Start/Stop 控制
 // ============================================================================
 
 const SHEET_NAME = 'AgentDialogues';
 const CTRL_SHEET_NAME = 'AgentControl';
-const CONTROL_PIN = '2026';
+const CONTROL_PIN = 'YOUR_SECRET_PIN'; // 请在私有 Apps Script 中自行设置为你的专属口令
 
 function getOrCreateSheet() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
