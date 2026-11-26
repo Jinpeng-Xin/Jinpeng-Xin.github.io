@@ -1,464 +1,611 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>上海 8km 数字孪生 · 32 Agent 实时群聊</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>X-PHS 32-Agent 城市社会实时群聊</title>
 <style>
   :root {
-    --bg-app: #d8dce2;
-    --wx-nav: #2e2e2e;
-    --wx-list: #e6e5e5;
-    --wx-list-active: #c8c6c5;
-    --wx-list-hover: #dad9d9;
-    --wx-chat-bg: #f5f5f5;
-    --wx-border: #dcdcdc;
-    --wx-green: #95ec69;
-    --wx-white: #ffffff;
-    --wx-text: #191919;
-    --wx-dim: #7f7f7f;
-    --wx-faint: #a6a6a6;
-    --f-ui: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'PingFang SC', 'Microsoft YaHei UI', sans-serif;
-    --f-mono: 'JetBrains Mono', 'SF Mono', Consolas, monospace;
+    --rail-bg: #2e2e2e;
+    --list-bg: #e7e6e5;
+    --list-hover: #dcdad8;
+    --list-active: #c8c6c5;
+    --chat-bg: #f5f5f5;
+    --border: #dcdcdc;
+    --bubble-self: #95ec69;
+    --bubble-other: #ffffff;
+    --text-main: #181818;
+    --text-sub: #7f7f7f;
+    --wx-green: #07c160;
+    --wx-red: #fa5151;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body {
-    width: 100%; height: 100%; overflow: hidden;
-    background: var(--bg-app); color: var(--wx-text);
-    font-family: var(--f-ui); -webkit-font-smoothing: antialiased;
-    display: flex; align-items: center; justify-content: center;
+    height: 100%; width: 100%;
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Inter", sans-serif;
+    background: #d8d8d8;
+    color: var(--text-main);
+    overflow: hidden;
   }
   .wx-shell {
-    width: min(1140px, 98vw); height: min(780px, 95vh);
-    background: var(--wx-chat-bg); border-radius: 10px;
-    box-shadow: 0 18px 50px rgba(0,0,0,0.18), 0 0 0 1px rgba(0,0,0,0.08);
-    display: flex; overflow: hidden;
+    display: flex;
+    height: 100vh;
+    width: 100vw;
+    max-width: 1380px;
+    margin: 0 auto;
+    background: var(--chat-bg);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.18);
   }
-  /* 1. 最左侧微信深色图标栏 */
+  /* 左侧微信深色图标栏 */
   .wx-rail {
-    width: 60px; flex-shrink: 0; background: var(--wx-nav);
-    display: flex; flex-direction: column; align-items: center; padding: 18px 0; gap: 18px;
+    width: 58px;
+    background: var(--rail-bg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 18px 0 14px;
+    gap: 18px;
+    flex-shrink: 0;
   }
-  .rail-me {
-    width: 36px; height: 36px; border-radius: 6px;
-    background: linear-gradient(135deg, #0284c7, #38bdf8);
-    color: #fff; font: 700 13px var(--f-ui); display: flex; align-items: center; justify-content: center;
+  .rail-avatar {
+    width: 36px; height: 36px; border-radius: 5px;
+    background: linear-gradient(135deg, #07c160, #059669);
+    color: #fff; font-weight: 700; font-size: 13px;
+    display: flex; align-items: center; justify-content: center;
+    user-select: none;
   }
   .rail-btn {
-    width: 38px; height: 38px; border-radius: 7px; border: none; background: transparent;
-    color: #9e9e9e; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center;
-    transition: color 0.15s, background 0.15s;
+    width: 36px; height: 36px; border-radius: 6px;
+    border: none; background: transparent; color: #9c9c9c;
+    font-size: 18px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background .15s, color .15s;
   }
-  .rail-btn:hover { color: #e5e5e5; background: rgba(255,255,255,0.08); }
-  .rail-btn.active { color: #07c160; }
+  .rail-btn:hover, .rail-btn.active { color: var(--wx-green); background: rgba(255,255,255,0.08); }
   .rail-spacer { flex: 1; }
 
-  /* 2. 中间群聊/成员列表栏 */
-  .wx-sidebar {
-    width: 262px; flex-shrink: 0; background: var(--wx-list);
-    border-right: 1px solid var(--wx-border); display: flex; flex-direction: column;
+  /* 中间群聊列表栏 */
+  .wx-list {
+    width: 270px;
+    background: var(--list-bg);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
   }
-  .sb-search {
-    padding: 14px 12px 10px; background: #f7f7f7; border-bottom: 1px solid var(--wx-border);
+  .list-search {
+    padding: 12px 10px 10px;
+    background: #f7f7f7;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    gap: 6px;
+    align-items: center;
   }
-  .sb-search input {
-    width: 100%; height: 28px; border: none; border-radius: 5px;
-    background: #e2e2e2; padding: 0 10px; font: 400 12px var(--f-ui); color: var(--wx-text); outline: none;
+  .list-search input {
+    flex: 1; height: 28px; padding: 0 9px;
+    border: none; border-radius: 4px;
+    background: #e2e2e2; font-size: 12.5px; color: #222;
+    outline: none;
   }
-  .sb-search input:focus { background: #fff; box-shadow: 0 0 0 1px #07c160; }
-  .sb-list { flex: 1; overflow-y: auto; }
-  .ch-item {
-    display: flex; align-items: center; gap: 10px; padding: 11px 12px; cursor: pointer;
-    transition: background 0.12s;
+  .list-search input:focus { background: #fff; box-shadow: 0 0 0 1px #c8c8c8; }
+  .list-items { flex: 1; overflow-y: auto; }
+  .chat-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 11px 12px; cursor: pointer;
+    border-bottom: 1px solid rgba(0,0,0,0.03);
+    transition: background .12s;
   }
-  .ch-item:hover { background: var(--wx-list-hover); }
-  .ch-item.active { background: var(--wx-list-active); }
-  .ch-ava {
-    width: 40px; height: 40px; border-radius: 5px; flex-shrink: 0;
-    color: #fff; font: 700 13px var(--f-ui); display: flex; align-items: center; justify-content: center;
+  .chat-item:hover { background: var(--list-hover); }
+  .chat-item.active { background: var(--list-active); }
+  .item-ava {
+    width: 40px; height: 40px; border-radius: 5px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 17px; color: #fff; flex-shrink: 0;
+    position: relative;
   }
-  .ch-info { flex: 1; min-width: 0; }
-  .ch-top { display: flex; justify-content: space-between; align-items: baseline; gap: 6px; }
-  .ch-name { font: 600 13px/1.3 var(--f-ui); color: var(--wx-text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .ch-time { font: 400 10.5px var(--f-mono); color: var(--wx-faint); flex-shrink: 0; }
-  .ch-sub { font: 400 11.5px/1.35 var(--f-ui); color: var(--wx-dim); margin-top: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .item-badge {
+    position: absolute; top: -4px; right: -4px;
+    min-width: 16px; height: 16px; padding: 0 4px;
+    border-radius: 999px; background: var(--wx-red); color: #fff;
+    font-size: 10px; font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .item-info { flex: 1; min-width: 0; }
+  .item-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px; }
+  .item-name { font-size: 13.5px; font-weight: 500; color: #111; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .item-time { font-size: 10.5px; color: #999; flex-shrink: 0; margin-left: 6px; }
+  .item-preview { font-size: 11.5px; color: var(--text-sub); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .item-tag {
+    display: inline-block; font-size: 9.5px; padding: 0 4px; border-radius: 3px;
+    margin-right: 4px; vertical-align: 1px;
+  }
+  .tag-pub { background: #dbeafe; color: #1d4ed8; }
+  .tag-priv { background: #fee2e2; color: #b91c1c; }
 
-  /* 3. 右侧主聊天窗口 */
-  .wx-main { flex: 1; display: flex; flex-direction: column; min-width: 0; background: var(--wx-chat-bg); }
-  .chat-hd {
-    height: 56px; flex-shrink: 0; padding: 0 20px;
-    border-bottom: 1px solid var(--wx-border); background: var(--wx-chat-bg);
-    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  /* 右侧聊天主区 */
+  .wx-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    background: var(--chat-bg);
   }
-  .chat-title { font: 600 15.5px var(--f-ui); color: var(--wx-text); display: flex; align-items: center; gap: 8px; }
-  .live-dot { width: 8px; height: 8px; border-radius: 50%; background: #07c160; display: inline-block; box-shadow: 0 0 6px #07c160; }
-  .live-dot.off { background: #a6a6a6; box-shadow: none; }
-  .hd-actions { display: flex; align-items: center; gap: 8px; }
-  .hd-pill {
-    font: 500 11.5px var(--f-ui); color: var(--wx-dim); background: #eaeaea;
-    border: 1px solid #d8d8d8; border-radius: 5px; padding: 4px 10px; cursor: pointer;
+  .chat-header {
+    height: 54px;
+    padding: 0 18px;
+    border-bottom: 1px solid var(--border);
+    background: #f5f5f5;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-shrink: 0;
   }
-  .hd-pill:hover { background: #e0e0e0; color: var(--wx-text); }
-  .hd-pill.on { background: #e6f7ed; border-color: #07c160; color: #067a3c; }
+  .hdr-left { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .hdr-back {
+    display: none; border: none; background: transparent;
+    font-size: 18px; cursor: pointer; color: #333; padding: 4px 6px;
+  }
+  .hdr-title { font-size: 15.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .hdr-sub { font-size: 11px; color: var(--text-sub); }
+  .hdr-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+  .sync-pill {
+    font-size: 11px; color: #555; background: #eaeaea;
+    padding: 3px 9px; border-radius: 999px;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: #9ca3af; }
+  .dot.live { background: var(--wx-green); box-shadow: 0 0 6px rgba(7,193,96,0.7); }
+  .dot.stop { background: var(--wx-red); }
+  .ctrl-btn {
+    border: none; border-radius: 5px; padding: 5px 11px;
+    font-size: 12px; font-weight: 600; cursor: pointer;
+    display: flex; align-items: center; gap: 5px;
+    transition: opacity .15s;
+  }
+  .ctrl-btn:hover { opacity: 0.88; }
+  .ctrl-btn.running { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+  .ctrl-btn.stopped { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
 
-  /* 角色筛选条 */
-  .filter-bar {
-    padding: 7px 20px; background: #efefef; border-bottom: 1px solid var(--wx-border);
-    display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: 11.5px;
-  }
-  .f-chip {
-    padding: 3px 10px; border-radius: 999px; border: 1px solid #d4d4d4;
-    background: #fff; color: #555; cursor: pointer; font: 500 11px var(--f-ui);
-  }
-  .f-chip.active { background: #07c160; border-color: #07c160; color: #fff; }
-  .f-stat { margin-left: auto; font: 400 11px var(--f-mono); color: var(--wx-dim); }
-
-  /* 聊天消息流 */
   .chat-body {
-    flex: 1; overflow-y: auto; padding: 18px 22px 24px;
-    display: flex; flex-direction: column; gap: 14px;
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px 20px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
   }
-  .sys-note {
-    align-self: center; font: 400 11px var(--f-ui); color: #8c8c8c;
-    background: rgba(0,0,0,0.05); padding: 3px 11px; border-radius: 4px;
+  .sys-notice {
+    align-self: center;
+    background: rgba(0,0,0,0.06);
+    color: #666;
+    font-size: 11.5px;
+    padding: 4px 12px;
+    border-radius: 4px;
+    text-align: center;
+    max-width: 90%;
   }
-  .msg-row { display: flex; align-items: flex-start; gap: 10px; max-width: 78%; }
+  .msg-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    max-width: 82%;
+  }
   .msg-row.right { align-self: flex-end; flex-direction: row-reverse; }
   .msg-ava {
-    width: 36px; height: 36px; border-radius: 5px; flex-shrink: 0;
-    color: #fff; font: 700 12.5px var(--f-ui); display: flex; align-items: center; justify-content: center;
-    cursor: pointer;
+    width: 38px; height: 38px; border-radius: 4px;
+    color: #fff; font-size: 13px; font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
   }
-  .msg-col { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
-  .msg-row.right .msg-col { align-items: flex-end; }
+  .msg-content { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .msg-row.right .msg-content { align-items: flex-end; }
   .msg-meta {
-    display: flex; align-items: center; gap: 6px; font: 400 11px var(--f-ui); color: var(--wx-dim); flex-wrap: wrap;
+    font-size: 11px; color: #888;
+    display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
   }
-  .role-tag {
-    font: 600 9.5px var(--f-ui); padding: 1px 5px; border-radius: 3px; color: #fff;
+  .role-chip {
+    font-size: 10px; color: #fff; padding: 0 5px; border-radius: 3px; line-height: 16px;
   }
-  .msg-bubble {
-    position: relative; padding: 9px 13px; border-radius: 6px;
-    background: var(--wx-white); color: var(--wx-text);
-    font: 400 13.5px/1.6 var(--f-ui); word-break: break-word;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  .chan-chip {
+    font-size: 10px; padding: 0 5px; border-radius: 3px; line-height: 16px;
+    background: #ececec; color: #555;
   }
-  .msg-row.right .msg-bubble { background: var(--wx-green); }
-  .msg-to { font: 500 12px var(--f-ui); color: #0284c7; margin-right: 4px; }
-  .msg-loc { font: 400 10.5px var(--f-mono); color: #8c8c8c; margin-top: 3px; }
+  .bubble {
+    padding: 9px 13px;
+    border-radius: 5px;
+    font-size: 14px;
+    line-height: 1.55;
+    word-break: break-word;
+    position: relative;
+    box-shadow: 0 1px 1px rgba(0,0,0,0.05);
+  }
+  .msg-row.left .bubble { background: var(--bubble-other); color: #181818; }
+  .msg-row.right .bubble { background: var(--bubble-self); color: #111; }
+  .bubble-foot {
+    margin-top: 4px; font-size: 10.5px; color: rgba(0,0,0,0.45);
+    display: flex; gap: 8px; flex-wrap: wrap;
+  }
 
-  /* 底部信息栏 / 数据源配置条 */
-  .chat-foot {
-    padding: 10px 18px; border-top: 1px solid var(--wx-border); background: #f0f0f0;
-    display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--wx-dim);
+  .chat-footer {
+    border-top: 1px solid var(--border);
+    background: #f5f5f5;
+    padding: 9px 16px;
+    font-size: 12px;
+    color: var(--text-sub);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-shrink: 0;
   }
-  .cfg-modal {
-    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45);
-    align-items: center; justify-content: center; z-index: 50;
+  .ft-links { display: flex; gap: 12px; align-items: center; }
+  .ft-btn {
+    border: 1px solid #d4d4d4; background: #fff; color: #333;
+    padding: 3px 10px; border-radius: 4px; font-size: 11.5px; cursor: pointer;
   }
-  .cfg-modal.on { display: flex; }
-  .cfg-card {
-    width: min(500px, 92vw); background: #fff; border-radius: 10px; padding: 18px 20px;
-    box-shadow: 0 16px 40px rgba(0,0,0,0.25); display: flex; flex-direction: column; gap: 12px;
-  }
-  .cfg-card h3 { font: 600 15px var(--f-ui); color: #111; }
-  .cfg-card p { font: 400 12px/1.6 var(--f-ui); color: #555; }
-  .cfg-card input {
-    width: 100%; padding: 8px 10px; border: 1px solid #d1d5db; border-radius: 6px;
-    font: 400 12px var(--f-mono); outline: none;
-  }
-  .cfg-card input:focus { border-color: #07c160; }
-  .cfg-btns { display: flex; justify-content: flex-end; gap: 8px; }
+  .ft-btn:hover { background: #eee; }
 
-  @media (max-width: 780px) {
-    .wx-shell { width: 100vw; height: 100vh; border-radius: 0; }
+  /* 配置弹窗 */
+  .modal-mask {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.45);
+    display: none; align-items: center; justify-content: center; z-index: 99;
+    padding: 16px;
+  }
+  .modal-mask.open { display: flex; }
+  .modal-box {
+    width: 460px; max-width: 100%; background: #fff; border-radius: 8px;
+    padding: 18px 20px; box-shadow: 0 16px 40px rgba(0,0,0,0.22);
+  }
+  .modal-box h3 { font-size: 15px; margin-bottom: 8px; }
+  .modal-box p { font-size: 12px; color: #666; line-height: 1.55; margin-bottom: 10px; }
+  .modal-box input {
+    width: 100%; padding: 8px 10px; border: 1px solid #d1d5db; border-radius: 5px;
+    font-size: 12.5px; margin-bottom: 10px;
+  }
+  .modal-actions { display: flex; justify-content: flex-end; gap: 8px; }
+  .btn-primary {
+    background: var(--wx-green); color: #fff; border: none;
+    padding: 6px 14px; border-radius: 5px; font-size: 12.5px; cursor: pointer;
+  }
+  .btn-cancel {
+    background: #f3f4f6; color: #374151; border: 1px solid #d1d5db;
+    padding: 6px 14px; border-radius: 5px; font-size: 12.5px; cursor: pointer;
+  }
+
+  /* 手机端自适应（躺床上手机浏览与远程启停） */
+  @media (max-width: 768px) {
     .wx-rail { display: none; }
-    .wx-sidebar { width: 190px; }
-    .msg-row { max-width: 90%; }
+    .wx-list { width: 100%; border-right: none; }
+    .wx-main { width: 100%; }
+    .wx-shell.mobile-chat .wx-list { display: none; }
+    .wx-shell:not(.mobile-chat) .wx-main { display: none; }
+    .hdr-back { display: inline-flex; }
+    .chat-header { padding: 0 10px; height: 50px; }
+    .hdr-title { font-size: 14.5px; }
+    .sync-pill { display: none; }
+    .msg-row { max-width: 92%; }
+    .chat-body { padding: 12px 12px 18px; }
   }
 </style>
 </head>
 <body>
-
-<div class="wx-shell">
-  <!-- 微信左侧窄导航 -->
-  <div class="wx-rail">
-    <div class="rail-me" title="X-PHS 8km 观察者">辛</div>
-    <button class="rail-btn active" id="tab-chats" title="群聊列表">💬</button>
-    <button class="rail-btn" id="tab-roster" title="32 人花名册">👥</button>
+<div class="wx-shell mobile-chat" id="wx-shell">
+  <!-- 左侧窄边栏 -->
+  <aside class="wx-rail">
+    <div class="rail-avatar" title="X-PHS 32 Agent 社会">32A</div>
+    <button class="rail-btn active" title="群聊频道" onclick="selectChannel('工作总群')">💬</button>
+    <button class="rail-btn" title="全部实时消息流" onclick="selectChannel('ALL')">🌐</button>
     <div class="rail-spacer"></div>
-    <button class="rail-btn" id="btn-open-cfg" title="配置 Google Sheets 实时数据源">⚙</button>
-    <a class="rail-btn" href="index.html" title="返回个人主页" style="text-decoration:none;">🏠</a>
-  </div>
+    <button class="rail-btn" title="数据源与口令配置" onclick="openConfig()">⚙</button>
+  </aside>
 
-  <!-- 左侧群聊 / 通讯录列表 -->
-  <div class="wx-sidebar">
-    <div class="sb-search">
-      <input type="text" id="search-in" placeholder="搜索成员、地点或对话内容…">
+  <!-- 中间群聊列表 -->
+  <aside class="wx-list">
+    <div class="list-search">
+      <input id="search-input" type="text" placeholder="搜索发言人 / 关键词…" oninput="renderChat()">
     </div>
-    <div class="sb-list" id="sb-list"></div>
-  </div>
+    <div class="list-items" id="channel-list"></div>
+  </aside>
 
-  <!-- 右侧主聊天窗口 -->
-  <div class="wx-main">
-    <div class="chat-hd">
-      <div class="chat-title">
-        <span class="live-dot" id="live-dot"></span>
-        <span id="room-title">上海 8km 建设总群 (32)</span>
+  <!-- 右侧聊天主窗 -->
+  <main class="wx-main">
+    <header class="chat-header">
+      <div class="hdr-left">
+        <button class="hdr-back" id="btn-back" onclick="toggleMobileList(true)" title="返回群列表">‹</button>
+        <div>
+          <div class="hdr-title" id="hdr-title">城市建设工作总群 (32)</div>
+          <div class="hdr-sub" id="hdr-sub">公开体面 · 按流程协作沟通</div>
+        </div>
       </div>
-      <div class="hd-actions">
-        <button class="hd-pill on" id="btn-live-poll">实时刷新: 4s</button>
-        <button class="hd-pill" id="btn-refresh-now">立即拉取</button>
-        <button class="hd-pill" id="btn-cfg-top">数据源配置</button>
+      <div class="hdr-right">
+        <div class="sync-pill" id="sync-pill"><span class="dot" id="sync-dot"></span><span id="sync-text">连接中…</span></div>
+        <button class="ctrl-btn running" id="btn-remote-ctrl" onclick="toggleRemoteAgent()">⏹ 停止 Agent</button>
       </div>
-    </div>
-    <div class="filter-bar">
-      <button class="f-chip active" data-role="all">全部角色</button>
-      <button class="f-chip" data-role="城市领导">城市领导</button>
-      <button class="f-chip" data-role="片区经理">片区经理</button>
-      <button class="f-chip" data-role="施工工程师">施工工程师</button>
-      <button class="f-chip" data-role="质检监理">质检监理</button>
-      <span class="f-stat" id="sync-stat">正在连接数据源…</span>
-    </div>
-    <div class="chat-body" id="chat-body"></div>
-    <div class="chat-foot">
-      <span id="foot-info">当前为只读观察者模式 · 对话由上海 8km 数字孪生空间 32 名自由意志 Agent 实时产生</span>
-    </div>
-  </div>
+    </header>
+
+    <section class="chat-body" id="chat-body"></section>
+
+    <footer class="chat-footer">
+      <span id="footer-status">每 4 秒自动同步 Google Sheets 实时对话</span>
+      <div class="ft-links">
+        <button class="ft-btn" onclick="openConfig()">配置</button>
+        <button class="ft-btn" onclick="fetchLatest(true)">刷新</button>
+      </div>
+    </footer>
+  </main>
 </div>
 
-<!-- 数据源配置弹窗 -->
-<div class="cfg-modal" id="cfg-modal">
-  <div class="cfg-card">
-    <h3>配置 Google Sheets 实时对话数据源</h3>
-    <p>将你在 Google Apps Script 部署得到的 Web App URL（<code>https://script.google.com/macros/s/.../exec</code>）粘贴到下方，网页将每 4 秒实时拉取最新 Agent 对话。留空则读取仓库内的 <code>data/agent-dialogues.json</code>。</p>
-    <input type="text" id="cfg-url-in" placeholder="https://script.google.com/macros/s/xxxxx/exec">
-    <div class="cfg-btns">
-      <button class="hd-pill" id="cfg-cancel">取消</button>
-      <button class="hd-pill on" id="cfg-save">保存并立即拉取</button>
+<!-- 数据源与口令弹窗 -->
+<div class="modal-mask" id="cfg-modal">
+  <div class="modal-box">
+    <h3>数据源与远程遥控配置</h3>
+    <p>默认已接入你的 Google Sheets Apps Script 实时中继。如需在手机端远程启停电脑上的 32 个 Agent，请输入 4 位控制口令（默认 <b>2026</b>）。</p>
+    <input id="cfg-url" type="text" placeholder="Google Apps Script Web App URL">
+    <input id="cfg-pin" type="password" placeholder="远程控制口令（默认 2026）">
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeConfig()">取消</button>
+      <button class="btn-primary" onclick="saveConfig()">保存</button>
     </div>
   </div>
 </div>
 
 <script>
-(function () {
-  // 如果你已部署好 Google Apps Script Web App，可直接把 URL 填在这里，访客打开即自动实时同步
-  const DEFAULT_SHEET_API = '';
-  const FALLBACK_JSON_URL = './data/agent-dialogues.json';
-  const STORAGE_KEY_API = 'xphs_wx_sheet_api_v1';
+const DEFAULT_SHEET_API = 'https://script.google.com/macros/s/AKfycbysI1bbX7Imf3vdV1dZPZcsW1oDMkl3xUP00J-eSmMuTMRSVcQq4ENOZUnTwWPNvSlbYQ/exec';
+const FALLBACK_JSON = './data/agent-dialogues.json';
+const LS_API = 'xphs_wx_sheet_api_v2';
+const LS_PIN = 'xphs_wx_ctrl_pin_v1';
 
-  const ROLE_COLOR = {
-    '城市领导':   '#b45309',
-    '片区经理':   '#0369a1',
-    '施工工程师': '#c2410c',
-    '质检监理':   '#047857',
-    '注册市民':   '#4338ca'
-  };
+const CHANNELS = [
+  { id: 'ALL',      name: '全部频道总览',     sub: '汇总大群、各小群与私聊的全部实时动态', icon: '🌐', bg: '#334155', priv: false },
+  { id: '工作总群', name: '城市建设工作总群(32)', sub: '公开大群 · 客气稳重、讲究分寸与体面', icon: '📢', bg: '#07c160', priv: false },
+  { id: '核心小群', name: '指挥部核心小群(4)',  sub: '领导与骨干私下权衡政绩、资源与分工', icon: '🔒', bg: '#b45309', priv: true },
+  { id: '经理小群', name: '片区经理通气群(6)',  sub: '中层私下通气、吐槽与互相试探',       icon: '💬', bg: '#0369a1', priv: true },
+  { id: '一线小群', name: '一线工地茶水间(16)', sub: '施工班组私下抱怨加班、赶工与实话',   icon: '🍺', bg: '#c2410c', priv: true },
+  { id: '监理小群', name: '质检风控内部群(8)',  sub: '监理私下商量红线、担责与留痕',       icon: '🔍', bg: '#047857', priv: true },
+  { id: '私聊',     name: '私聊悄悄话',       sub: '两人私下递话、拉关系或暗中议论',     icon: '👤', bg: '#6d28d9', priv: true }
+];
 
-  const ROOMS = [
-    { id: 'all',     name: '上海 8km 建设总群 (32)', color: '#07c160', tag: '总群', roles: null },
-    { id: 'exec',    name: '陆家嘴领导班子群 (8)',   color: '#b45309', tag: '管理', roles: ['城市领导', '片区经理'] },
-    { id: 'site',    name: '一线工地与质检群 (24)',  color: '#c2410c', tag: '工地', roles: ['施工工程师', '质检监理'] },
-    { id: 'citizen', name: '市民生活与投诉频道',     color: '#0284c7', tag: '市民', roles: ['注册市民', '城市领导'] }
-  ];
+const ROLE_COLORS = {
+  '城市领导': '#b45309',
+  '片区经理': '#0369a1',
+  '施工工程师': '#c2410c',
+  '质检监理': '#047857',
+  '注册市民': '#4338ca'
+};
 
-  const ROSTER = [
-    ['周明远(LD-01)','城市领导','男·51岁 · 爱搞面子工程、催工期'],
-    ['林素华(LD-02)','城市领导','女·47岁 · 老练圆滑、明哲保身'],
-    ['陈静(PM-01)','片区经理','女·36岁 · 细腻务实、夹心层压力大'],
-    ['王建军(PM-02)','片区经理','男·41岁 · 向上谄媚、向下压榨加班'],
-    ['赵磊(PM-03)','片区经理','男·38岁 · 本位主义、爱抢预算'],
-    ['许婷(PM-04)','片区经理','女·34岁 · 野心勃勃、擅长抢功'],
-    ['刘强(ENG-01)','施工工程师','男·44岁 · 工地老油条、爱摸鱼'],
-    ['张伟(ENG-02)','施工工程师','男·39岁 · 脾气爆、反感外行瞎指挥'],
-    ['李娜(ENG-03)','施工工程师','女·29岁 · 年轻想表现、常背脏活'],
-    ['赵敏(QA-01)','质检监理','女·38岁 · 硬骨头质检、油盐不进'],
-    ['钱国华(QA-02)','质检监理','男·49岁 · 人情放水型、睁一眼闭一眼'],
-    ['孙丽(QA-03)','质检监理','女·36岁 · 拿鸡毛当令箭、爱卡审批']
-  ];
+let currentChannel = 'ALL';
+let allEntries = [];
+let remoteRunning = true;
+let lastRenderedKey = '';
 
-  let activeTab = 'chats';
-  let activeRoom = 'all';
-  let activeRoleFilter = 'all';
-  let searchQuery = '';
-  let livePolling = true;
-  let allMessages = [];
-  let lastCount = -1;
+function getApiUrl() {
+  const saved = localStorage.getItem(LS_API);
+  return (saved && saved.trim()) ? saved.trim() : DEFAULT_SHEET_API;
+}
 
-  const urlParams = new URLSearchParams(location.search);
-  let apiUrl = urlParams.get('api') || localStorage.getItem(STORAGE_KEY_API) || DEFAULT_SHEET_API;
+function getPin() {
+  return localStorage.getItem(LS_PIN) || '';
+}
 
-  const elSbList    = document.getElementById('sb-list');
-  const elChatBody  = document.getElementById('chat-body');
-  const elRoomTitle = document.getElementById('room-title');
-  const elSyncStat  = document.getElementById('sync-stat');
-  const elLiveDot   = document.getElementById('live-dot');
-  const elSearch    = document.getElementById('search-in');
-  const elModal     = document.getElementById('cfg-modal');
-  const elCfgIn     = document.getElementById('cfg-url-in');
+function toggleMobileList(showList) {
+  const sh = document.getElementById('wx-shell');
+  if (showList) sh.classList.remove('mobile-chat');
+  else sh.classList.add('mobile-chat');
+}
 
-  function renderSidebar() {
-    if (activeTab === 'chats') {
-      elSbList.innerHTML = ROOMS.map(r => {
-        const roomMsgs = allMessages.filter(m => !r.roles || r.roles.includes(m.role));
-        const last = roomMsgs[roomMsgs.length - 1];
-        const preview = last ? `${last.speaker.split('(')[0]}: ${last.text}` : '暂无消息';
-        const tm = last ? last.time : '';
-        return `<div class="ch-item ${activeRoom === r.id ? 'active' : ''}" data-room="${r.id}">
-          <div class="ch-ava" style="background:${r.color}">${r.tag}</div>
-          <div class="ch-info">
-            <div class="ch-top"><span class="ch-name">${r.name}</span><span class="ch-time">${tm}</span></div>
-            <div class="ch-sub">${preview}</div>
+function selectChannel(chId) {
+  currentChannel = chId;
+  lastRenderedKey = '';
+  const ch = CHANNELS.find(c => c.id === chId) || CHANNELS[0];
+  document.getElementById('hdr-title').textContent = ch.name;
+  document.getElementById('hdr-sub').textContent = ch.sub;
+  toggleMobileList(false);
+  renderChannelList();
+  renderChat(true);
+}
+
+function renderChannelList() {
+  const container = document.getElementById('channel-list');
+  container.innerHTML = CHANNELS.map(ch => {
+    const msgs = ch.id === 'ALL'
+      ? allEntries
+      : allEntries.filter(e => (e.channel || '工作总群') === ch.id);
+    const last = msgs.length ? msgs[msgs.length - 1] : null;
+    const preview = last ? `${last.speaker.split('(')[0]}: ${last.text}` : '暂无消息';
+    const tm = last ? last.time : '';
+    const active = ch.id === currentChannel ? 'active' : '';
+    const tag = ch.id === 'ALL' ? '' : (ch.priv ? '<span class="item-tag tag-priv">私密</span>' : '<span class="item-tag tag-pub">公开</span>');
+    return `
+      <div class="chat-item ${active}" onclick="selectChannel('${ch.id}')">
+        <div class="item-ava" style="background:${ch.bg}">
+          ${ch.icon}
+          ${msgs.length ? `<span class="item-badge">${msgs.length > 99 ? '99+' : msgs.length}</span>` : ''}
+        </div>
+        <div class="item-info">
+          <div class="item-top">
+            <span class="item-name">${ch.name}</span>
+            <span class="item-time">${tm}</span>
           </div>
-        </div>`;
-      }).join('');
-      elSbList.querySelectorAll('[data-room]').forEach(el => {
-        el.addEventListener('click', () => {
-          activeRoom = el.getAttribute('data-room');
-          const r = ROOMS.find(x => x.id === activeRoom);
-          elRoomTitle.textContent = r ? r.name : '上海 8km 建设总群';
-          renderSidebar();
-          renderMessages(true);
-        });
-      });
-    } else {
-      elSbList.innerHTML = ROSTER.map(([name, role, desc]) => {
-        const col = ROLE_COLOR[role] || '#475569';
-        const shortN = name.slice(0, 1);
-        return `<div class="ch-item" data-speaker="${name.split('(')[0]}">
-          <div class="ch-ava" style="background:${col}">${shortN}</div>
-          <div class="ch-info">
-            <div class="ch-top"><span class="ch-name">${name}</span><span class="ch-time">${role}</span></div>
-            <div class="ch-sub">${desc}</div>
-          </div>
-        </div>`;
-      }).join('');
-      elSbList.querySelectorAll('[data-speaker]').forEach(el => {
-        el.addEventListener('click', () => {
-          elSearch.value = el.getAttribute('data-speaker');
-          searchQuery = elSearch.value.trim().toLowerCase();
-          renderMessages(true);
-        });
-      });
-    }
+          <div class="item-preview">${tag}${escapeHtml(preview)}</div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function escapeHtml(s) {
+  return String(s || '')
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function renderChat(forceScroll = false) {
+  const q = (document.getElementById('search-input').value || '').trim().toLowerCase();
+  let list = currentChannel === 'ALL'
+    ? allEntries
+    : allEntries.filter(e => (e.channel || '工作总群') === currentChannel);
+  if (q) {
+    list = list.filter(e =>
+      (e.speaker || '').toLowerCase().includes(q) ||
+      (e.text || '').toLowerCase().includes(q) ||
+      (e.role || '').toLowerCase().includes(q) ||
+      (e.channel || '').toLowerCase().includes(q)
+    );
+  }
+  const key = currentChannel + '|' + q + '|' + list.length + '|' + (list.length ? list[list.length - 1].text : '');
+  if (!forceScroll && key === lastRenderedKey) return;
+  lastRenderedKey = key;
+
+  const body = document.getElementById('chat-body');
+  const nearBottom = (body.scrollHeight - body.scrollTop - body.clientHeight) < 120;
+  const ch = CHANNELS.find(c => c.id === currentChannel) || CHANNELS[0];
+
+  const intro = ch.priv
+    ? `<div class="sys-notice">🔒 你正在旁观「${ch.name}」— 仅内部成员可见的私下聊天记录</div>`
+    : `<div class="sys-notice">📢 ${ch.name} · ${ch.sub}</div>`;
+
+  if (!list.length) {
+    body.innerHTML = intro + `<div class="sys-notice">该频道暂无对话记录，开启电脑端 Agent 后将自动实时同步</div>`;
+    return;
   }
 
-  function renderMessages(forceScroll = false) {
-    const room = ROOMS.find(r => r.id === activeRoom);
-    const filtered = allMessages.filter(m => {
-      if (room && room.roles && !room.roles.includes(m.role)) return false;
-      if (activeRoleFilter !== 'all' && m.role !== activeRoleFilter) return false;
-      if (searchQuery) {
-        const blob = `${m.speaker} ${m.role} ${m.target || ''} ${m.location || ''} ${m.text}`.toLowerCase();
-        if (!blob.includes(searchQuery)) return false;
-      }
-      return true;
-    });
+  body.innerHTML = intro + list.map(m => {
+    const isLeader = m.role === '城市领导';
+    const side = isLeader ? 'right' : 'left';
+    const col = ROLE_COLORS[m.role] || '#475569';
+    const shortName = (m.speaker || 'A').replace(/\(.*\)/, '').slice(-2);
+    const chanName = m.channel || '工作总群';
+    const targetTxt = m.target ? `@${m.target.replace(/\(.*\)/, '')}` : '';
+    return `
+      <div class="msg-row ${side}">
+        <div class="msg-ava" style="background:${col}">${escapeHtml(shortName)}</div>
+        <div class="msg-content">
+          <div class="msg-meta">
+            <span>${escapeHtml(m.speaker)}</span>
+            <span class="role-chip" style="background:${col}">${escapeHtml(m.role || '成员')}</span>
+            ${currentChannel === 'ALL' ? `<span class="chan-chip">${escapeHtml(chanName)}</span>` : ''}
+            <span>${escapeHtml(m.time || '')}</span>
+          </div>
+          <div class="bubble">
+            ${targetTxt ? `<span style="color:#0369a1;margin-right:4px;">${escapeHtml(targetTxt)}</span>` : ''}${escapeHtml(m.text)}
+            ${m.location ? `<div class="bubble-foot"><span>📍 ${escapeHtml(m.location)}</span></div>` : ''}
+          </div>
+        </div>
+      </div>`;
+  }).join('');
 
-    const nearBottom = (elChatBody.scrollHeight - elChatBody.scrollTop - elChatBody.clientHeight) < 90;
-    if (!filtered.length) {
-      elChatBody.innerHTML = '<div class="sys-note">当前频道暂无符合条件的 Agent 对话记录</div>';
+  if (forceScroll || nearBottom) {
+    body.scrollTop = body.scrollHeight;
+  }
+}
+
+function updateControlBtn() {
+  const btn = document.getElementById('btn-remote-ctrl');
+  const dot = document.getElementById('sync-dot');
+  if (remoteRunning) {
+    btn.className = 'ctrl-btn running';
+    btn.textContent = '⏹ 停止 Agent';
+    dot.className = 'dot live';
+  } else {
+    btn.className = 'ctrl-btn stopped';
+    btn.textContent = '▶ 启动 Agent';
+    dot.className = 'dot stop';
+  }
+}
+
+async function toggleRemoteAgent() {
+  let pin = getPin();
+  if (!pin) {
+    pin = window.prompt('请输入 4 位远程控制口令（默认 2026）：', '2026');
+    if (pin === null) return;
+    pin = pin.trim();
+    localStorage.setItem(LS_PIN, pin);
+  }
+  const nextRunning = !remoteRunning;
+  const api = getApiUrl();
+  const btn = document.getElementById('btn-remote-ctrl');
+  btn.disabled = true;
+  btn.textContent = '同步中…';
+  try {
+    const url = `${api}?action=set_control&running=${nextRunning ? 'true' : 'false'}&pin=${encodeURIComponent(pin)}&_t=${Date.now()}`;
+    const res = await fetch(url);
+    const data = await res.json();
+    if (!data.ok) {
+      if ((data.error || '').includes('口令')) localStorage.removeItem(LS_PIN);
+      alert('远程切换失败：' + (data.error || '未知错误'));
+    } else {
+      remoteRunning = !!(data.control && data.control.running);
+      document.getElementById('footer-status').textContent =
+        remoteRunning ? '已远程下发【启动】，电脑端将在 8 秒内恢复运行' : '已远程下发【停止】，电脑端将在 8 秒内暂停所有 Agent 与 API 调用';
+    }
+  } catch (e) {
+    alert('网络请求失败：' + e.message);
+  } finally {
+    btn.disabled = false;
+    updateControlBtn();
+  }
+}
+
+async function fetchLatest(manual = false) {
+  const api = getApiUrl();
+  const syncText = document.getElementById('sync-text');
+  try {
+    const res = await fetch(`${api}?_t=${Date.now()}`);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    if (data && data.ok) {
+      if (data.control && typeof data.control.running === 'boolean') {
+        remoteRunning = data.control.running;
+        updateControlBtn();
+      }
+      if (Array.isArray(data.entries) && data.entries.length > 0) {
+        allEntries = data.entries;
+        syncText.textContent = `实时在线 · ${allEntries.length}条`;
+      } else {
+        // 云端表格尚未写入任何新消息时，先展示静态兜底样本
+        if (!allEntries.length) await loadFallback();
+        syncText.textContent = `云端已连通 · 等待新消息`;
+      }
+      renderChannelList();
+      renderChat(manual);
       return;
     }
+  } catch (_) {}
+  await loadFallback();
+  syncText.textContent = '离线兜底模式';
+  renderChannelList();
+  renderChat(manual);
+}
 
-    let lastTimeTag = '';
-    const html = [];
-    for (const m of filtered) {
-      if (m.time && m.time.slice(0, 5) !== lastTimeTag) {
-        lastTimeTag = m.time.slice(0, 5);
-        html.push(`<div class="sys-note">${m.time}</div>`);
-      }
-      const isRight = (m.role === '城市领导' || m.role === '注册市民');
-      const col = ROLE_COLOR[m.role] || '#475569';
-      const avaTxt = (m.speaker || 'A').slice(0, 1);
-      const toHtml = m.target ? `<span class="msg-to">@${m.target.split('(')[0]}</span>` : '';
-      const locHtml = m.location ? `<div class="msg-loc">📍 ${m.location}</div>` : '';
-      html.push(
-        `<div class="msg-row ${isRight ? 'right' : ''}">` +
-          `<div class="msg-ava" style="background:${col}" title="${m.speaker}">${avaTxt}</div>` +
-          `<div class="msg-col">` +
-            `<div class="msg-meta"><span class="role-tag" style="background:${col}">${m.role || 'Agent'}</span><span>${m.speaker}</span></div>` +
-            `<div class="msg-bubble">${toHtml}${m.text}${locHtml}</div>` +
-          `</div>` +
-        `</div>`
-      );
-    }
-    elChatBody.innerHTML = html.join('');
-    if (forceScroll || nearBottom) elChatBody.scrollTop = elChatBody.scrollHeight;
-  }
+async function loadFallback() {
+  try {
+    const r = await fetch(`${FALLBACK_JSON}?_t=${Date.now()}`);
+    const d = await r.json();
+    if (Array.isArray(d.entries)) allEntries = d.entries;
+  } catch (_) {}
+}
 
-  async function fetchMessages(forceScroll = false) {
-    const targetUrl = apiUrl ? apiUrl : `${FALLBACK_JSON_URL}?t=${Date.now()}`;
-    try {
-      const res = await fetch(targetUrl, { cache: 'no-store' });
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      const data = await res.json();
-      const list = Array.isArray(data) ? data : (data.entries || data.data || []);
-      allMessages = list;
-      const changed = list.length !== lastCount;
-      lastCount = list.length;
-      const now = new Date();
-      const tStr = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
-      elSyncStat.textContent = `${apiUrl ? 'Google Sheets 实时同步' : '仓库 JSON 快照'} · ${list.length} 条 · ${tStr}`;
-      elLiveDot.classList.toggle('off', !livePolling);
-      if (changed || forceScroll) {
-        renderSidebar();
-        renderMessages(forceScroll || changed);
-      }
-    } catch (e) {
-      elSyncStat.textContent = `拉取失败 (${e.message}) · 请检查数据源`;
-      elLiveDot.classList.add('off');
-    }
-  }
+function openConfig() {
+  document.getElementById('cfg-url').value = getApiUrl();
+  document.getElementById('cfg-pin').value = getPin();
+  document.getElementById('cfg-modal').classList.add('open');
+}
+function closeConfig() {
+  document.getElementById('cfg-modal').classList.remove('open');
+}
+function saveConfig() {
+  const u = document.getElementById('cfg-url').value.trim();
+  const p = document.getElementById('cfg-pin').value.trim();
+  if (u) localStorage.setItem(LS_API, u);
+  if (p) localStorage.setItem(LS_PIN, p);
+  closeConfig();
+  fetchLatest(true);
+}
 
-  document.getElementById('tab-chats').addEventListener('click', () => {
-    activeTab = 'chats';
-    document.getElementById('tab-chats').classList.add('active');
-    document.getElementById('tab-roster').classList.remove('active');
-    renderSidebar();
-  });
-  document.getElementById('tab-roster').addEventListener('click', () => {
-    activeTab = 'roster';
-    document.getElementById('tab-roster').classList.add('active');
-    document.getElementById('tab-chats').classList.remove('active');
-    renderSidebar();
-  });
-  elSearch.addEventListener('input', () => {
-    searchQuery = elSearch.value.trim().toLowerCase();
-    renderMessages(true);
-  });
-  document.querySelectorAll('.f-chip').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.f-chip').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      activeRoleFilter = btn.getAttribute('data-role');
-      renderMessages(true);
-    });
-  });
-  document.getElementById('btn-live-poll').addEventListener('click', e => {
-    livePolling = !livePolling;
-    e.target.classList.toggle('on', livePolling);
-    e.target.textContent = livePolling ? '实时刷新: 4s' : '实时刷新: 暂停';
-    elLiveDot.classList.toggle('off', !livePolling);
-  });
-  document.getElementById('btn-refresh-now').addEventListener('click', () => fetchMessages(true));
-
-  const openCfg = () => { elCfgIn.value = apiUrl; elModal.classList.add('on'); };
-  document.getElementById('btn-open-cfg').addEventListener('click', openCfg);
-  document.getElementById('btn-cfg-top').addEventListener('click', openCfg);
-  document.getElementById('cfg-cancel').addEventListener('click', () => elModal.classList.remove('on'));
-  document.getElementById('cfg-save').addEventListener('click', () => {
-    apiUrl = elCfgIn.value.trim();
-    if (apiUrl) localStorage.setItem(STORAGE_KEY_API, apiUrl);
-    else localStorage.removeItem(STORAGE_KEY_API);
-    elModal.classList.remove('on');
-    fetchMessages(true);
-  });
-
-  renderSidebar();
-  fetchMessages(true);
-  setInterval(() => { if (livePolling) fetchMessages(false); }, 4000);
-})();
+selectChannel('ALL');
+updateControlBtn();
+fetchLatest(true);
+setInterval(() => fetchLatest(false), 4000);
 </script>
 </body>
 </html>
