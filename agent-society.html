@@ -2,368 +2,519 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>X-PHS 32-Agent 城市社会实时群聊</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#ededed">
+<title>微信 · X-PHS 32-Agent 社会</title>
 <style>
   :root {
     --rail-bg: #2e2e2e;
-    --list-bg: #e7e6e5;
-    --list-hover: #dcdad8;
-    --list-active: #c8c6c5;
-    --chat-bg: #f5f5f5;
-    --border: #dcdcdc;
+    --wx-nav-bg: #ededed;
+    --wx-tab-bg: #f7f7f7;
+    --wx-chat-bg: #ededed;
+    --wx-white: #ffffff;
+    --wx-border: #e5e5e5;
     --bubble-self: #95ec69;
     --bubble-other: #ffffff;
     --text-main: #181818;
-    --text-sub: #7f7f7f;
+    --text-sub: #888888;
     --wx-green: #07c160;
+    --wx-blue: #576b95;
     --wx-red: #fa5151;
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
   }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   html, body {
     height: 100%; width: 100%;
-    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Inter", sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
     background: #d8d8d8;
     color: var(--text-main);
     overflow: hidden;
   }
-  .wx-shell {
+
+  .wx-app {
     display: flex;
     height: 100vh;
+    height: 100dvh;
     width: 100vw;
-    max-width: 1380px;
+    max-width: 1280px;
     margin: 0 auto;
-    background: var(--chat-bg);
+    background: var(--wx-chat-bg);
     box-shadow: 0 12px 40px rgba(0,0,0,0.18);
+    position: relative;
   }
-  /* 左侧微信深色图标栏 */
+
+  /* 桌面端左侧微信深色边栏 */
   .wx-rail {
-    width: 58px;
+    width: 60px;
     background: var(--rail-bg);
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 18px 0 14px;
-    gap: 18px;
+    padding: 18px 0 16px;
+    gap: 16px;
     flex-shrink: 0;
   }
-  .rail-avatar {
-    width: 36px; height: 36px; border-radius: 5px;
+  .rail-ava {
+    width: 38px; height: 38px; border-radius: 6px;
     background: linear-gradient(135deg, #07c160, #059669);
     color: #fff; font-weight: 700; font-size: 13px;
     display: flex; align-items: center; justify-content: center;
-    user-select: none;
   }
   .rail-btn {
-    width: 36px; height: 36px; border-radius: 6px;
+    width: 40px; height: 40px; border-radius: 6px;
     border: none; background: transparent; color: #9c9c9c;
-    font-size: 18px; cursor: pointer;
+    font-size: 19px; cursor: pointer;
     display: flex; align-items: center; justify-content: center;
-    transition: background .15s, color .15s;
+    position: relative;
   }
-  .rail-btn:hover, .rail-btn.active { color: var(--wx-green); background: rgba(255,255,255,0.08); }
+  .rail-btn.active, .rail-btn:hover { color: var(--wx-green); background: rgba(255,255,255,0.08); }
   .rail-spacer { flex: 1; }
 
-  /* 中间群聊列表栏 */
-  .wx-list {
-    width: 270px;
-    background: var(--list-bg);
-    border-right: 1px solid var(--border);
+  /* 中间列表栏（微信列表 / 通讯录） */
+  .wx-sidebar {
+    width: 280px;
+    background: #f7f7f7;
+    border-right: 1px solid #dcdcdc;
     display: flex;
     flex-direction: column;
     flex-shrink: 0;
   }
-  .list-search {
-    padding: 12px 10px 10px;
-    background: #f7f7f7;
-    border-bottom: 1px solid var(--border);
+  .wx-topbar {
+    height: 50px;
+    padding: 0 14px;
+    background: var(--wx-nav-bg);
+    border-bottom: 1px solid var(--wx-border);
     display: flex;
-    gap: 6px;
     align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
   }
-  .list-search input {
-    flex: 1; height: 28px; padding: 0 9px;
-    border: none; border-radius: 4px;
-    background: #e2e2e2; font-size: 12.5px; color: #222;
-    outline: none;
+  .wx-topbar-title { font-size: 16px; font-weight: 600; color: #111; }
+  .wx-topbar-sub { font-size: 11px; color: var(--text-sub); }
+  .search-wrap {
+    padding: 8px 10px;
+    background: var(--wx-nav-bg);
+    border-bottom: 1px solid var(--wx-border);
   }
-  .list-search input:focus { background: #fff; box-shadow: 0 0 0 1px #c8c8c8; }
-  .list-items { flex: 1; overflow-y: auto; }
-  .chat-item {
-    display: flex; align-items: center; gap: 10px;
-    padding: 11px 12px; cursor: pointer;
-    border-bottom: 1px solid rgba(0,0,0,0.03);
-    transition: background .12s;
+  .search-wrap input {
+    width: 100%; height: 32px; border: none; border-radius: 6px;
+    background: #ffffff; padding: 0 10px; font-size: 13px; outline: none;
   }
-  .chat-item:hover { background: var(--list-hover); }
-  .chat-item.active { background: var(--list-active); }
-  .item-ava {
-    width: 40px; height: 40px; border-radius: 5px;
+  .list-scroll { flex: 1; overflow-y: auto; background: #fff; }
+  .chat-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 14px; cursor: pointer;
+    border-bottom: 1px solid #f0f0f0;
+    background: #fff;
+  }
+  .chat-row:active, .chat-row:hover { background: #f2f2f2; }
+  .chat-row.active { background: #e6e6e6; }
+  .row-ava {
+    width: 46px; height: 46px; border-radius: 6px;
     display: flex; align-items: center; justify-content: center;
-    font-size: 17px; color: #fff; flex-shrink: 0;
-    position: relative;
+    font-size: 20px; color: #fff; flex-shrink: 0; position: relative;
   }
-  .item-badge {
-    position: absolute; top: -4px; right: -4px;
-    min-width: 16px; height: 16px; padding: 0 4px;
+  .row-badge {
+    position: absolute; top: -5px; right: -5px;
+    min-width: 18px; height: 18px; padding: 0 5px;
     border-radius: 999px; background: var(--wx-red); color: #fff;
-    font-size: 10px; font-weight: 600;
+    font-size: 11px; font-weight: 600;
     display: flex; align-items: center; justify-content: center;
   }
-  .item-info { flex: 1; min-width: 0; }
-  .item-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px; }
-  .item-name { font-size: 13.5px; font-weight: 500; color: #111; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .item-time { font-size: 10.5px; color: #999; flex-shrink: 0; margin-left: 6px; }
-  .item-preview { font-size: 11.5px; color: var(--text-sub); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .item-tag {
-    display: inline-block; font-size: 9.5px; padding: 0 4px; border-radius: 3px;
+  .row-main { flex: 1; min-width: 0; }
+  .row-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+  .row-name { font-size: 15px; font-weight: 500; color: #111; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .row-time { font-size: 11px; color: #b2b2b2; flex-shrink: 0; margin-left: 8px; }
+  .row-sub { font-size: 12.5px; color: var(--text-sub); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tag-pill {
+    display: inline-block; font-size: 10px; padding: 0 4px; border-radius: 3px;
     margin-right: 4px; vertical-align: 1px;
   }
-  .tag-pub { background: #dbeafe; color: #1d4ed8; }
+  .tag-pub { background: #e0f2fe; color: #0369a1; }
   .tag-priv { background: #fee2e2; color: #b91c1c; }
 
-  /* 右侧聊天主区 */
-  .wx-main {
+  /* 右侧主内容区（聊天 / 朋友圈 / 通讯录详情 / 遥控面板） */
+  .wx-stage {
     flex: 1;
     display: flex;
     flex-direction: column;
     min-width: 0;
-    background: var(--chat-bg);
+    background: var(--wx-chat-bg);
+    position: relative;
   }
-  .chat-header {
-    height: 54px;
-    padding: 0 18px;
-    border-bottom: 1px solid var(--border);
-    background: #f5f5f5;
+  .view-pane { display: none; flex-direction: column; flex: 1; min-height: 0; }
+  .view-pane.active { display: flex; }
+
+  /* 聊天窗顶部 */
+  .chat-hdr {
+    height: 50px;
+    padding: 0 14px;
+    background: var(--wx-nav-bg);
+    border-bottom: 1px solid var(--wx-border);
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 10px;
+    gap: 8px;
     flex-shrink: 0;
   }
-  .hdr-left { display: flex; align-items: center; gap: 10px; min-width: 0; }
-  .hdr-back {
+  .hdr-l { display: flex; align-items: center; gap: 6px; min-width: 0; }
+  .back-btn {
     display: none; border: none; background: transparent;
-    font-size: 18px; cursor: pointer; color: #333; padding: 4px 6px;
+    font-size: 24px; line-height: 1; color: #111; padding: 2px 6px 4px 0; cursor: pointer;
   }
-  .hdr-title { font-size: 15.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .hdr-sub { font-size: 11px; color: var(--text-sub); }
-  .hdr-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-  .sync-pill {
-    font-size: 11px; color: #555; background: #eaeaea;
-    padding: 3px 9px; border-radius: 999px;
-    display: flex; align-items: center; gap: 5px;
-  }
-  .dot { width: 7px; height: 7px; border-radius: 50%; background: #9ca3af; }
-  .dot.live { background: var(--wx-green); box-shadow: 0 0 6px rgba(7,193,96,0.7); }
-  .dot.stop { background: var(--wx-red); }
-  .ctrl-btn {
-    border: none; border-radius: 5px; padding: 5px 11px;
+  .hdr-name { font-size: 16px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .hdr-r { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+  .mini-ctrl {
+    border: none; border-radius: 999px; padding: 5px 11px;
     font-size: 12px; font-weight: 600; cursor: pointer;
-    display: flex; align-items: center; gap: 5px;
-    transition: opacity .15s;
+    display: inline-flex; align-items: center; gap: 4px;
   }
-  .ctrl-btn:hover { opacity: 0.88; }
-  .ctrl-btn.running { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
-  .ctrl-btn.stopped { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+  .mini-ctrl.running { background: #fee2e2; color: #b91c1c; }
+  .mini-ctrl.stopped { background: #dcfce7; color: #15803d; }
 
-  .chat-body {
+  /* 聊天气泡区 */
+  .chat-scroll {
     flex: 1;
     overflow-y: auto;
-    padding: 16px 20px 24px;
+    padding: 14px 14px 20px;
     display: flex;
     flex-direction: column;
     gap: 14px;
+    background: var(--wx-chat-bg);
+    -webkit-overflow-scrolling: touch;
   }
-  .sys-notice {
+  .sys-tip {
     align-self: center;
     background: rgba(0,0,0,0.06);
-    color: #666;
-    font-size: 11.5px;
-    padding: 4px 12px;
-    border-radius: 4px;
-    text-align: center;
-    max-width: 90%;
+    color: #666; font-size: 11.5px;
+    padding: 4px 12px; border-radius: 5px;
+    text-align: center; max-width: 90%;
   }
-  .msg-row {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    max-width: 82%;
-  }
-  .msg-row.right { align-self: flex-end; flex-direction: row-reverse; }
+  .msg-item { display: flex; align-items: flex-start; gap: 9px; max-width: 86%; }
+  .msg-item.right { align-self: flex-end; flex-direction: row-reverse; }
   .msg-ava {
-    width: 38px; height: 38px; border-radius: 4px;
+    width: 40px; height: 40px; border-radius: 5px;
     color: #fff; font-size: 13px; font-weight: 600;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
   }
-  .msg-content { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
-  .msg-row.right .msg-content { align-items: flex-end; }
-  .msg-meta {
-    font-size: 11px; color: #888;
-    display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
-  }
-  .role-chip {
-    font-size: 10px; color: #fff; padding: 0 5px; border-radius: 3px; line-height: 16px;
-  }
-  .chan-chip {
-    font-size: 10px; padding: 0 5px; border-radius: 3px; line-height: 16px;
-    background: #ececec; color: #555;
-  }
+  .msg-col { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .msg-item.right .msg-col { align-items: flex-end; }
+  .msg-who { font-size: 11px; color: #888; display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+  .r-chip { font-size: 10px; color: #fff; padding: 0 5px; border-radius: 3px; line-height: 16px; }
+  .c-chip { font-size: 10px; color: #555; background: #e0e0e0; padding: 0 5px; border-radius: 3px; line-height: 16px; }
   .bubble {
-    padding: 9px 13px;
-    border-radius: 5px;
-    font-size: 14px;
-    line-height: 1.55;
+    padding: 9px 12px;
+    border-radius: 6px;
+    font-size: 15px;
+    line-height: 1.5;
     word-break: break-word;
     position: relative;
-    box-shadow: 0 1px 1px rgba(0,0,0,0.05);
+    box-shadow: 0 1px 1px rgba(0,0,0,0.04);
   }
-  .msg-row.left .bubble { background: var(--bubble-other); color: #181818; }
-  .msg-row.right .bubble { background: var(--bubble-self); color: #111; }
-  .bubble-foot {
-    margin-top: 4px; font-size: 10.5px; color: rgba(0,0,0,0.45);
-    display: flex; gap: 8px; flex-wrap: wrap;
+  .msg-item.left .bubble { background: var(--bubble-other); color: #111; }
+  .msg-item.right .bubble { background: var(--bubble-self); color: #111; }
+  .bubble-loc { margin-top: 4px; font-size: 11px; color: rgba(0,0,0,0.42); }
+  .chat-input-bar {
+    height: 46px; padding: 0 12px;
+    background: #f7f7f7; border-top: 1px solid var(--wx-border);
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 12px; color: #777; flex-shrink: 0;
   }
 
-  .chat-footer {
-    border-top: 1px solid var(--border);
-    background: #f5f5f5;
-    padding: 9px 16px;
-    font-size: 12px;
-    color: var(--text-sub);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-    flex-shrink: 0;
+  /* ================= 朋友圈 Moments 视图 ================= */
+  .moments-scroll {
+    flex: 1; overflow-y: auto; background: #ffffff;
+    -webkit-overflow-scrolling: touch;
   }
-  .ft-links { display: flex; gap: 12px; align-items: center; }
-  .ft-btn {
-    border: 1px solid #d4d4d4; background: #fff; color: #333;
-    padding: 3px 10px; border-radius: 4px; font-size: 11.5px; cursor: pointer;
-  }
-  .ft-btn:hover { background: #eee; }
-
-  /* 配置弹窗 */
-  .modal-mask {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.45);
-    display: none; align-items: center; justify-content: center; z-index: 99;
+  .moments-cover {
+    height: 210px;
+    background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 55%, #0f766e 100%);
+    position: relative;
+    margin-bottom: 34px;
+    display: flex; align-items: flex-end; justify-content: flex-end;
     padding: 16px;
   }
-  .modal-mask.open { display: flex; }
-  .modal-box {
-    width: 460px; max-width: 100%; background: #fff; border-radius: 8px;
-    padding: 18px 20px; box-shadow: 0 16px 40px rgba(0,0,0,0.22);
+  .moments-cover::before {
+    content: "X-PHS 8km · 上海数字孪生";
+    position: absolute; top: 18px; left: 16px;
+    font-size: 12px; letter-spacing: 1px; color: rgba(255,255,255,0.72);
   }
-  .modal-box h3 { font-size: 15px; margin-bottom: 8px; }
-  .modal-box p { font-size: 12px; color: #666; line-height: 1.55; margin-bottom: 10px; }
-  .modal-box input {
-    width: 100%; padding: 8px 10px; border: 1px solid #d1d5db; border-radius: 5px;
-    font-size: 12.5px; margin-bottom: 10px;
+  .cover-user {
+    position: absolute; right: 16px; bottom: -22px;
+    display: flex; align-items: center; gap: 12px;
   }
-  .modal-actions { display: flex; justify-content: flex-end; gap: 8px; }
-  .btn-primary {
-    background: var(--wx-green); color: #fff; border: none;
-    padding: 6px 14px; border-radius: 5px; font-size: 12.5px; cursor: pointer;
+  .cover-name {
+    color: #fff; font-size: 16px; font-weight: 600;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.45);
+    margin-bottom: 18px;
   }
-  .btn-cancel {
-    background: #f3f4f6; color: #374151; border: 1px solid #d1d5db;
-    padding: 6px 14px; border-radius: 5px; font-size: 12.5px; cursor: pointer;
+  .cover-ava {
+    width: 64px; height: 64px; border-radius: 8px;
+    background: linear-gradient(135deg, #07c160, #059669);
+    border: 2px solid #fff;
+    color: #fff; font-weight: 700; font-size: 18px;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.16);
+  }
+  .moment-card {
+    display: flex; gap: 11px;
+    padding: 14px 16px 16px;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  .m-ava {
+    width: 42px; height: 42px; border-radius: 6px;
+    color: #fff; font-size: 14px; font-weight: 600;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .m-body { flex: 1; min-width: 0; }
+  .m-name {
+    font-size: 15px; font-weight: 600; color: var(--wx-blue);
+    display: flex; align-items: center; gap: 6px; margin-bottom: 5px;
+  }
+  .m-text { font-size: 15px; line-height: 1.55; color: #181818; margin-bottom: 8px; word-break: break-word; }
+  .m-loc { font-size: 12px; color: var(--wx-blue); margin-bottom: 6px; }
+  .m-meta {
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 12px; color: #a0a0a0; margin-bottom: 8px;
+  }
+  .m-interact {
+    background: #f7f7f7; border-radius: 4px;
+    padding: 7px 10px; font-size: 13px; line-height: 1.5;
+  }
+  .m-likes { color: var(--wx-blue); font-weight: 500; }
+  .m-comment {
+    margin-top: 5px; padding-top: 5px; border-top: 1px solid #ececec;
+    color: #222;
+  }
+  .m-comment b { color: var(--wx-blue); font-weight: 600; }
+
+  /* ================= 通讯录花名册视图 ================= */
+  .contacts-scroll { flex: 1; overflow-y: auto; background: #f7f7f7; }
+  .contact-sec {
+    padding: 6px 14px; font-size: 12px; color: #888; background: #ededed;
+  }
+  .contact-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 14px; background: #fff; border-bottom: 1px solid #f2f2f2;
+    cursor: pointer;
+  }
+  .contact-item:active { background: #f2f2f2; }
+
+  /* ================= 手机端远程遥控面板 ================= */
+  .remote-wrap {
+    flex: 1; overflow-y: auto; padding: 18px 16px 30px;
+    background: #ededed; display: flex; flex-direction: column; gap: 14px;
+  }
+  .r-card {
+    background: #fff; border-radius: 10px; padding: 18px 16px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  }
+  .r-status-row {
+    display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;
+  }
+  .r-badge {
+    font-size: 14px; font-weight: 700; padding: 4px 12px; border-radius: 999px;
+  }
+  .r-badge.on { background: #dcfce7; color: #15803d; }
+  .r-badge.off { background: #fee2e2; color: #b91c1c; }
+  .big-switch-btn {
+    width: 100%; height: 48px; border: none; border-radius: 8px;
+    font-size: 16px; font-weight: 600; cursor: pointer;
+    transition: opacity .15s;
+  }
+  .big-switch-btn:active { opacity: 0.85; }
+  .big-switch-btn.stop { background: var(--wx-red); color: #fff; }
+  .big-switch-btn.start { background: var(--wx-green); color: #fff; }
+  .r-field { margin-top: 12px; }
+  .r-field label { display: block; font-size: 12.5px; color: #666; margin-bottom: 5px; }
+  .r-field input {
+    width: 100%; height: 40px; padding: 0 12px;
+    border: 1px solid #dcdcdc; border-radius: 6px; font-size: 14px;
+  }
+  .r-save-btn {
+    margin-top: 12px; width: 100%; height: 42px;
+    background: #181818; color: #fff; border: none; border-radius: 7px;
+    font-size: 14px; font-weight: 600; cursor: pointer;
   }
 
-  /* 手机端自适应（躺床上手机浏览与远程启停） */
+  /* ================= 手机端微信底部 Tab 栏 ================= */
+  .wx-bottom-tabs {
+    display: none;
+    height: calc(56px + var(--safe-bottom));
+    padding-bottom: var(--safe-bottom);
+    background: var(--wx-tab-bg);
+    border-top: 1px solid #dcdcdc;
+    flex-shrink: 0;
+  }
+  .tab-btn {
+    flex: 1; border: none; background: transparent;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 2px; color: #181818; font-size: 10.5px; cursor: pointer; position: relative;
+  }
+  .tab-btn .t-ic { font-size: 21px; line-height: 1.1; }
+  .tab-btn.active { color: var(--wx-green); font-weight: 600; }
+  .tab-dot {
+    position: absolute; top: 5px; right: calc(50% - 18px);
+    width: 8px; height: 8px; border-radius: 50%; background: var(--wx-red);
+    display: none;
+  }
+  .tab-dot.show { display: block; }
+
+  /* ================= 手机端完整原生微信适配 ================= */
   @media (max-width: 768px) {
+    .wx-app { flex-direction: column; max-width: 100%; box-shadow: none; }
     .wx-rail { display: none; }
-    .wx-list { width: 100%; border-right: none; }
-    .wx-main { width: 100%; }
-    .wx-shell.mobile-chat .wx-list { display: none; }
-    .wx-shell:not(.mobile-chat) .wx-main { display: none; }
-    .hdr-back { display: inline-flex; }
-    .chat-header { padding: 0 10px; height: 50px; }
-    .hdr-title { font-size: 14.5px; }
-    .sync-pill { display: none; }
-    .msg-row { max-width: 92%; }
-    .chat-body { padding: 12px 12px 18px; }
+    .wx-sidebar { width: 100%; flex: 1; border-right: none; min-height: 0; }
+    .wx-stage { width: 100%; flex: 1; min-height: 0; }
+    .wx-bottom-tabs { display: flex; }
+
+    /* 手机端导航状态机：在聊天详情内隐藏列表与底部 Tab；在列表/朋友圈/通讯录/遥控显示底部 Tab */
+    .wx-app[data-mobile-mode="list"] .wx-stage { display: none; }
+    .wx-app[data-mobile-mode="list"] .wx-sidebar { display: flex; }
+
+    .wx-app[data-mobile-mode="chat"] .wx-sidebar { display: none; }
+    .wx-app[data-mobile-mode="chat"] .wx-stage { display: flex; }
+    .wx-app[data-mobile-mode="chat"] .wx-bottom-tabs { display: none; }
+    .wx-app[data-mobile-mode="chat"] .back-btn { display: inline-block; }
+
+    .wx-app[data-mobile-mode="tab"] .wx-sidebar { display: none; }
+    .wx-app[data-mobile-mode="tab"] .wx-stage { display: flex; }
   }
 </style>
 </head>
 <body>
-<div class="wx-shell mobile-chat" id="wx-shell">
-  <!-- 左侧窄边栏 -->
+<div class="wx-app" id="wx-app" data-mobile-mode="list">
+  <!-- 桌面端左侧微信边栏 -->
   <aside class="wx-rail">
-    <div class="rail-avatar" title="X-PHS 32 Agent 社会">32A</div>
-    <button class="rail-btn active" title="群聊频道" onclick="selectChannel('工作总群')">💬</button>
-    <button class="rail-btn" title="全部实时消息流" onclick="selectChannel('ALL')">🌐</button>
+    <div class="rail-ava">32A</div>
+    <button class="rail-btn active" id="rail-chats" title="微信群聊" onclick="switchTab('chats')">💬</button>
+    <button class="rail-btn" id="rail-contacts" title="通讯录" onclick="switchTab('contacts')">👥</button>
+    <button class="rail-btn" id="rail-moments" title="朋友圈" onclick="switchTab('moments')">⭕</button>
     <div class="rail-spacer"></div>
-    <button class="rail-btn" title="数据源与口令配置" onclick="openConfig()">⚙</button>
+    <button class="rail-btn" id="rail-remote" title="远程启停控制" onclick="switchTab('remote')">⚙</button>
   </aside>
 
-  <!-- 中间群聊列表 -->
-  <aside class="wx-list">
-    <div class="list-search">
-      <input id="search-input" type="text" placeholder="搜索发言人 / 关键词…" oninput="renderChat()">
+  <!-- 微信群聊列表页 -->
+  <aside class="wx-sidebar">
+    <div class="wx-topbar">
+      <div>
+        <div class="wx-topbar-title">微信 <span id="top-live-tag" style="font-size:11px;font-weight:500;color:#07c160;">(实时)</span></div>
+      </div>
+      <button class="mini-ctrl running" id="list-ctrl-btn" onclick="toggleRemoteAgent()">⏹ 停止</button>
     </div>
-    <div class="list-items" id="channel-list"></div>
+    <div class="search-wrap">
+      <input id="search-input" type="text" placeholder="🔍 搜索群聊、发言人或关键词" oninput="renderAll()">
+    </div>
+    <div class="list-scroll" id="channel-list"></div>
   </aside>
 
-  <!-- 右侧聊天主窗 -->
-  <main class="wx-main">
-    <header class="chat-header">
-      <div class="hdr-left">
-        <button class="hdr-back" id="btn-back" onclick="toggleMobileList(true)" title="返回群列表">‹</button>
-        <div>
-          <div class="hdr-title" id="hdr-title">城市建设工作总群 (32)</div>
-          <div class="hdr-sub" id="hdr-sub">公开体面 · 按流程协作沟通</div>
+  <!-- 主展示舞台：聊天 / 朋友圈 / 通讯录 / 远程控制 -->
+  <main class="wx-stage">
+    <!-- 1. 聊天窗口 -->
+    <section class="view-pane active" id="pane-chat">
+      <header class="chat-hdr">
+        <div class="hdr-l">
+          <button class="back-btn" onclick="backToList()">‹</button>
+          <div class="hdr-name" id="chat-title">城市建设工作总群(32)</div>
+        </div>
+        <div class="hdr-r">
+          <button class="mini-ctrl running" id="chat-ctrl-btn" onclick="toggleRemoteAgent()">⏹ 停止</button>
+        </div>
+      </header>
+      <div class="chat-scroll" id="chat-body"></div>
+      <div class="chat-input-bar">
+        <span id="chat-foot-txt">每 4 秒自动同步 · 实时旁观模式</span>
+        <button onclick="fetchLatest(true)" style="border:1px solid #d4d4d4;background:#fff;padding:4px 10px;border-radius:4px;font-size:12px;">刷新</button>
+      </div>
+    </section>
+
+    <!-- 2. 朋友圈 Moments -->
+    <section class="view-pane" id="pane-moments">
+      <header class="chat-hdr">
+        <div class="hdr-l"><div class="hdr-name">朋友圈</div></div>
+        <div class="hdr-r">
+          <button onclick="fetchLatest(true)" style="border:none;background:transparent;font-size:14px;color:#07c160;font-weight:600;cursor:pointer;">刷新</button>
+        </div>
+      </header>
+      <div class="moments-scroll" id="moments-body"></div>
+    </section>
+
+    <!-- 3. 通讯录 -->
+    <section class="view-pane" id="pane-contacts">
+      <header class="chat-hdr">
+        <div class="hdr-l"><div class="hdr-name">通讯录 · 32 位城市居民</div></div>
+      </header>
+      <div class="contacts-scroll" id="contacts-body"></div>
+    </section>
+
+    <!-- 4. 躺床上手机远程控制 -->
+    <section class="view-pane" id="pane-remote">
+      <header class="chat-hdr">
+        <div class="hdr-l"><div class="hdr-name">远程控制与设置</div></div>
+      </header>
+      <div class="remote-wrap">
+        <div class="r-card">
+          <div class="r-status-row">
+            <div>
+              <div style="font-size:15px;font-weight:600;">电脑端 32 Agent 运行状态</div>
+              <div id="remote-ts" style="font-size:12px;color:#888;margin-top:2px;">同步中…</div>
+            </div>
+            <span class="r-badge on" id="remote-badge">运行中</span>
+          </div>
+          <button class="big-switch-btn stop" id="big-ctrl-btn" onclick="toggleRemoteAgent()">⏹ 一键停止全部 Agent（省额度休息）</button>
+          <p style="font-size:12px;color:#777;margin-top:10px;line-height:1.55;">
+            点击后通过 Google Sheets 云端中继下发指令，电脑上开着的 3D 场景将在 8 秒内自动暂停或恢复全部 Agent 对话与 DeepSeek API 调用。
+          </p>
+        </div>
+        <div class="r-card">
+          <div style="font-size:15px;font-weight:600;margin-bottom:4px;">口令与云端地址</div>
+          <div class="r-field">
+            <label>专属远程控制口令（保存在本机浏览器，只需输一次）</label>
+            <input id="cfg-pin" type="password" placeholder="请输入你的专属口令">
+          </div>
+          <div class="r-field">
+            <label>Google Apps Script Web App 地址</label>
+            <input id="cfg-url" type="text" placeholder="https://script.google.com/macros/s/.../exec">
+          </div>
+          <button class="r-save-btn" onclick="saveRemoteConfig()">保存配置</button>
         </div>
       </div>
-      <div class="hdr-right">
-        <div class="sync-pill" id="sync-pill"><span class="dot" id="sync-dot"></span><span id="sync-text">连接中…</span></div>
-        <button class="ctrl-btn running" id="btn-remote-ctrl" onclick="toggleRemoteAgent()">⏹ 停止 Agent</button>
-      </div>
-    </header>
-
-    <section class="chat-body" id="chat-body"></section>
-
-    <footer class="chat-footer">
-      <span id="footer-status">每 4 秒自动同步 Google Sheets 实时对话</span>
-      <div class="ft-links">
-        <button class="ft-btn" onclick="openConfig()">配置</button>
-        <button class="ft-btn" onclick="fetchLatest(true)">刷新</button>
-      </div>
-    </footer>
+    </section>
   </main>
-</div>
 
-<!-- 数据源与口令弹窗 -->
-<div class="modal-mask" id="cfg-modal">
-  <div class="modal-box">
-    <h3>数据源与远程遥控配置</h3>
-    <p>默认已接入你的 Google Sheets Apps Script 实时中继。如需在手机端远程启停电脑上的 32 个 Agent，请输入你的专属远程控制口令。</p>
-    <input id="cfg-url" type="text" placeholder="Google Apps Script Web App URL">
-    <input id="cfg-pin" type="password" placeholder="远程控制口令">
-    <div class="modal-actions">
-      <button class="btn-cancel" onclick="closeConfig()">取消</button>
-      <button class="btn-primary" onclick="saveConfig()">保存</button>
-    </div>
-  </div>
+  <!-- 手机端原生微信底部 4 Tab 导航栏 -->
+  <nav class="wx-bottom-tabs">
+    <button class="tab-btn active" id="tab-chats" onclick="switchTab('chats')">
+      <span class="t-ic">💬</span><span>微信</span>
+    </button>
+    <button class="tab-btn" id="tab-contacts" onclick="switchTab('contacts')">
+      <span class="t-ic">👥</span><span>通讯录</span>
+    </button>
+    <button class="tab-btn" id="tab-moments" onclick="switchTab('moments')">
+      <span class="t-ic">⭕</span><span>朋友圈</span>
+      <span class="tab-dot" id="moments-dot"></span>
+    </button>
+    <button class="tab-btn" id="tab-remote" onclick="switchTab('remote')">
+      <span class="t-ic">⚙️</span><span>控制</span>
+    </button>
+  </nav>
 </div>
 
 <script>
 const DEFAULT_SHEET_API = 'https://script.google.com/macros/s/AKfycbysI1bbX7Imf3vdV1dZPZcsW1oDMkl3xUP00J-eSmMuTMRSVcQq4ENOZUnTwWPNvSlbYQ/exec';
 const FALLBACK_JSON = './data/agent-dialogues.json';
-const LS_API = 'xphs_wx_sheet_api_v2';
-const LS_PIN = 'xphs_wx_ctrl_pin_v1';
+const LS_API = 'xphs_wx_sheet_api_v3';
+const LS_PIN = 'xphs_wx_ctrl_pin_v2';
 
 const CHANNELS = [
-  { id: 'ALL',      name: '全部频道总览',     sub: '汇总大群、各小群与私聊的全部实时动态', icon: '🌐', bg: '#334155', priv: false },
   { id: '工作总群', name: '城市建设工作总群(32)', sub: '公开大群 · 客气稳重、讲究分寸与体面', icon: '📢', bg: '#07c160', priv: false },
-  { id: '核心小群', name: '指挥部核心小群(4)',  sub: '领导与骨干私下权衡政绩、资源与分工', icon: '🔒', bg: '#b45309', priv: true },
-  { id: '经理小群', name: '片区经理通气群(6)',  sub: '中层私下通气、吐槽与互相试探',       icon: '💬', bg: '#0369a1', priv: true },
-  { id: '一线小群', name: '一线工地茶水间(16)', sub: '施工班组私下抱怨加班、赶工与实话',   icon: '🍺', bg: '#c2410c', priv: true },
-  { id: '监理小群', name: '质检风控内部群(8)',  sub: '监理私下商量红线、担责与留痕',       icon: '🔍', bg: '#047857', priv: true },
-  { id: '私聊',     name: '私聊悄悄话',       sub: '两人私下递话、拉关系或暗中议论',     icon: '👤', bg: '#6d28d9', priv: true }
+  { id: '核心小群', name: '指挥部核心小群(4)',    sub: '领导与骨干私下权衡政绩、资源与分工', icon: '🔒', bg: '#b45309', priv: true },
+  { id: '经理小群', name: '片区经理通气群(6)',    sub: '中层私下通气、吐槽与互相试探',       icon: '💬', bg: '#0369a1', priv: true },
+  { id: '一线小群', name: '一线工地茶水间(16)',   sub: '施工班组私下抱怨加班、赶工与实话',   icon: '🍺', bg: '#c2410c', priv: true },
+  { id: '监理小群', name: '质检风控内部群(8)',    sub: '监理私下商量红线、担责与留痕',       icon: '🔍', bg: '#047857', priv: true },
+  { id: '私聊',     name: '私聊悄悄话',           sub: '两人私下递话、拉关系或暗中议论',     icon: '👤', bg: '#6d28d9', priv: true },
+  { id: 'ALL',      name: '全部消息汇总流',       sub: '大群与各私密小群的完整时间线',       icon: '🌐', bg: '#334155', priv: false }
 ];
 
 const ROLE_COLORS = {
@@ -374,149 +525,289 @@ const ROLE_COLORS = {
   '注册市民': '#4338ca'
 };
 
-let currentChannel = 'ALL';
+let currentTab = 'chats';
+let currentChannel = '工作总群';
+let filterSpeaker = '';
 let allEntries = [];
 let remoteRunning = true;
-let lastRenderedKey = '';
+let remoteUpdatedAt = '';
+let lastChatKey = '';
 
 function getApiUrl() {
-  const saved = localStorage.getItem(LS_API);
-  return (saved && saved.trim()) ? saved.trim() : DEFAULT_SHEET_API;
+  const s = localStorage.getItem(LS_API);
+  return (s && s.trim()) ? s.trim() : DEFAULT_SHEET_API;
+}
+function getPin() { return localStorage.getItem(LS_PIN) || ''; }
+function esc(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-function getPin() {
-  return localStorage.getItem(LS_PIN) || '';
+function setMobileMode(mode) {
+  document.getElementById('wx-app').setAttribute('data-mobile-mode', mode);
 }
 
-function toggleMobileList(showList) {
-  const sh = document.getElementById('wx-shell');
-  if (showList) sh.classList.remove('mobile-chat');
-  else sh.classList.add('mobile-chat');
+function switchTab(tab) {
+  currentTab = tab;
+  ['chats','contacts','moments','remote'].forEach(t => {
+    const rb = document.getElementById('rail-' + t);
+    const tb = document.getElementById('tab-' + t);
+    if (rb) rb.classList.toggle('active', t === tab);
+    if (tb) tb.classList.toggle('active', t === tab);
+  });
+  document.querySelectorAll('.view-pane').forEach(p => p.classList.remove('active'));
+  if (tab === 'chats') {
+    document.getElementById('pane-chat').classList.add('active');
+    setMobileMode('list');
+  } else if (tab === 'moments') {
+    document.getElementById('pane-moments').classList.add('active');
+    document.getElementById('moments-dot').classList.remove('show');
+    setMobileMode('tab');
+    renderMoments();
+  } else if (tab === 'contacts') {
+    document.getElementById('pane-contacts').classList.add('active');
+    setMobileMode('tab');
+    renderContacts();
+  } else if (tab === 'remote') {
+    document.getElementById('pane-remote').classList.add('active');
+    document.getElementById('cfg-url').value = getApiUrl();
+    document.getElementById('cfg-pin').value = getPin();
+    setMobileMode('tab');
+    updateControlUI();
+  }
 }
 
-function selectChannel(chId) {
+function openChannel(chId) {
   currentChannel = chId;
-  lastRenderedKey = '';
+  filterSpeaker = '';
+  lastChatKey = '';
   const ch = CHANNELS.find(c => c.id === chId) || CHANNELS[0];
-  document.getElementById('hdr-title').textContent = ch.name;
-  document.getElementById('hdr-sub').textContent = ch.sub;
-  toggleMobileList(false);
+  document.getElementById('chat-title').textContent = ch.name;
+  document.querySelectorAll('.view-pane').forEach(p => p.classList.remove('active'));
+  document.getElementById('pane-chat').classList.add('active');
+  setMobileMode('chat');
   renderChannelList();
   renderChat(true);
 }
 
+function openSpeakerHistory(speaker) {
+  filterSpeaker = speaker;
+  currentChannel = 'ALL';
+  lastChatKey = '';
+  document.getElementById('chat-title').textContent = speaker + ' 的全部记录';
+  document.querySelectorAll('.view-pane').forEach(p => p.classList.remove('active'));
+  document.getElementById('pane-chat').classList.add('active');
+  setMobileMode('chat');
+  renderChat(true);
+}
+
+function backToList() {
+  filterSpeaker = '';
+  setMobileMode('list');
+}
+
+function getChatMessages() {
+  return allEntries.filter(e => (e.channel || '工作总群') !== '朋友圈');
+}
+function getMomentMessages() {
+  return allEntries.filter(e => (e.channel || '') === '朋友圈');
+}
+
 function renderChannelList() {
-  const container = document.getElementById('channel-list');
-  container.innerHTML = CHANNELS.map(ch => {
+  const chatMsgs = getChatMessages();
+  const q = (document.getElementById('search-input').value || '').trim().toLowerCase();
+  const el = document.getElementById('channel-list');
+  el.innerHTML = CHANNELS.map(ch => {
     const msgs = ch.id === 'ALL'
-      ? allEntries
-      : allEntries.filter(e => (e.channel || '工作总群') === ch.id);
+      ? chatMsgs
+      : chatMsgs.filter(e => (e.channel || '工作总群') === ch.id);
+    if (q && !ch.name.toLowerCase().includes(q) && !msgs.some(m => (m.text + m.speaker).toLowerCase().includes(q))) {
+      return '';
+    }
     const last = msgs.length ? msgs[msgs.length - 1] : null;
-    const preview = last ? `${last.speaker.split('(')[0]}: ${last.text}` : '暂无消息';
+    const preview = last ? `${last.speaker.split('(')[0]}: ${last.text}` : ch.sub;
     const tm = last ? last.time : '';
-    const active = ch.id === currentChannel ? 'active' : '';
-    const tag = ch.id === 'ALL' ? '' : (ch.priv ? '<span class="item-tag tag-priv">私密</span>' : '<span class="item-tag tag-pub">公开</span>');
+    const active = (ch.id === currentChannel && !filterSpeaker) ? 'active' : '';
+    const tag = ch.id === 'ALL' ? '' : (ch.priv ? '<span class="tag-pill tag-priv">私密</span>' : '<span class="tag-pill tag-pub">公开</span>');
     return `
-      <div class="chat-item ${active}" onclick="selectChannel('${ch.id}')">
-        <div class="item-ava" style="background:${ch.bg}">
+      <div class="chat-row ${active}" onclick="openChannel('${ch.id}')">
+        <div class="row-ava" style="background:${ch.bg}">
           ${ch.icon}
-          ${msgs.length ? `<span class="item-badge">${msgs.length > 99 ? '99+' : msgs.length}</span>` : ''}
+          ${msgs.length ? `<span class="row-badge">${msgs.length > 99 ? '99+' : msgs.length}</span>` : ''}
         </div>
-        <div class="item-info">
-          <div class="item-top">
-            <span class="item-name">${ch.name}</span>
-            <span class="item-time">${tm}</span>
+        <div class="row-main">
+          <div class="row-top">
+            <span class="row-name">${ch.name}</span>
+            <span class="row-time">${esc(tm)}</span>
           </div>
-          <div class="item-preview">${tag}${escapeHtml(preview)}</div>
+          <div class="row-sub">${tag}${esc(preview)}</div>
         </div>
       </div>`;
   }).join('');
 }
 
-function escapeHtml(s) {
-  return String(s || '')
-    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-}
-
 function renderChat(forceScroll = false) {
   const q = (document.getElementById('search-input').value || '').trim().toLowerCase();
-  let list = currentChannel === 'ALL'
-    ? allEntries
-    : allEntries.filter(e => (e.channel || '工作总群') === currentChannel);
-  if (q) {
-    list = list.filter(e =>
-      (e.speaker || '').toLowerCase().includes(q) ||
-      (e.text || '').toLowerCase().includes(q) ||
-      (e.role || '').toLowerCase().includes(q) ||
-      (e.channel || '').toLowerCase().includes(q)
-    );
+  let list = getChatMessages();
+  if (filterSpeaker) {
+    list = allEntries.filter(e => e.speaker === filterSpeaker);
+  } else if (currentChannel !== 'ALL') {
+    list = list.filter(e => (e.channel || '工作总群') === currentChannel);
   }
-  const key = currentChannel + '|' + q + '|' + list.length + '|' + (list.length ? list[list.length - 1].text : '');
-  if (!forceScroll && key === lastRenderedKey) return;
-  lastRenderedKey = key;
+  if (q) {
+    list = list.filter(e => (e.speaker + e.text + e.role + (e.channel || '')).toLowerCase().includes(q));
+  }
+  const key = currentChannel + '|' + filterSpeaker + '|' + q + '|' + list.length + '|' + (list.length ? list[list.length - 1].text : '');
+  if (!forceScroll && key === lastChatKey) return;
+  lastChatKey = key;
 
   const body = document.getElementById('chat-body');
   const nearBottom = (body.scrollHeight - body.scrollTop - body.clientHeight) < 120;
   const ch = CHANNELS.find(c => c.id === currentChannel) || CHANNELS[0];
-
-  const intro = ch.priv
-    ? `<div class="sys-notice">🔒 你正在旁观「${ch.name}」— 仅内部成员可见的私下聊天记录</div>`
-    : `<div class="sys-notice">📢 ${ch.name} · ${ch.sub}</div>`;
+  const tip = filterSpeaker
+    ? `<div class="sys-tip">正在查看 ${esc(filterSpeaker)} 在大群、小群及朋友圈的全部轨迹</div>`
+    : (ch.priv
+      ? `<div class="sys-tip">🔒 「${ch.name}」仅内部成员可见的私下聊天记录</div>`
+      : `<div class="sys-tip">📢 ${ch.name} · ${ch.sub}</div>`);
 
   if (!list.length) {
-    body.innerHTML = intro + `<div class="sys-notice">该频道暂无对话记录，开启电脑端 Agent 后将自动实时同步</div>`;
+    body.innerHTML = tip + `<div class="sys-tip">暂无消息，开启电脑端 Agent 后将实时同步</div>`;
     return;
   }
 
-  body.innerHTML = intro + list.map(m => {
+  body.innerHTML = tip + list.map(m => {
     const isLeader = m.role === '城市领导';
     const side = isLeader ? 'right' : 'left';
     const col = ROLE_COLORS[m.role] || '#475569';
     const shortName = (m.speaker || 'A').replace(/\(.*\)/, '').slice(-2);
     const chanName = m.channel || '工作总群';
-    const targetTxt = m.target ? `@${m.target.replace(/\(.*\)/, '')}` : '';
+    const targetTxt = (m.target && chanName !== '朋友圈') ? `@${m.target.replace(/\(.*\)/, '')}` : '';
     return `
-      <div class="msg-row ${side}">
-        <div class="msg-ava" style="background:${col}">${escapeHtml(shortName)}</div>
-        <div class="msg-content">
-          <div class="msg-meta">
-            <span>${escapeHtml(m.speaker)}</span>
-            <span class="role-chip" style="background:${col}">${escapeHtml(m.role || '成员')}</span>
-            ${currentChannel === 'ALL' ? `<span class="chan-chip">${escapeHtml(chanName)}</span>` : ''}
-            <span>${escapeHtml(m.time || '')}</span>
+      <div class="msg-item ${side}">
+        <div class="msg-ava" style="background:${col}">${esc(shortName)}</div>
+        <div class="msg-col">
+          <div class="msg-who">
+            <span>${esc(m.speaker)}</span>
+            <span class="r-chip" style="background:${col}">${esc(m.role || '成员')}</span>
+            ${(currentChannel === 'ALL' || filterSpeaker) ? `<span class="c-chip">${esc(chanName)}</span>` : ''}
+            <span>${esc(m.time || '')}</span>
           </div>
           <div class="bubble">
-            ${targetTxt ? `<span style="color:#0369a1;margin-right:4px;">${escapeHtml(targetTxt)}</span>` : ''}${escapeHtml(m.text)}
-            ${m.location ? `<div class="bubble-foot"><span>📍 ${escapeHtml(m.location)}</span></div>` : ''}
+            ${targetTxt ? `<span style="color:#576b95;margin-right:4px;">${esc(targetTxt)}</span>` : ''}${esc(m.text)}
+            ${m.location ? `<div class="bubble-loc">📍 ${esc(m.location)}</div>` : ''}
           </div>
         </div>
       </div>`;
   }).join('');
 
-  if (forceScroll || nearBottom) {
-    body.scrollTop = body.scrollHeight;
-  }
+  if (forceScroll || nearBottom) body.scrollTop = body.scrollHeight;
 }
 
-function updateControlBtn() {
-  const btn = document.getElementById('btn-remote-ctrl');
-  const dot = document.getElementById('sync-dot');
-  if (remoteRunning) {
-    btn.className = 'ctrl-btn running';
-    btn.textContent = '⏹ 停止 Agent';
-    dot.className = 'dot live';
-  } else {
-    btn.className = 'ctrl-btn stopped';
-    btn.textContent = '▶ 启动 Agent';
-    dot.className = 'dot stop';
+function renderMoments() {
+  const list = getMomentMessages().slice().reverse();
+  const el = document.getElementById('moments-body');
+  const likePools = [
+    '陈静, 李娜, 张伟',
+    '周明远, 孙浩, 赵敏',
+    '王磊, 刘强, 马超, 吴涛',
+    '陈静, 林雪, 高峰'
+  ];
+  const cards = list.length ? list.map((m, idx) => {
+    const col = ROLE_COLORS[m.role] || '#475569';
+    const shortName = (m.speaker || 'A').replace(/\(.*\)/, '').slice(-2);
+    const dispName = (m.speaker || 'Agent').replace(/\(.*\)/, '');
+    const likes = likePools[idx % likePools.length];
+    const commentHtml = m.target && m.target.includes(':')
+      ? `<div class="m-comment"><b>${esc(m.target.split(':')[0])}</b>：${esc(m.target.split(':').slice(1).join(':').trim())}</div>`
+      : '';
+    return `
+      <article class="moment-card">
+        <div class="m-ava" style="background:${col}">${esc(shortName)}</div>
+        <div class="m-body">
+          <div class="m-name">
+            <span>${esc(dispName)}</span>
+            <span class="r-chip" style="background:${col}">${esc(m.role || '居民')}</span>
+          </div>
+          <div class="m-text">${esc(m.text)}</div>
+          ${m.location ? `<div class="m-loc">${esc(m.location)}</div>` : ''}
+          <div class="m-meta">
+            <span>${esc(m.time || '刚刚')}</span>
+            <span>••</span>
+          </div>
+          <div class="m-interact">
+            <div class="m-likes">♡ ${likes}</div>
+            ${commentHtml}
+          </div>
+        </div>
+      </article>`;
+  }).join('') : `<div style="padding:36px 20px;text-align:center;color:#999;font-size:13.5px;">暂无朋友圈动态，Agent 运行后会自动发朋友圈</div>`;
+
+  el.innerHTML = `
+    <div class="moments-cover">
+      <div class="cover-user">
+        <div class="cover-name">上海数字孪生 · 32人圈</div>
+        <div class="cover-ava">32A</div>
+      </div>
+    </div>
+    ${cards}`;
+}
+
+function renderContacts() {
+  const groups = { '城市领导': [], '片区经理': [], '施工工程师': [], '质检监理': [], '其他': [] };
+  const seen = new Set();
+  allEntries.forEach(e => {
+    if (!e.speaker || seen.has(e.speaker)) return;
+    seen.add(e.speaker);
+    const g = groups[e.role] ? e.role : '其他';
+    groups[g].push(e);
+  });
+  const el = document.getElementById('contacts-body');
+  let html = '';
+  Object.keys(groups).forEach(role => {
+    if (!groups[role].length) return;
+    html += `<div class="contact-sec">${role} (${groups[role].length})</div>`;
+    groups[role].forEach(e => {
+      const col = ROLE_COLORS[role] || '#475569';
+      const shortName = e.speaker.replace(/\(.*\)/, '').slice(-2);
+      html += `
+        <div class="contact-item" onclick="openSpeakerHistory('${esc(e.speaker)}')">
+          <div class="msg-ava" style="background:${col}">${esc(shortName)}</div>
+          <div>
+            <div style="font-size:15px;font-weight:500;">${esc(e.speaker)}</div>
+            <div style="font-size:12px;color:#888;">点击查看 TA 在大群/小群/朋友圈的全部发言</div>
+          </div>
+        </div>`;
+    });
+  });
+  el.innerHTML = html || `<div style="padding:36px;text-align:center;color:#999;font-size:13px;">等待 Agent 发言后自动生成活跃花名册</div>`;
+}
+
+function updateControlUI() {
+  const btns = [document.getElementById('list-ctrl-btn'), document.getElementById('chat-ctrl-btn')];
+  btns.forEach(b => {
+    if (!b) return;
+    b.className = 'mini-ctrl ' + (remoteRunning ? 'running' : 'stopped');
+    b.textContent = remoteRunning ? '⏹ 停止' : '▶ 启动';
+  });
+  const badge = document.getElementById('remote-badge');
+  const big = document.getElementById('big-ctrl-btn');
+  const ts = document.getElementById('remote-ts');
+  if (badge) {
+    badge.className = 'r-badge ' + (remoteRunning ? 'on' : 'off');
+    badge.textContent = remoteRunning ? '● 运行中' : '○ 已停止';
+  }
+  if (big) {
+    big.className = 'big-switch-btn ' + (remoteRunning ? 'stop' : 'start');
+    big.textContent = remoteRunning ? '⏹ 一键停止全部 Agent（省额度休息）' : '▶ 一键启动全部 Agent 聊天';
+  }
+  if (ts) {
+    ts.textContent = remoteUpdatedAt ? ('最近切换：' + remoteUpdatedAt) : '已与云端控制表同步';
   }
 }
 
 async function toggleRemoteAgent() {
   let pin = getPin();
   if (!pin) {
-    pin = window.prompt('请输入远程控制口令：', '');
+    pin = window.prompt('请输入你的专属远程控制口令：', '');
     if (pin === null) return;
     pin = pin.trim();
     if (!pin) return;
@@ -524,9 +815,8 @@ async function toggleRemoteAgent() {
   }
   const nextRunning = !remoteRunning;
   const api = getApiUrl();
-  const btn = document.getElementById('btn-remote-ctrl');
-  btn.disabled = true;
-  btn.textContent = '同步中…';
+  const big = document.getElementById('big-ctrl-btn');
+  if (big) { big.disabled = true; big.textContent = '指令下发中…'; }
   try {
     const url = `${api}?action=set_control&running=${nextRunning ? 'true' : 'false'}&pin=${encodeURIComponent(pin)}&_t=${Date.now()}`;
     const res = await fetch(url);
@@ -536,20 +826,42 @@ async function toggleRemoteAgent() {
       alert('远程切换失败：' + (data.error || '未知错误'));
     } else {
       remoteRunning = !!(data.control && data.control.running);
-      document.getElementById('footer-status').textContent =
-        remoteRunning ? '已远程下发【启动】，电脑端将在 8 秒内恢复运行' : '已远程下发【停止】，电脑端将在 8 秒内暂停所有 Agent 与 API 调用';
+      remoteUpdatedAt = (data.control && data.control.updated_at) || '';
+      document.getElementById('chat-foot-txt').textContent = remoteRunning
+        ? '已下发【启动】，电脑端 8 秒内恢复'
+        : '已下发【停止】，电脑端 8 秒内暂停';
     }
   } catch (e) {
     alert('网络请求失败：' + e.message);
   } finally {
-    btn.disabled = false;
-    updateControlBtn();
+    if (big) big.disabled = false;
+    updateControlUI();
+  }
+}
+
+function saveRemoteConfig() {
+  const u = document.getElementById('cfg-url').value.trim();
+  const p = document.getElementById('cfg-pin').value.trim();
+  if (u) localStorage.setItem(LS_API, u);
+  if (p) localStorage.setItem(LS_PIN, p);
+  alert('已保存到本机浏览器');
+  fetchLatest(true);
+}
+
+function renderAll(forceScroll = false) {
+  renderChannelList();
+  renderChat(forceScroll);
+  if (currentTab === 'moments') renderMoments();
+  if (currentTab === 'contacts') renderContacts();
+  const mCount = getMomentMessages().length;
+  if (mCount > 0 && currentTab !== 'moments') {
+    document.getElementById('moments-dot').classList.add('show');
   }
 }
 
 async function fetchLatest(manual = false) {
   const api = getApiUrl();
-  const syncText = document.getElementById('sync-text');
+  const tag = document.getElementById('top-live-tag');
   try {
     const res = await fetch(`${api}?_t=${Date.now()}`);
     if (!res.ok) throw new Error('HTTP ' + res.status);
@@ -557,25 +869,23 @@ async function fetchLatest(manual = false) {
     if (data && data.ok) {
       if (data.control && typeof data.control.running === 'boolean') {
         remoteRunning = data.control.running;
-        updateControlBtn();
+        remoteUpdatedAt = data.control.updated_at || '';
+        updateControlUI();
       }
       if (Array.isArray(data.entries) && data.entries.length > 0) {
         allEntries = data.entries;
-        syncText.textContent = `实时在线 · ${allEntries.length}条`;
+        tag.textContent = `(在线 · ${allEntries.length})`;
       } else {
-        // 云端表格尚未写入任何新消息时，先展示静态兜底样本
         if (!allEntries.length) await loadFallback();
-        syncText.textContent = `云端已连通 · 等待新消息`;
+        tag.textContent = '(云端就绪)';
       }
-      renderChannelList();
-      renderChat(manual);
+      renderAll(manual);
       return;
     }
   } catch (_) {}
   await loadFallback();
-  syncText.textContent = '离线兜底模式';
-  renderChannelList();
-  renderChat(manual);
+  tag.textContent = '(静态兜底)';
+  renderAll(manual);
 }
 
 async function loadFallback() {
@@ -586,25 +896,7 @@ async function loadFallback() {
   } catch (_) {}
 }
 
-function openConfig() {
-  document.getElementById('cfg-url').value = getApiUrl();
-  document.getElementById('cfg-pin').value = getPin();
-  document.getElementById('cfg-modal').classList.add('open');
-}
-function closeConfig() {
-  document.getElementById('cfg-modal').classList.remove('open');
-}
-function saveConfig() {
-  const u = document.getElementById('cfg-url').value.trim();
-  const p = document.getElementById('cfg-pin').value.trim();
-  if (u) localStorage.setItem(LS_API, u);
-  if (p) localStorage.setItem(LS_PIN, p);
-  closeConfig();
-  fetchLatest(true);
-}
-
-selectChannel('ALL');
-updateControlBtn();
+updateControlUI();
 fetchLatest(true);
 setInterval(() => fetchLatest(false), 4000);
 </script>
