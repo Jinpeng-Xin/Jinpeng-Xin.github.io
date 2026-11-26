@@ -541,6 +541,11 @@ function getPin() { return localStorage.getItem(LS_PIN) || ''; }
 function esc(s) {
   return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
+function fmtTime(t) {
+  const s = String(t || '');
+  const m = s.match(/\b(\d{2}:\d{2})(?::\d{2})?\b/);
+  return m ? m[1] : s.slice(0, 8);
+}
 
 function setMobileMode(mode) {
   document.getElementById('wx-app').setAttribute('data-mobile-mode', mode);
@@ -625,7 +630,7 @@ function renderChannelList() {
     }
     const last = msgs.length ? msgs[msgs.length - 1] : null;
     const preview = last ? `${last.speaker.split('(')[0]}: ${last.text}` : ch.sub;
-    const tm = last ? last.time : '';
+    const tm = last ? fmtTime(last.time) : '';
     const active = (ch.id === currentChannel && !filterSpeaker) ? 'active' : '';
     const tag = ch.id === 'ALL' ? '' : (ch.priv ? '<span class="tag-pill tag-priv">私密</span>' : '<span class="tag-pill tag-pub">公开</span>');
     return `
@@ -689,7 +694,7 @@ function renderChat(forceScroll = false) {
             <span>${esc(m.speaker)}</span>
             <span class="r-chip" style="background:${col}">${esc(m.role || '成员')}</span>
             ${(currentChannel === 'ALL' || filterSpeaker) ? `<span class="c-chip">${esc(chanName)}</span>` : ''}
-            <span>${esc(m.time || '')}</span>
+            <span>${esc(fmtTime(m.time))}</span>
           </div>
           <div class="bubble">
             ${targetTxt ? `<span style="color:#576b95;margin-right:4px;">${esc(targetTxt)}</span>` : ''}${esc(m.text)}
@@ -730,7 +735,7 @@ function renderMoments() {
           <div class="m-text">${esc(m.text)}</div>
           ${m.location ? `<div class="m-loc">${esc(m.location)}</div>` : ''}
           <div class="m-meta">
-            <span>${esc(m.time || '刚刚')}</span>
+            <span>${esc(fmtTime(m.time) || '刚刚')}</span>
             <span>••</span>
           </div>
           <div class="m-interact">
