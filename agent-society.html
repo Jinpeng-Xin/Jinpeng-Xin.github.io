@@ -777,23 +777,43 @@ function renderLife() {
 
   const p = state.me;
   const st = p.stats || {};
+  const initSt = p.initial_stats || st;
+  const curMonth = p.month || 1;
+  const maxMonths = p.max_months || 12;
+  const completedCount = p.year_completed ? maxMonths : Math.max(0, curMonth - 1);
   const statItems = [
-    ['财富', st.wealth || 50, '#d97706'],
-    ['健康', st.health || 75, '#059669'],
-    ['心情', st.happiness || 60, '#2563eb'],
-    ['声望', st.reputation || 40, '#6d28d9'],
-    ['运气', st.luck || 50, '#be185d']
+    ['财富', st.wealth || 50, '#d97706', (st.wealth || 50) - (initSt.wealth || 50)],
+    ['健康', st.health || 75, '#059669', (st.health || 75) - (initSt.health || 75)],
+    ['心情', st.happiness || 60, '#2563eb', (st.happiness || 60) - (initSt.happiness || 60)],
+    ['声望', st.reputation || 40, '#6d28d9', (st.reputation || 40) - (initSt.reputation || 40)],
+    ['运气', st.luck || 50, '#be185d', (st.luck || 50) - (initSt.luck || 50)]
   ];
+
+  const monthSegs = Array.from({ length: maxMonths }, (_, i) => {
+    const done = i < completedCount;
+    const active = !p.year_completed && i === curMonth - 1;
+    const bg = done ? '#07c160' : (active ? '#95ec69' : '#e5e7eb');
+    return `<div style="flex:1;height:5px;border-radius:3px;background:${bg}"></div>`;
+  }).join('');
 
   let eventHtml = '';
   if (lastOutcome) {
-    eventHtml += `<div class="outcome-box"><b>抉择结果：</b>${esc(lastOutcome)}</div>`;
+    eventHtml += `<div class="outcome-box"><b>本月抉择结果：</b>${esc(lastOutcome)}</div>`;
   }
-  if (p.pending_event) {
+  if (p.year_completed && p.year_summary) {
+    const ys = p.year_summary;
+    eventHtml += `
+      <div class="card event-card">
+        <span class="ev-cat">年度终章 · 12 / 12 月</span>
+        <div class="ev-title">${esc(ys.headline || '这一年的答卷')}</div>
+        <div class="ev-scene">${esc(ys.epilogue || '')}</div>
+        <button class="btn-big btn-green" onclick="registerPlayer(true)">开启下一段一年人生剧本</button>
+      </div>`;
+  } else if (p.pending_event) {
     const ev = p.pending_event;
     eventHtml += `
       <div class="card event-card">
-        <span class="ev-cat">${esc(ev.category || '抉择')}</span>
+        <span class="ev-cat">第 ${ev.month || curMonth} 月 · ${esc(ev.category || '抉择')}</span>
         <div class="ev-title">${esc(ev.title)}</div>
         <div class="ev-scene">${esc(ev.scene)}</div>
         <div class="choice-list">
@@ -805,16 +825,17 @@ function renderLife() {
         </div>
       </div>`;
   } else {
+    const btnLbl = curMonth >= maxMonths ? `进入第 ${maxMonths} 月 · 岁末终章` : `推进至第 ${curMonth} 月（共 ${maxMonths} 月）`;
     eventHtml += `
       <div class="card">
-        <button class="btn-big btn-green" id="btn-advance" onclick="advanceLife()">推进人生 · 遭遇新事件</button>
-        <p style="font-size:12px;color:#888;margin-top:8px;text-align:center;">推进过程中会遇到学业、感情、职业抉择，并可能结识新朋友或受邀加入小群</p>
+        <button class="btn-big btn-green" id="btn-advance" onclick="advanceLife()">${btnLbl}</button>
+        <p style="font-size:12px;color:#888;margin-top:8px;text-align:center;">为期一年的连续剧本：每个月的抉择都会延续影响后续剧情与人际关系</p>
       </div>`;
   }
 
   const histHtml = (p.history || []).slice().reverse().map(h => `
     <div class="tl-item">
-      <div class="tl-age">${h.age}岁 · ${esc(h.time || '')}${h.title ? ' · ' + esc(h.title) : ''}</div>
+      <div class="tl-age">${h.month ? ('第 ' + h.month + ' 月') : '年初开篇'} · ${esc(h.time || '')}${h.title ? ' · ' + esc(h.title) : ''}</div>
       <div class="tl-txt">${h.choice ? `<span style="color:#07c160;font-weight:600;">[${esc(h.choice)}]</span> ` : ''}${esc(h.text)}</div>
     </div>`).join('');
 
@@ -822,10 +843,17 @@ function renderLife() {
     <div class="card">
       <div class="profile-head">
         <div class="p-ava" style="background:${colorOf(p.name)}">${esc(p.name.slice(0,2))}</div>
-        <div>
+        <div style="flex:1;min-width:0;">
           <div class="p-name">${esc(p.name)} <span style="font-size:13px;font-weight:400;color:#666;">${esc(p.gender)} · ${p.age}岁</span></div>
           <div class="p-sub">${esc(p.city)} · ${esc(p.job)}</div>
         </div>
+      </div>
+      <div style="margin-bottom:12px;">
+        <div style="display:flex;justify-content:space-between;font-size:11.5px;color:#666;margin-bottom:5px;">
+          <span>一年人生剧本进度</span>
+          <b>${p.year_completed ? '已完成 12 / 12 月' : `第 ${curMonth} / ${maxMonths} 月`}</b>
+        </div>
+        <div style="display:flex;gap:3px;">${monthSegs}</div>
       </div>
       <div class="meta-grid">
         <div class="meta-cell"><span>民族</span><b>${esc(p.ethnicity)}</b></div>
@@ -836,10 +864,10 @@ function renderLife() {
         <div class="meta-cell"><span>感情</span><b>${esc(p.relationship)}</b></div>
       </div>
       <div class="stats-grid">
-        ${statItems.map(([k, v, c]) => `
+        ${statItems.map(([k, v, c, d]) => `
           <div class="stat-box">
             <div class="s-lbl">${k}</div>
-            <div class="s-val">${v}</div>
+            <div class="s-val">${v}${d ? `<span style="font-size:10px;color:${d>0?'#059669':'#dc2626'};margin-left:1px;">${d>0?'+'+d:d}</span>` : ''}</div>
             <div class="stat-bar"><div class="stat-fill" style="width:${v}%;background:${c}"></div></div>
           </div>`).join('')}
       </div>
@@ -847,8 +875,8 @@ function renderLife() {
     ${eventHtml}
     <div class="card">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-        <b style="font-size:15px;">人生轨迹</b>
-        <button class="btn-ghost" onclick="registerPlayer(true)">重开一世</button>
+        <b style="font-size:15px;">这一年的轨迹</b>
+        <button class="btn-ghost" onclick="registerPlayer(true)">重开一年</button>
       </div>
       ${histHtml}
     </div>`;
