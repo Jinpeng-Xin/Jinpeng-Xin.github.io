@@ -5,158 +5,114 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#ededed">
-<title>微信 · X-PHS 32-Agent 社会</title>
+<title>微信 · 全球随机人生与实时社会</title>
 <style>
   :root {
     --rail-bg: #2e2e2e;
-    --wx-nav-bg: #ededed;
-    --wx-tab-bg: #f7f7f7;
-    --wx-chat-bg: #ededed;
+    --wx-nav: #ededed;
+    --wx-tab: #f7f7f7;
+    --wx-bg: #ededed;
     --wx-white: #ffffff;
     --wx-border: #e5e5e5;
-    --bubble-self: #95ec69;
+    --bubble-me: #95ec69;
     --bubble-other: #ffffff;
     --text-main: #181818;
     --text-sub: #888888;
     --wx-green: #07c160;
     --wx-blue: #576b95;
     --wx-red: #fa5151;
-    --safe-bottom: env(safe-area-inset-bottom, 0px);
+    --safe-b: env(safe-area-inset-bottom, 0px);
   }
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   html, body {
     height: 100%; width: 100%;
     font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
-    background: #d8d8d8;
-    color: var(--text-main);
-    overflow: hidden;
+    background: #d8d8d8; color: var(--text-main); overflow: hidden;
   }
 
   .wx-app {
-    display: flex;
-    height: 100vh;
-    height: 100dvh;
-    width: 100vw;
-    max-width: 1280px;
-    margin: 0 auto;
-    background: var(--wx-chat-bg);
-    box-shadow: 0 12px 40px rgba(0,0,0,0.18);
+    display: flex; height: 100vh; height: 100dvh; width: 100vw; max-width: 1280px;
+    margin: 0 auto; background: var(--wx-bg); box-shadow: 0 12px 40px rgba(0,0,0,0.18);
     position: relative;
   }
 
-  /* 桌面端左侧微信深色边栏 */
+  /* 桌面端左侧深色边栏 */
   .wx-rail {
-    width: 60px;
-    background: var(--rail-bg);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 18px 0 16px;
-    gap: 16px;
-    flex-shrink: 0;
+    width: 62px; background: var(--rail-bg); display: flex; flex-direction: column;
+    align-items: center; padding: 18px 0 16px; gap: 16px; flex-shrink: 0;
   }
   .rail-ava {
     width: 38px; height: 38px; border-radius: 6px;
     background: linear-gradient(135deg, #07c160, #059669);
     color: #fff; font-weight: 700; font-size: 13px;
-    display: flex; align-items: center; justify-content: center;
+    display: flex; align-items: center; justify-content: center; cursor: pointer;
   }
   .rail-btn {
-    width: 40px; height: 40px; border-radius: 6px;
-    border: none; background: transparent; color: #9c9c9c;
-    font-size: 19px; cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    position: relative;
+    width: 40px; height: 40px; border-radius: 6px; border: none; background: transparent;
+    color: #9c9c9c; font-size: 20px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; position: relative;
   }
   .rail-btn.active, .rail-btn:hover { color: var(--wx-green); background: rgba(255,255,255,0.08); }
   .rail-spacer { flex: 1; }
 
-  /* 中间列表栏（微信列表 / 通讯录） */
+  /* 左侧列表栏（微信会话列表） */
   .wx-sidebar {
-    width: 280px;
-    background: #f7f7f7;
-    border-right: 1px solid #dcdcdc;
-    display: flex;
-    flex-direction: column;
-    flex-shrink: 0;
+    width: 290px; background: #f7f7f7; border-right: 1px solid #dcdcdc;
+    display: flex; flex-direction: column; flex-shrink: 0;
   }
   .wx-topbar {
-    height: 50px;
-    padding: 0 14px;
-    background: var(--wx-nav-bg);
+    height: 50px; padding: 0 14px; background: var(--wx-nav);
     border-bottom: 1px solid var(--wx-border);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
   }
   .wx-topbar-title { font-size: 16px; font-weight: 600; color: #111; }
-  .wx-topbar-sub { font-size: 11px; color: var(--text-sub); }
-  .search-wrap {
-    padding: 8px 10px;
-    background: var(--wx-nav-bg);
-    border-bottom: 1px solid var(--wx-border);
+  .top-actions { display: flex; align-items: center; gap: 8px; }
+  .icon-btn {
+    border: none; background: transparent; font-size: 17px; cursor: pointer;
+    padding: 4px 6px; border-radius: 6px; color: #222;
   }
+  .icon-btn:active { background: rgba(0,0,0,0.08); }
+  .search-wrap { padding: 8px 10px; background: var(--wx-nav); border-bottom: 1px solid var(--wx-border); }
   .search-wrap input {
     width: 100%; height: 32px; border: none; border-radius: 6px;
-    background: #ffffff; padding: 0 10px; font-size: 13px; outline: none;
+    background: #fff; padding: 0 10px; font-size: 13px; outline: none;
   }
-  .list-scroll { flex: 1; overflow-y: auto; background: #fff; }
+  .list-scroll { flex: 1; overflow-y: auto; background: #fff; -webkit-overflow-scrolling: touch; }
   .chat-row {
-    display: flex; align-items: center; gap: 12px;
-    padding: 12px 14px; cursor: pointer;
-    border-bottom: 1px solid #f0f0f0;
-    background: #fff;
+    display: flex; align-items: center; gap: 12px; padding: 12px 14px;
+    cursor: pointer; border-bottom: 1px solid #f0f0f0; background: #fff;
   }
   .chat-row:active, .chat-row:hover { background: #f2f2f2; }
   .chat-row.active { background: #e6e6e6; }
   .row-ava {
     width: 46px; height: 46px; border-radius: 6px;
     display: flex; align-items: center; justify-content: center;
-    font-size: 20px; color: #fff; flex-shrink: 0; position: relative;
+    font-size: 20px; color: #fff; flex-shrink: 0; position: relative; font-weight: 600;
   }
   .row-badge {
-    position: absolute; top: -5px; right: -5px;
-    min-width: 18px; height: 18px; padding: 0 5px;
-    border-radius: 999px; background: var(--wx-red); color: #fff;
-    font-size: 11px; font-weight: 600;
-    display: flex; align-items: center; justify-content: center;
+    position: absolute; top: -5px; right: -5px; min-width: 18px; height: 18px;
+    padding: 0 5px; border-radius: 999px; background: var(--wx-red); color: #fff;
+    font-size: 11px; font-weight: 600; display: flex; align-items: center; justify-content: center;
   }
   .row-main { flex: 1; min-width: 0; }
   .row-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
   .row-name { font-size: 15px; font-weight: 500; color: #111; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .row-time { font-size: 11px; color: #b2b2b2; flex-shrink: 0; margin-left: 8px; }
   .row-sub { font-size: 12.5px; color: var(--text-sub); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .tag-pill {
-    display: inline-block; font-size: 10px; padding: 0 4px; border-radius: 3px;
-    margin-right: 4px; vertical-align: 1px;
-  }
+  .tag-pill { display: inline-block; font-size: 10px; padding: 0 4px; border-radius: 3px; margin-right: 4px; vertical-align: 1px; }
   .tag-pub { background: #e0f2fe; color: #0369a1; }
   .tag-priv { background: #fee2e2; color: #b91c1c; }
+  .tag-dm { background: #ede9fe; color: #6d28d9; }
 
-  /* 右侧主内容区（聊天 / 朋友圈 / 通讯录详情 / 遥控面板） */
-  .wx-stage {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-    background: var(--wx-chat-bg);
-    position: relative;
-  }
+  /* 右侧主内容舞台 */
+  .wx-stage { flex: 1; display: flex; flex-direction: column; min-width: 0; background: var(--wx-bg); position: relative; }
   .view-pane { display: none; flex-direction: column; flex: 1; min-height: 0; }
   .view-pane.active { display: flex; }
 
-  /* 聊天窗顶部 */
   .chat-hdr {
-    height: 50px;
-    padding: 0 14px;
-    background: var(--wx-nav-bg);
+    height: 50px; padding: 0 14px; background: var(--wx-nav);
     border-bottom: 1px solid var(--wx-border);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-shrink: 0;
   }
   .hdr-l { display: flex; align-items: center; gap: 6px; min-width: 0; }
   .back-btn {
@@ -165,187 +121,217 @@
   }
   .hdr-name { font-size: 16px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .hdr-r { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-  .mini-ctrl {
-    border: none; border-radius: 999px; padding: 5px 11px;
-    font-size: 12px; font-weight: 600; cursor: pointer;
-    display: inline-flex; align-items: center; gap: 4px;
+  .status-pill {
+    font-size: 11px; padding: 3px 9px; border-radius: 999px; font-weight: 600; cursor: pointer; border: none;
   }
-  .mini-ctrl.running { background: #fee2e2; color: #b91c1c; }
-  .mini-ctrl.stopped { background: #dcfce7; color: #15803d; }
+  .status-pill.on { background: #dcfce7; color: #15803d; }
+  .status-pill.off { background: #fee2e2; color: #b91c1c; }
 
   /* 聊天气泡区 */
   .chat-scroll {
-    flex: 1;
-    overflow-y: auto;
-    padding: 14px 14px 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-    background: var(--wx-chat-bg);
-    -webkit-overflow-scrolling: touch;
+    flex: 1; overflow-y: auto; padding: 14px 14px 18px;
+    display: flex; flex-direction: column; gap: 14px;
+    background: var(--wx-bg); -webkit-overflow-scrolling: touch;
   }
   .sys-tip {
-    align-self: center;
-    background: rgba(0,0,0,0.06);
-    color: #666; font-size: 11.5px;
-    padding: 4px 12px; border-radius: 5px;
-    text-align: center; max-width: 90%;
+    align-self: center; background: rgba(0,0,0,0.06); color: #666;
+    font-size: 11.5px; padding: 4px 12px; border-radius: 5px;
+    text-align: center; max-width: 92%; line-height: 1.45;
   }
   .msg-item { display: flex; align-items: flex-start; gap: 9px; max-width: 86%; }
   .msg-item.right { align-self: flex-end; flex-direction: row-reverse; }
   .msg-ava {
-    width: 40px; height: 40px; border-radius: 5px;
-    color: #fff; font-size: 13px; font-weight: 600;
-    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    width: 40px; height: 40px; border-radius: 5px; color: #fff; font-size: 13px; font-weight: 600;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0; cursor: pointer;
   }
   .msg-col { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
   .msg-item.right .msg-col { align-items: flex-end; }
   .msg-who { font-size: 11px; color: #888; display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
   .r-chip { font-size: 10px; color: #fff; padding: 0 5px; border-radius: 3px; line-height: 16px; }
-  .c-chip { font-size: 10px; color: #555; background: #e0e0e0; padding: 0 5px; border-radius: 3px; line-height: 16px; }
   .bubble {
-    padding: 9px 12px;
-    border-radius: 6px;
-    font-size: 15px;
-    line-height: 1.5;
-    word-break: break-word;
-    position: relative;
-    box-shadow: 0 1px 1px rgba(0,0,0,0.04);
+    padding: 9px 12px; border-radius: 6px; font-size: 15px; line-height: 1.5;
+    word-break: break-word; box-shadow: 0 1px 1px rgba(0,0,0,0.04);
   }
   .msg-item.left .bubble { background: var(--bubble-other); color: #111; }
-  .msg-item.right .bubble { background: var(--bubble-self); color: #111; }
+  .msg-item.right .bubble { background: var(--bubble-me); color: #111; }
+  .reply-tag {
+    display: inline-block; font-size: 12px; color: var(--wx-blue);
+    margin-right: 4px; font-weight: 500;
+  }
   .bubble-loc { margin-top: 4px; font-size: 11px; color: rgba(0,0,0,0.42); }
-  .chat-input-bar {
-    height: 46px; padding: 0 12px;
-    background: #f7f7f7; border-top: 1px solid var(--wx-border);
-    display: flex; align-items: center; justify-content: space-between;
-    font-size: 12px; color: #777; flex-shrink: 0;
-  }
 
-  /* ================= 朋友圈 Moments 视图 ================= */
-  .moments-scroll {
-    flex: 1; overflow-y: auto; background: #ffffff;
-    -webkit-overflow-scrolling: touch;
+  /* 微信真实聊天输入栏 */
+  .chat-composer {
+    padding: 8px 10px calc(8px + var(--safe-b));
+    background: #f7f7f7; border-top: 1px solid var(--wx-border);
+    display: flex; align-items: center; gap: 8px; flex-shrink: 0;
   }
+  .chat-composer input {
+    flex: 1; height: 38px; border: 1px solid #e2e2e2; border-radius: 6px;
+    background: #fff; padding: 0 12px; font-size: 15px; outline: none;
+  }
+  .chat-composer input:focus { border-color: var(--wx-green); }
+  .send-btn {
+    height: 38px; padding: 0 16px; border: none; border-radius: 6px;
+    background: var(--wx-green); color: #fff; font-size: 14px; font-weight: 600;
+    cursor: pointer; flex-shrink: 0;
+  }
+  .send-btn:disabled { opacity: 0.55; }
+
+  /* ================= 全球随机人生面板 ================= */
+  .life-scroll {
+    flex: 1; overflow-y: auto; padding: 14px 14px 28px;
+    background: #ededed; -webkit-overflow-scrolling: touch;
+    display: flex; flex-direction: column; gap: 12px;
+  }
+  .card {
+    background: #fff; border-radius: 10px; padding: 16px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+  }
+  .hero-title { font-size: 18px; font-weight: 700; margin-bottom: 6px; color: #111; }
+  .hero-desc { font-size: 13.5px; color: #555; line-height: 1.6; margin-bottom: 14px; }
+  .input-row { display: flex; gap: 8px; margin-bottom: 12px; }
+  .input-row input {
+    flex: 1; height: 42px; padding: 0 12px; border: 1px solid #d4d4d4;
+    border-radius: 8px; font-size: 14.5px; outline: none;
+  }
+  .btn-big {
+    width: 100%; height: 46px; border: none; border-radius: 8px;
+    font-size: 15.5px; font-weight: 600; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .btn-green { background: var(--wx-green); color: #fff; }
+  .btn-dark { background: #1e293b; color: #fff; }
+  .btn-ghost { background: #f3f4f6; color: #374151; border: 1px solid #e5e7eb; height: 38px; font-size: 13.5px; }
+  .btn-big:disabled { opacity: 0.55; }
+
+  .profile-head { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+  .p-ava {
+    width: 54px; height: 54px; border-radius: 8px; background: linear-gradient(135deg, #07c160, #0284c7);
+    color: #fff; font-size: 18px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .p-name { font-size: 17px; font-weight: 700; color: #111; }
+  .p-sub { font-size: 12.5px; color: #666; margin-top: 2px; line-height: 1.4; }
+  .meta-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;
+    margin-bottom: 12px; font-size: 12.5px;
+  }
+  .meta-cell { background: #f8fafc; border: 1px solid #eef2f6; border-radius: 6px; padding: 7px 9px; }
+  .meta-cell span { display: block; font-size: 11px; color: #888; margin-bottom: 2px; }
+  .meta-cell b { color: #1e293b; font-weight: 600; }
+  .traits-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+  .trait-chip { font-size: 11.5px; background: #eff6ff; color: #1d4ed8; padding: 3px 8px; border-radius: 999px; }
+
+  .stats-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; text-align: center; }
+  .stat-box { background: #f9fafb; border-radius: 6px; padding: 6px 4px; }
+  .stat-box .s-lbl { font-size: 11px; color: #777; }
+  .stat-box .s-val { font-size: 15px; font-weight: 700; color: #111; margin: 2px 0; }
+  .stat-bar { height: 4px; background: #e5e7eb; border-radius: 2px; overflow: hidden; }
+  .stat-fill { height: 100%; background: var(--wx-green); }
+
+  /* 人生关键抉择卡片 */
+  .event-card { border-left: 4px solid #07c160; }
+  .ev-cat {
+    display: inline-block; font-size: 11px; font-weight: 600;
+    background: #dcfce7; color: #15803d; padding: 2px 8px; border-radius: 999px; margin-bottom: 6px;
+  }
+  .ev-title { font-size: 16.5px; font-weight: 700; margin-bottom: 8px; color: #111; }
+  .ev-scene { font-size: 14px; line-height: 1.65; color: #333; margin-bottom: 12px; }
+  .choice-list { display: flex; flex-direction: column; gap: 8px; }
+  .choice-btn {
+    text-align: left; padding: 11px 12px; border-radius: 8px;
+    border: 1px solid #dcdcdc; background: #fafafa; cursor: pointer;
+    transition: border-color .15s, background .15s;
+  }
+  .choice-btn:active, .choice-btn:hover { border-color: var(--wx-green); background: #f0fdf4; }
+  .choice-btn b { display: block; font-size: 14px; color: #111; margin-bottom: 2px; }
+  .choice-btn span { font-size: 12px; color: #777; }
+  .outcome-box {
+    background: #fefce8; border: 1px solid #fde047; border-radius: 8px;
+    padding: 12px; font-size: 13.5px; line-height: 1.6; color: #422006; margin-bottom: 10px;
+  }
+  .tl-item {
+    border-left: 2px solid #e5e7eb; padding: 0 0 12px 12px; margin-left: 6px; position: relative;
+  }
+  .tl-item::before {
+    content: ""; position: absolute; left: -5px; top: 4px; width: 8px; height: 8px;
+    border-radius: 50%; background: var(--wx-green);
+  }
+  .tl-age { font-size: 11.5px; color: #888; margin-bottom: 2px; }
+  .tl-txt { font-size: 13.5px; color: #222; line-height: 1.55; }
+
+  /* ================= 朋友圈 Moments ================= */
+  .moments-scroll { flex: 1; overflow-y: auto; background: #fff; -webkit-overflow-scrolling: touch; }
   .moments-cover {
-    height: 210px;
-    background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 55%, #0f766e 100%);
-    position: relative;
-    margin-bottom: 34px;
-    display: flex; align-items: flex-end; justify-content: flex-end;
-    padding: 16px;
+    height: 195px; background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 55%, #0f766e 100%);
+    position: relative; margin-bottom: 34px;
   }
   .moments-cover::before {
-    content: "X-PHS 8km · 上海数字孪生";
-    position: absolute; top: 18px; left: 16px;
-    font-size: 12px; letter-spacing: 1px; color: rgba(255,255,255,0.72);
+    content: "WORLD SOCIETY · 全球实时朋友圈";
+    position: absolute; top: 16px; left: 16px; font-size: 12px; letter-spacing: 1px; color: rgba(255,255,255,0.75);
   }
-  .cover-user {
-    position: absolute; right: 16px; bottom: -22px;
-    display: flex; align-items: center; gap: 12px;
-  }
-  .cover-name {
-    color: #fff; font-size: 16px; font-weight: 600;
-    text-shadow: 0 1px 4px rgba(0,0,0,0.45);
-    margin-bottom: 18px;
-  }
+  .cover-user { position: absolute; right: 16px; bottom: -22px; display: flex; align-items: center; gap: 12px; }
+  .cover-name { color: #fff; font-size: 16px; font-weight: 600; text-shadow: 0 1px 4px rgba(0,0,0,0.45); margin-bottom: 18px; }
   .cover-ava {
-    width: 64px; height: 64px; border-radius: 8px;
-    background: linear-gradient(135deg, #07c160, #059669);
-    border: 2px solid #fff;
-    color: #fff; font-weight: 700; font-size: 18px;
+    width: 62px; height: 62px; border-radius: 8px; background: linear-gradient(135deg, #07c160, #0284c7);
+    border: 2px solid #fff; color: #fff; font-weight: 700; font-size: 17px;
     display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.16);
   }
-  .moment-card {
-    display: flex; gap: 11px;
-    padding: 14px 16px 16px;
-    border-bottom: 1px solid #f0f0f0;
-  }
+  .moment-card { display: flex; gap: 11px; padding: 14px 16px 16px; border-bottom: 1px solid #f0f0f0; }
   .m-ava {
-    width: 42px; height: 42px; border-radius: 6px;
-    color: #fff; font-size: 14px; font-weight: 600;
+    width: 42px; height: 42px; border-radius: 6px; color: #fff; font-size: 14px; font-weight: 600;
     display: flex; align-items: center; justify-content: center; flex-shrink: 0;
   }
   .m-body { flex: 1; min-width: 0; }
-  .m-name {
-    font-size: 15px; font-weight: 600; color: var(--wx-blue);
-    display: flex; align-items: center; gap: 6px; margin-bottom: 5px;
-  }
-  .m-text { font-size: 15px; line-height: 1.55; color: #181818; margin-bottom: 8px; word-break: break-word; }
+  .m-name { font-size: 15px; font-weight: 600; color: var(--wx-blue); display: flex; align-items: center; gap: 6px; margin-bottom: 5px; flex-wrap: wrap; }
+  .m-text { font-size: 15px; line-height: 1.55; color: #181818; margin-bottom: 7px; word-break: break-word; }
   .m-loc { font-size: 12px; color: var(--wx-blue); margin-bottom: 6px; }
-  .m-meta {
-    display: flex; align-items: center; justify-content: space-between;
-    font-size: 12px; color: #a0a0a0; margin-bottom: 8px;
+  .m-meta { display: flex; align-items: center; justify-content: space-between; font-size: 12px; color: #a0a0a0; margin-bottom: 8px; }
+  .m-actions { display: flex; gap: 8px; }
+  .m-act-btn {
+    border: none; background: #f3f4f6; color: #555; padding: 3px 9px;
+    border-radius: 4px; font-size: 12px; cursor: pointer;
   }
-  .m-interact {
-    background: #f7f7f7; border-radius: 4px;
-    padding: 7px 10px; font-size: 13px; line-height: 1.5;
-  }
+  .m-interact { background: #f7f7f7; border-radius: 4px; padding: 7px 10px; font-size: 13px; line-height: 1.5; }
   .m-likes { color: var(--wx-blue); font-weight: 500; }
-  .m-comment {
-    margin-top: 5px; padding-top: 5px; border-top: 1px solid #ececec;
-    color: #222;
-  }
-  .m-comment b { color: var(--wx-blue); font-weight: 600; }
+  .m-cmt { margin-top: 4px; padding-top: 4px; border-top: 1px solid #ececec; color: #222; }
+  .m-cmt b { color: var(--wx-blue); font-weight: 600; }
 
-  /* ================= 通讯录花名册视图 ================= */
-  .contacts-scroll { flex: 1; overflow-y: auto; background: #f7f7f7; }
-  .contact-sec {
-    padding: 6px 14px; font-size: 12px; color: #888; background: #ededed;
-  }
+  /* ================= 通讯录 ================= */
+  .contacts-scroll { flex: 1; overflow-y: auto; background: #f7f7f7; -webkit-overflow-scrolling: touch; }
+  .contact-sec { padding: 6px 14px; font-size: 12px; color: #888; background: #ededed; }
   .contact-item {
-    display: flex; align-items: center; gap: 12px;
-    padding: 10px 14px; background: #fff; border-bottom: 1px solid #f2f2f2;
-    cursor: pointer;
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    padding: 11px 14px; background: #fff; border-bottom: 1px solid #f2f2f2; cursor: pointer;
   }
-  .contact-item:active { background: #f2f2f2; }
-
-  /* ================= 手机端远程遥控面板 ================= */
-  .remote-wrap {
-    flex: 1; overflow-y: auto; padding: 18px 16px 30px;
-    background: #ededed; display: flex; flex-direction: column; gap: 14px;
-  }
-  .r-card {
-    background: #fff; border-radius: 10px; padding: 18px 16px;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
-  }
-  .r-status-row {
-    display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;
-  }
-  .r-badge {
-    font-size: 14px; font-weight: 700; padding: 4px 12px; border-radius: 999px;
-  }
-  .r-badge.on { background: #dcfce7; color: #15803d; }
-  .r-badge.off { background: #fee2e2; color: #b91c1c; }
-  .big-switch-btn {
-    width: 100%; height: 48px; border: none; border-radius: 8px;
-    font-size: 16px; font-weight: 600; cursor: pointer;
-    transition: opacity .15s;
-  }
-  .big-switch-btn:active { opacity: 0.85; }
-  .big-switch-btn.stop { background: var(--wx-red); color: #fff; }
-  .big-switch-btn.start { background: var(--wx-green); color: #fff; }
-  .r-field { margin-top: 12px; }
-  .r-field label { display: block; font-size: 12.5px; color: #666; margin-bottom: 5px; }
-  .r-field input {
-    width: 100%; height: 40px; padding: 0 12px;
-    border: 1px solid #dcdcdc; border-radius: 6px; font-size: 14px;
-  }
-  .r-save-btn {
-    margin-top: 12px; width: 100%; height: 42px;
-    background: #181818; color: #fff; border: none; border-radius: 7px;
-    font-size: 14px; font-weight: 600; cursor: pointer;
+  .contact-l { display: flex; align-items: center; gap: 11px; min-width: 0; }
+  .dm-pill {
+    font-size: 12px; background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0;
+    padding: 4px 10px; border-radius: 999px; flex-shrink: 0; font-weight: 600;
   }
 
-  /* ================= 手机端微信底部 Tab 栏 ================= */
+  /* 弹窗（发朋友圈 / 遥控） */
+  .modal-mask {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.45);
+    display: none; align-items: center; justify-content: center; z-index: 99; padding: 16px;
+  }
+  .modal-mask.open { display: flex; }
+  .modal-box {
+    width: 420px; max-width: 100%; background: #fff; border-radius: 10px;
+    padding: 18px; box-shadow: 0 16px 40px rgba(0,0,0,0.22);
+  }
+  .modal-box h3 { font-size: 16px; margin-bottom: 8px; }
+  .modal-box textarea, .modal-box input {
+    width: 100%; padding: 9px 11px; border: 1px solid #d4d4d4; border-radius: 6px;
+    font-size: 14px; margin-bottom: 10px; font-family: inherit;
+  }
+  .modal-actions { display: flex; justify-content: flex-end; gap: 8px; }
+
+  /* 手机端原生微信底部 4 Tab */
   .wx-bottom-tabs {
-    display: none;
-    height: calc(56px + var(--safe-bottom));
-    padding-bottom: var(--safe-bottom);
-    background: var(--wx-tab-bg);
-    border-top: 1px solid #dcdcdc;
-    flex-shrink: 0;
+    display: none; height: calc(56px + var(--safe-b)); padding-bottom: var(--safe-b);
+    background: var(--wx-tab); border-top: 1px solid #dcdcdc; flex-shrink: 0;
   }
   .tab-btn {
     flex: 1; border: none; background: transparent;
@@ -354,30 +340,19 @@
   }
   .tab-btn .t-ic { font-size: 21px; line-height: 1.1; }
   .tab-btn.active { color: var(--wx-green); font-weight: 600; }
-  .tab-dot {
-    position: absolute; top: 5px; right: calc(50% - 18px);
-    width: 8px; height: 8px; border-radius: 50%; background: var(--wx-red);
-    display: none;
-  }
-  .tab-dot.show { display: block; }
 
-  /* ================= 手机端完整原生微信适配 ================= */
   @media (max-width: 768px) {
     .wx-app { flex-direction: column; max-width: 100%; box-shadow: none; }
     .wx-rail { display: none; }
     .wx-sidebar { width: 100%; flex: 1; border-right: none; min-height: 0; }
     .wx-stage { width: 100%; flex: 1; min-height: 0; }
     .wx-bottom-tabs { display: flex; }
-
-    /* 手机端导航状态机：在聊天详情内隐藏列表与底部 Tab；在列表/朋友圈/通讯录/遥控显示底部 Tab */
     .wx-app[data-mobile-mode="list"] .wx-stage { display: none; }
     .wx-app[data-mobile-mode="list"] .wx-sidebar { display: flex; }
-
     .wx-app[data-mobile-mode="chat"] .wx-sidebar { display: none; }
     .wx-app[data-mobile-mode="chat"] .wx-stage { display: flex; }
     .wx-app[data-mobile-mode="chat"] .wx-bottom-tabs { display: none; }
     .wx-app[data-mobile-mode="chat"] .back-btn { display: inline-block; }
-
     .wx-app[data-mobile-mode="tab"] .wx-sidebar { display: none; }
     .wx-app[data-mobile-mode="tab"] .wx-stage { display: flex; }
   }
@@ -385,525 +360,701 @@
 </head>
 <body>
 <div class="wx-app" id="wx-app" data-mobile-mode="list">
-  <!-- 桌面端左侧微信边栏 -->
+  <!-- 桌面端左侧微信深色栏 -->
   <aside class="wx-rail">
-    <div class="rail-ava">32A</div>
-    <button class="rail-btn active" id="rail-chats" title="微信群聊" onclick="switchTab('chats')">💬</button>
+    <div class="rail-ava" id="rail-me-ava" title="我的人生" onclick="switchTab('life')">我</div>
+    <button class="rail-btn active" id="rail-chats" title="微信" onclick="switchTab('chats')">💬</button>
     <button class="rail-btn" id="rail-contacts" title="通讯录" onclick="switchTab('contacts')">👥</button>
     <button class="rail-btn" id="rail-moments" title="朋友圈" onclick="switchTab('moments')">⭕</button>
+    <button class="rail-btn" id="rail-life" title="我的随机人生" onclick="switchTab('life')">🌍</button>
     <div class="rail-spacer"></div>
-    <button class="rail-btn" id="rail-remote" title="远程启停控制" onclick="switchTab('remote')">⚙</button>
+    <button class="rail-btn" title="管理员总控" onclick="openAdminModal()">⚙</button>
   </aside>
 
-  <!-- 微信群聊列表页 -->
+  <!-- 微信会话列表 -->
   <aside class="wx-sidebar">
     <div class="wx-topbar">
-      <div>
-        <div class="wx-topbar-title">微信 <span id="top-live-tag" style="font-size:11px;font-weight:500;color:#07c160;">(实时)</span></div>
+      <div class="wx-topbar-title">微信 <span id="top-badge" style="font-size:11px;font-weight:500;color:#07c160;">(阿里云在线)</span></div>
+      <div class="top-actions">
+        <button class="status-pill on" id="list-status-pill" onclick="openAdminModal()">● 运行中</button>
       </div>
-      <button class="mini-ctrl running" id="list-ctrl-btn" onclick="toggleRemoteAgent()">⏹ 停止</button>
     </div>
     <div class="search-wrap">
-      <input id="search-input" type="text" placeholder="🔍 搜索群聊、发言人或关键词" oninput="renderAll()">
+      <input id="search-input" type="text" placeholder="🔍 搜索群聊、好友或聊天记录" oninput="renderChatList()">
     </div>
     <div class="list-scroll" id="channel-list"></div>
   </aside>
 
-  <!-- 主展示舞台：聊天 / 朋友圈 / 通讯录 / 远程控制 -->
+  <!-- 主内容舞台 -->
   <main class="wx-stage">
-    <!-- 1. 聊天窗口 -->
+    <!-- 1. 聊天窗（群聊 + 私聊） -->
     <section class="view-pane active" id="pane-chat">
       <header class="chat-hdr">
         <div class="hdr-l">
           <button class="back-btn" onclick="backToList()">‹</button>
-          <div class="hdr-name" id="chat-title">城市建设工作总群(32)</div>
+          <div class="hdr-name" id="chat-title">世界广场大群</div>
         </div>
         <div class="hdr-r">
-          <button class="mini-ctrl running" id="chat-ctrl-btn" onclick="toggleRemoteAgent()">⏹ 停止</button>
+          <button class="status-pill on" id="chat-status-pill" onclick="openAdminModal()">● 在线</button>
         </div>
       </header>
       <div class="chat-scroll" id="chat-body"></div>
-      <div class="chat-input-bar">
-        <span id="chat-foot-txt">每 4 秒自动同步 · 实时旁观模式</span>
-        <button onclick="fetchLatest(true)" style="border:1px solid #d4d4d4;background:#fff;padding:4px 10px;border-radius:4px;font-size:12px;">刷新</button>
+      <div class="chat-composer">
+        <input id="msg-input" type="text" placeholder="说点什么，群友或对方会直接接话…" onkeydown="if(event.key==='Enter')sendMessage()">
+        <button class="send-btn" id="send-btn" onclick="sendMessage()">发送</button>
       </div>
     </section>
 
-    <!-- 2. 朋友圈 Moments -->
+    <!-- 2. 全球随机人生与关键抉择 -->
+    <section class="view-pane" id="pane-life">
+      <header class="chat-hdr">
+        <div class="hdr-l"><div class="hdr-name">🌍 我的随机人生</div></div>
+        <div class="hdr-r">
+          <button class="icon-btn" title="管理员控制" onclick="openAdminModal()">⚙</button>
+        </div>
+      </header>
+      <div class="life-scroll" id="life-body"></div>
+    </section>
+
+    <!-- 3. 朋友圈 Moments -->
     <section class="view-pane" id="pane-moments">
       <header class="chat-hdr">
         <div class="hdr-l"><div class="hdr-name">朋友圈</div></div>
         <div class="hdr-r">
-          <button onclick="fetchLatest(true)" style="border:none;background:transparent;font-size:14px;color:#07c160;font-weight:600;cursor:pointer;">刷新</button>
+          <button onclick="openMomentModal()" style="border:none;background:var(--wx-green);color:#fff;padding:5px 11px;border-radius:5px;font-size:12.5px;font-weight:600;cursor:pointer;">📷 发圈</button>
         </div>
       </header>
       <div class="moments-scroll" id="moments-body"></div>
     </section>
 
-    <!-- 3. 通讯录 -->
+    <!-- 4. 通讯录（AI 居民 + 真人玩家，点击直接私聊） -->
     <section class="view-pane" id="pane-contacts">
       <header class="chat-hdr">
-        <div class="hdr-l"><div class="hdr-name">通讯录 · 32 位城市居民</div></div>
+        <div class="hdr-l"><div class="hdr-name">通讯录 · 遇见世界的人</div></div>
+        <div class="hdr-r">
+          <button class="icon-btn" onclick="openAdminModal()">⚙</button>
+        </div>
       </header>
       <div class="contacts-scroll" id="contacts-body"></div>
     </section>
-
-    <!-- 4. 躺床上手机远程控制 -->
-    <section class="view-pane" id="pane-remote">
-      <header class="chat-hdr">
-        <div class="hdr-l"><div class="hdr-name">远程控制与设置</div></div>
-      </header>
-      <div class="remote-wrap">
-        <div class="r-card">
-          <div class="r-status-row">
-            <div>
-              <div style="font-size:15px;font-weight:600;">电脑端 32 Agent 运行状态</div>
-              <div id="remote-ts" style="font-size:12px;color:#888;margin-top:2px;">同步中…</div>
-            </div>
-            <span class="r-badge on" id="remote-badge">运行中</span>
-          </div>
-          <button class="big-switch-btn stop" id="big-ctrl-btn" onclick="toggleRemoteAgent()">⏹ 一键停止全部 Agent（省额度休息）</button>
-          <p style="font-size:12px;color:#777;margin-top:10px;line-height:1.55;">
-            点击后通过 Google Sheets 云端中继下发指令，电脑上开着的 3D 场景将在 8 秒内自动暂停或恢复全部 Agent 对话与 DeepSeek API 调用。
-          </p>
-        </div>
-        <div class="r-card">
-          <div style="font-size:15px;font-weight:600;margin-bottom:4px;">口令与云端地址</div>
-          <div class="r-field">
-            <label>专属远程控制口令（保存在本机浏览器，只需输一次）</label>
-            <input id="cfg-pin" type="password" placeholder="请输入你的专属口令">
-          </div>
-          <div class="r-field">
-            <label>Google Apps Script Web App 地址</label>
-            <input id="cfg-url" type="text" placeholder="https://script.google.com/macros/s/.../exec">
-          </div>
-          <button class="r-save-btn" onclick="saveRemoteConfig()">保存配置</button>
-        </div>
-      </div>
-    </section>
   </main>
 
-  <!-- 手机端原生微信底部 4 Tab 导航栏 -->
+  <!-- 手机端原生微信底部 4 Tab -->
   <nav class="wx-bottom-tabs">
-    <button class="tab-btn active" id="tab-chats" onclick="switchTab('chats')">
-      <span class="t-ic">💬</span><span>微信</span>
-    </button>
-    <button class="tab-btn" id="tab-contacts" onclick="switchTab('contacts')">
-      <span class="t-ic">👥</span><span>通讯录</span>
-    </button>
-    <button class="tab-btn" id="tab-moments" onclick="switchTab('moments')">
-      <span class="t-ic">⭕</span><span>朋友圈</span>
-      <span class="tab-dot" id="moments-dot"></span>
-    </button>
-    <button class="tab-btn" id="tab-remote" onclick="switchTab('remote')">
-      <span class="t-ic">⚙️</span><span>控制</span>
-    </button>
+    <button class="tab-btn active" id="tab-chats" onclick="switchTab('chats')"><span class="t-ic">💬</span><span>微信</span></button>
+    <button class="tab-btn" id="tab-contacts" onclick="switchTab('contacts')"><span class="t-ic">👥</span><span>通讯录</span></button>
+    <button class="tab-btn" id="tab-moments" onclick="switchTab('moments')"><span class="t-ic">⭕</span><span>朋友圈</span></button>
+    <button class="tab-btn" id="tab-life" onclick="switchTab('life')"><span class="t-ic">🌍</span><span>人生</span></button>
   </nav>
 </div>
 
-<script>
-const DEFAULT_SHEET_API = 'https://script.google.com/macros/s/AKfycbysI1bbX7Imf3vdV1dZPZcsW1oDMkl3xUP00J-eSmMuTMRSVcQq4ENOZUnTwWPNvSlbYQ/exec';
-const FALLBACK_JSON = './data/agent-dialogues.json';
-const LS_API = 'xphs_wx_sheet_api_v3';
-const LS_PIN = 'xphs_wx_ctrl_pin_v2';
+<!-- 发朋友圈弹窗 -->
+<div class="modal-mask" id="moment-modal">
+  <div class="modal-box">
+    <h3>发一条朋友圈</h3>
+    <textarea id="mom-text" rows="4" placeholder="记录此刻的想法、见闻或吐槽…发出去后世界里的朋友可能会来点赞评论"></textarea>
+    <input id="mom-loc" type="text" placeholder="定位（留空默认你当前所在城市）">
+    <div class="modal-actions">
+      <button class="btn-ghost" style="padding:0 14px;border-radius:6px;" onclick="closeModal('moment-modal')">取消</button>
+      <button class="send-btn" id="mom-submit" onclick="submitMoment()">发布</button>
+    </div>
+  </div>
+</div>
 
-const CHANNELS = [
-  { id: '工作总群', name: '城市建设工作总群(32)', sub: '公开大群 · 客气稳重、讲究分寸与体面', icon: '📢', bg: '#07c160', priv: false },
-  { id: '核心小群', name: '指挥部核心小群(4)',    sub: '领导与骨干私下权衡政绩、资源与分工', icon: '🔒', bg: '#b45309', priv: true },
-  { id: '经理小群', name: '片区经理通气群(6)',    sub: '中层私下通气、吐槽与互相试探',       icon: '💬', bg: '#0369a1', priv: true },
-  { id: '一线小群', name: '一线工地茶水间(16)',   sub: '施工班组私下抱怨加班、赶工与实话',   icon: '🍺', bg: '#c2410c', priv: true },
-  { id: '监理小群', name: '质检风控内部群(8)',    sub: '监理私下商量红线、担责与留痕',       icon: '🔍', bg: '#047857', priv: true },
-  { id: '私聊',     name: '私聊悄悄话',           sub: '两人私下递话、拉关系或暗中议论',     icon: '👤', bg: '#6d28d9', priv: true },
-  { id: 'ALL',      name: '全部消息汇总流',       sub: '大群与各私密小群的完整时间线',       icon: '🌐', bg: '#334155', priv: false }
+<!-- 管理员远程总控弹窗 -->
+<div class="modal-mask" id="admin-modal">
+  <div class="modal-box">
+    <h3>世界 AI 运行总控（阿里云 24h）</h3>
+    <p id="admin-info" style="font-size:12.5px;color:#666;margin-bottom:10px;line-height:1.55;">状态加载中…</p>
+    <input id="admin-pin" type="password" placeholder="输入管理员控制口令">
+    <div style="display:flex;gap:8px;margin-bottom:10px;">
+      <button class="btn-big btn-green" style="height:40px;font-size:14px;" onclick="setAdminRunning(true)">▶ 启动 AI 互动</button>
+      <button class="btn-big" style="height:40px;font-size:14px;background:#fa5151;color:#fff;" onclick="setAdminRunning(false)">⏹ 停止 AI 互动</button>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-ghost" style="padding:0 14px;border-radius:6px;" onclick="closeModal('admin-modal')">关闭</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const API_BASE = 'https://world-siety-api-hvghwsjoqy.cn-hangzhou.fcapp.run';
+const LS_PID = 'ws_v2_player_id';
+const LS_PIN = 'ws_v2_admin_pin';
+
+const GROUP_META = [
+  { id: '世界广场大群',   icon: '🌐', bg: '#07c160', priv: false, sub: '全球公开大群 · 客气稳重、跨文化交流' },
+  { id: '职场与搞钱小群', icon: '💼', bg: '#0369a1', priv: true,  sub: '私密小群 · 吐槽职场、搞钱副业与行业内幕' },
+  { id: '跨国漂泊与留学群', icon: '✈️', bg: '#0d9488', priv: true, sub: '海外签证、留学孤独与异国生活' },
+  { id: '情感与八卦茶水间', icon: '🍵', bg: '#c2410c', priv: true, sub: '相亲恋爱、情感吐槽与人间八卦' },
+  { id: '深夜树洞',       icon: '🌙', bg: '#4338ca', priv: true,  sub: '卸下伪装 · 说点平时不敢说的心里话' }
 ];
 
-const ROLE_COLORS = {
-  '城市领导': '#b45309',
-  '片区经理': '#0369a1',
-  '施工工程师': '#c2410c',
-  '质检监理': '#047857',
-  '注册市民': '#4338ca'
+const AVA_COLORS = ['#07c160','#0369a1','#b45309','#c2410c','#047857','#6d28d9','#be185d','#0f766e','#334155'];
+
+let state = {
+  control: { running: true, daily_calls: 0, max_daily_calls: 350, updated_at: '' },
+  agents: [],
+  players: [],
+  me: null,
+  channels: {},
+  dms: {},
+  moments: []
 };
-
 let currentTab = 'chats';
-let currentChannel = '工作总群';
-let filterSpeaker = '';
-let allEntries = [];
-let remoteRunning = true;
-let remoteUpdatedAt = '';
-let lastChatKey = '';
+let activeChat = { type: 'group', id: '世界广场大群', title: '世界广场大群' };
+let lastOutcome = null;
+let lastChatSig = '';
 
-function getApiUrl() {
-  const s = localStorage.getItem(LS_API);
-  return (s && s.trim()) ? s.trim() : DEFAULT_SHEET_API;
+function getPid() { return localStorage.getItem(LS_PID) || ''; }
+function esc(s) { return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function colorOf(str) {
+  let h = 0; const s = String(str || 'x');
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
+  return AVA_COLORS[h % AVA_COLORS.length];
 }
-function getPin() { return localStorage.getItem(LS_PIN) || ''; }
-function esc(s) {
-  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-function fmtTime(t) {
-  const s = String(t || '');
-  const m = s.match(/\b(\d{2}:\d{2})(?::\d{2})?\b/);
-  return m ? m[1] : s.slice(0, 8);
-}
-
-function setMobileMode(mode) {
-  document.getElementById('wx-app').setAttribute('data-mobile-mode', mode);
-}
+function dmKey(a, b) { return [String(a), String(b)].sort().join('__'); }
+function setMobileMode(m) { document.getElementById('wx-app').setAttribute('data-mobile-mode', m); }
 
 function switchTab(tab) {
   currentTab = tab;
-  ['chats','contacts','moments','remote'].forEach(t => {
-    const rb = document.getElementById('rail-' + t);
-    const tb = document.getElementById('tab-' + t);
-    if (rb) rb.classList.toggle('active', t === tab);
-    if (tb) tb.classList.toggle('active', t === tab);
+  ['chats','contacts','moments','life'].forEach(t => {
+    const r = document.getElementById('rail-' + t);
+    const b = document.getElementById('tab-' + t);
+    if (r) r.classList.toggle('active', t === tab);
+    if (b) b.classList.toggle('active', t === tab);
   });
   document.querySelectorAll('.view-pane').forEach(p => p.classList.remove('active'));
   if (tab === 'chats') {
     document.getElementById('pane-chat').classList.add('active');
     setMobileMode('list');
+    renderChatList();
+  } else if (tab === 'life') {
+    document.getElementById('pane-life').classList.add('active');
+    setMobileMode('tab');
+    renderLife();
   } else if (tab === 'moments') {
     document.getElementById('pane-moments').classList.add('active');
-    document.getElementById('moments-dot').classList.remove('show');
     setMobileMode('tab');
     renderMoments();
   } else if (tab === 'contacts') {
     document.getElementById('pane-contacts').classList.add('active');
     setMobileMode('tab');
     renderContacts();
-  } else if (tab === 'remote') {
-    document.getElementById('pane-remote').classList.add('active');
-    document.getElementById('cfg-url').value = getApiUrl();
-    document.getElementById('cfg-pin').value = getPin();
-    setMobileMode('tab');
-    updateControlUI();
   }
 }
 
-function openChannel(chId) {
-  currentChannel = chId;
-  filterSpeaker = '';
-  lastChatKey = '';
-  const ch = CHANNELS.find(c => c.id === chId) || CHANNELS[0];
-  document.getElementById('chat-title').textContent = ch.name;
+function openGroup(chId) {
+  activeChat = { type: 'group', id: chId, title: chId };
+  lastChatSig = '';
+  document.getElementById('chat-title').textContent = chId;
   document.querySelectorAll('.view-pane').forEach(p => p.classList.remove('active'));
   document.getElementById('pane-chat').classList.add('active');
   setMobileMode('chat');
-  renderChannelList();
-  renderChat(true);
+  renderChatList();
+  renderChatBody(true);
 }
 
-function openSpeakerHistory(speaker) {
-  filterSpeaker = speaker;
-  currentChannel = 'ALL';
-  lastChatKey = '';
-  document.getElementById('chat-title').textContent = speaker + ' 的全部记录';
-  document.querySelectorAll('.view-pane').forEach(p => p.classList.remove('active'));
-  document.getElementById('pane-chat').classList.add('active');
-  setMobileMode('chat');
-  renderChat(true);
-}
-
-function backToList() {
-  filterSpeaker = '';
-  setMobileMode('list');
-}
-
-function getChatMessages() {
-  return allEntries.filter(e => (e.channel || '工作总群') !== '朋友圈');
-}
-function getMomentMessages() {
-  return allEntries.filter(e => (e.channel || '') === '朋友圈');
-}
-
-function renderChannelList() {
-  const chatMsgs = getChatMessages();
-  const q = (document.getElementById('search-input').value || '').trim().toLowerCase();
-  const el = document.getElementById('channel-list');
-  el.innerHTML = CHANNELS.map(ch => {
-    const msgs = ch.id === 'ALL'
-      ? chatMsgs
-      : chatMsgs.filter(e => (e.channel || '工作总群') === ch.id);
-    if (q && !ch.name.toLowerCase().includes(q) && !msgs.some(m => (m.text + m.speaker).toLowerCase().includes(q))) {
-      return '';
-    }
-    const last = msgs.length ? msgs[msgs.length - 1] : null;
-    const preview = last ? `${last.speaker.split('(')[0]}: ${last.text}` : ch.sub;
-    const tm = last ? fmtTime(last.time) : '';
-    const active = (ch.id === currentChannel && !filterSpeaker) ? 'active' : '';
-    const tag = ch.id === 'ALL' ? '' : (ch.priv ? '<span class="tag-pill tag-priv">私密</span>' : '<span class="tag-pill tag-pub">公开</span>');
-    return `
-      <div class="chat-row ${active}" onclick="openChannel('${ch.id}')">
-        <div class="row-ava" style="background:${ch.bg}">
-          ${ch.icon}
-          ${msgs.length ? `<span class="row-badge">${msgs.length > 99 ? '99+' : msgs.length}</span>` : ''}
-        </div>
-        <div class="row-main">
-          <div class="row-top">
-            <span class="row-name">${ch.name}</span>
-            <span class="row-time">${esc(tm)}</span>
-          </div>
-          <div class="row-sub">${tag}${esc(preview)}</div>
-        </div>
-      </div>`;
-  }).join('');
-}
-
-function renderChat(forceScroll = false) {
-  const q = (document.getElementById('search-input').value || '').trim().toLowerCase();
-  let list = getChatMessages();
-  if (filterSpeaker) {
-    list = allEntries.filter(e => e.speaker === filterSpeaker);
-  } else if (currentChannel !== 'ALL') {
-    list = list.filter(e => (e.channel || '工作总群') === currentChannel);
-  }
-  if (q) {
-    list = list.filter(e => (e.speaker + e.text + e.role + (e.channel || '')).toLowerCase().includes(q));
-  }
-  const key = currentChannel + '|' + filterSpeaker + '|' + q + '|' + list.length + '|' + (list.length ? list[list.length - 1].text : '');
-  if (!forceScroll && key === lastChatKey) return;
-  lastChatKey = key;
-
-  const body = document.getElementById('chat-body');
-  const nearBottom = (body.scrollHeight - body.scrollTop - body.clientHeight) < 120;
-  const ch = CHANNELS.find(c => c.id === currentChannel) || CHANNELS[0];
-  const tip = filterSpeaker
-    ? `<div class="sys-tip">正在查看 ${esc(filterSpeaker)} 在大群、小群及朋友圈的全部轨迹</div>`
-    : (ch.priv
-      ? `<div class="sys-tip">🔒 「${ch.name}」仅内部成员可见的私下聊天记录</div>`
-      : `<div class="sys-tip">📢 ${ch.name} · ${ch.sub}</div>`);
-
-  if (!list.length) {
-    body.innerHTML = tip + `<div class="sys-tip">暂无消息，开启电脑端 Agent 后将实时同步</div>`;
+function openDM(targetId, targetName) {
+  if (!state.me) {
+    alert('请先在底部「🌍 人生」页一键创建你的随机角色，即可与世界里的任何人私聊！');
+    switchTab('life');
     return;
   }
+  if (targetId === state.me.id) return;
+  activeChat = { type: 'dm', id: targetId, title: '与 ' + targetName + ' 私聊' };
+  lastChatSig = '';
+  document.getElementById('chat-title').textContent = targetName;
+  document.querySelectorAll('.view-pane').forEach(p => p.classList.remove('active'));
+  document.getElementById('pane-chat').classList.add('active');
+  setMobileMode('chat');
+  renderChatList();
+  renderChatBody(true);
+}
 
-  body.innerHTML = tip + list.map(m => {
-    const isLeader = m.role === '城市领导';
-    const side = isLeader ? 'right' : 'left';
-    const col = ROLE_COLORS[m.role] || '#475569';
-    const shortName = (m.speaker || 'A').replace(/\(.*\)/, '').slice(-2);
-    const chanName = m.channel || '工作总群';
-    const targetTxt = (m.target && chanName !== '朋友圈') ? `@${m.target.replace(/\(.*\)/, '')}` : '';
-    return `
+function backToList() { setMobileMode('list'); }
+
+function renderChatList() {
+  const q = (document.getElementById('search-input').value || '').trim().toLowerCase();
+  const rows = [];
+
+  GROUP_META.forEach(g => {
+    const msgs = state.channels[g.id] || [];
+    if (q && !g.id.toLowerCase().includes(q) && !msgs.some(m => (m.text + m.speaker).toLowerCase().includes(q))) return;
+    const last = msgs.length ? msgs[msgs.length - 1] : null;
+    const prev = last ? `${last.speaker}: ${last.text}` : g.sub;
+    const act = (activeChat.type === 'group' && activeChat.id === g.id) ? 'active' : '';
+    const tag = g.priv ? '<span class="tag-pill tag-priv">小群</span>' : '<span class="tag-pill tag-pub">大群</span>';
+    rows.push(`
+      <div class="chat-row ${act}" onclick="openGroup('${g.id}')">
+        <div class="row-ava" style="background:${g.bg}">${g.icon}${msgs.length ? `<span class="row-badge">${msgs.length > 99 ? '99+' : msgs.length}</span>` : ''}</div>
+        <div class="row-main">
+          <div class="row-top"><span class="row-name">${g.id}</span><span class="row-time">${esc(last ? last.time : '')}</span></div>
+          <div class="row-sub">${tag}${esc(prev)}</div>
+        </div>
+      </div>`);
+  });
+
+  // 已有私聊会话
+  if (state.me) {
+    Object.keys(state.dms || {}).forEach(dk => {
+      const msgs = state.dms[dk] || [];
+      if (!msgs.length) return;
+      const parts = dk.split('__');
+      const otherId = parts[0] === state.me.id ? parts[1] : parts[0];
+      const other = findPerson(otherId);
+      const otherName = other ? other.name : otherId;
+      if (q && !otherName.toLowerCase().includes(q)) return;
+      const last = msgs[msgs.length - 1];
+      const act = (activeChat.type === 'dm' && activeChat.id === otherId) ? 'active' : '';
+      rows.push(`
+        <div class="chat-row ${act}" onclick="openDM('${esc(otherId)}','${esc(otherName)}')">
+          <div class="row-ava" style="background:${colorOf(otherName)}">${esc(otherName.slice(0,2))}</div>
+          <div class="row-main">
+            <div class="row-top"><span class="row-name">${esc(otherName)}</span><span class="row-time">${esc(last.time)}</span></div>
+            <div class="row-sub"><span class="tag-pill tag-dm">私聊</span>${esc(last.text)}</div>
+          </div>
+        </div>`);
+    });
+  }
+
+  document.getElementById('channel-list').innerHTML = rows.join('');
+}
+
+function findPerson(id) {
+  return (state.agents || []).find(a => a.id === id) || (state.players || []).find(p => p.id === id) || null;
+}
+
+function renderChatBody(forceScroll = false) {
+  let msgs = [];
+  let tip = '';
+  if (activeChat.type === 'dm' && state.me) {
+    msgs = (state.dms || {})[dmKey(state.me.id, activeChat.id)] || [];
+    const p = findPerson(activeChat.id);
+    tip = p ? `🔒 你与 ${p.name}（${p.city || ''} · ${p.job || ''}）的一对一私聊` : '🔒 私聊窗口';
+  } else {
+    msgs = (state.channels || {})[activeChat.id] || [];
+    const g = GROUP_META.find(x => x.id === activeChat.id);
+    tip = g ? `${g.icon} ${g.id} · ${g.sub}` : activeChat.id;
+  }
+
+  const sig = activeChat.type + '|' + activeChat.id + '|' + msgs.length + '|' + (msgs.length ? msgs[msgs.length - 1].id : '');
+  if (!forceScroll && sig === lastChatSig) return;
+  lastChatSig = sig;
+
+  const body = document.getElementById('chat-body');
+  const nearBottom = (body.scrollHeight - body.scrollTop - body.clientHeight) < 140;
+  const myId = state.me ? state.me.id : '';
+
+  const html = [`<div class="sys-tip">${esc(tip)}</div>`];
+  if (!msgs.length) {
+    html.push(`<div class="sys-tip">发一句话打个招呼吧，对方会顺着你的话题直接回复。</div>`);
+  }
+  msgs.forEach(m => {
+    if (m.is_system) {
+      html.push(`<div class="sys-tip">${esc(m.text)}</div>`);
+      return;
+    }
+    const isMe = myId && m.speaker_id === myId;
+    const side = isMe ? 'right' : 'left';
+    const col = colorOf(m.speaker);
+    const shortAva = (m.speaker || '?').slice(0, 2);
+    const clickAttr = (!isMe && m.speaker_id && m.speaker_id !== 'SYS')
+      ? `onclick="openDM('${esc(m.speaker_id)}','${esc(m.speaker)}')" title="点击私聊"` : '';
+    html.push(`
       <div class="msg-item ${side}">
-        <div class="msg-ava" style="background:${col}">${esc(shortName)}</div>
+        <div class="msg-ava" style="background:${col}" ${clickAttr}>${esc(shortAva)}</div>
         <div class="msg-col">
           <div class="msg-who">
             <span>${esc(m.speaker)}</span>
-            <span class="r-chip" style="background:${col}">${esc(m.role || '成员')}</span>
-            ${(currentChannel === 'ALL' || filterSpeaker) ? `<span class="c-chip">${esc(chanName)}</span>` : ''}
-            <span>${esc(fmtTime(m.time))}</span>
+            <span class="r-chip" style="background:${col}">${esc(m.role || '居民')}</span>
+            <span>${esc(m.time || '')}</span>
           </div>
           <div class="bubble">
-            ${targetTxt ? `<span style="color:#576b95;margin-right:4px;">${esc(targetTxt)}</span>` : ''}${esc(m.text)}
+            ${m.reply_to ? `<span class="reply-tag">@${esc(m.reply_to)}</span>` : ''}${esc(m.text)}
             ${m.location ? `<div class="bubble-loc">📍 ${esc(m.location)}</div>` : ''}
           </div>
         </div>
-      </div>`;
-  }).join('');
-
+      </div>`);
+  });
+  body.innerHTML = html.join('');
   if (forceScroll || nearBottom) body.scrollTop = body.scrollHeight;
 }
 
-function renderMoments() {
-  const list = getMomentMessages().slice().reverse();
-  const el = document.getElementById('moments-body');
-  const likePools = [
-    '陈静, 李娜, 张伟',
-    '周明远, 孙浩, 赵敏',
-    '王磊, 刘强, 马超, 吴涛',
-    '陈静, 林雪, 高峰'
+async function sendMessage() {
+  if (!state.me) {
+    alert('你还没有角色，先去「🌍 人生」一键抽取你的全球随机身份吧！');
+    switchTab('life');
+    return;
+  }
+  const inp = document.getElementById('msg-input');
+  const text = inp.value.trim();
+  if (!text) return;
+  const btn = document.getElementById('send-btn');
+  inp.value = '';
+  btn.disabled = true; btn.textContent = '…';
+  try {
+    const payload = activeChat.type === 'dm'
+      ? { player_id: state.me.id, mode: 'dm', target_id: activeChat.id, text }
+      : { player_id: state.me.id, mode: 'group', channel: activeChat.id, text };
+    const res = await fetch(`${API_BASE}/api/chat`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+    });
+    const d = await res.json();
+    if (!d.ok) alert(d.error || '发送失败');
+    await fetchState(true);
+  } catch (e) {
+    alert('网络异常：' + e.message);
+  } finally {
+    btn.disabled = false; btn.textContent = '发送';
+  }
+}
+
+function renderLife() {
+  const el = document.getElementById('life-body');
+  if (!state.me) {
+    el.innerHTML = `
+      <div class="card">
+        <div class="hero-title">🎲 开启你的全球随机人生</div>
+        <div class="hero-desc">
+          你的出生地、民族、宗教、家庭背景、学业与天赋完全随机——可能降生在肯尼亚内罗毕、日本东京、法国巴黎、埃及开罗、澳大利亚悉尼或中国成都。<br><br>
+          创建角色后，你可以手动推进人生遭遇可遇不可求的关键抉择（爱情、学业、职业、迁徙、命运），也能进入微信大群/小群/朋友圈，与全球 AI 居民和其他真实玩家直接对话相识。
+        </div>
+        <div class="input-row">
+          <input id="reg-name" type="text" placeholder="输入自定义名字（留空则按出生国随机取名）" maxlength="16">
+        </div>
+        <button class="btn-big btn-green" id="btn-register" onclick="registerPlayer(false)">🎲 抽取我的随机人生</button>
+      </div>`;
+    return;
+  }
+
+  const p = state.me;
+  const st = p.stats || {};
+  const statItems = [
+    ['财富', st.wealth || 50, '#f59e0b'],
+    ['健康', st.health || 70, '#10b981'],
+    ['心情', st.happiness || 60, '#3b82f6'],
+    ['声望', st.reputation || 40, '#8b5cf6'],
+    ['运气', st.luck || 50, '#ec4899']
   ];
-  const cards = list.length ? list.map((m, idx) => {
-    const col = ROLE_COLORS[m.role] || '#475569';
-    const shortName = (m.speaker || 'A').replace(/\(.*\)/, '').slice(-2);
-    const dispName = (m.speaker || 'Agent').replace(/\(.*\)/, '');
-    const likes = likePools[idx % likePools.length];
-    const commentHtml = m.target && m.target.includes(':')
-      ? `<div class="m-comment"><b>${esc(m.target.split(':')[0])}</b>：${esc(m.target.split(':').slice(1).join(':').trim())}</div>`
-      : '';
+
+  let eventHtml = '';
+  if (lastOutcome) {
+    eventHtml += `<div class="outcome-box"><b>📌 上一抉择结局：</b>${esc(lastOutcome)}</div>`;
+  }
+  if (p.pending_event) {
+    const ev = p.pending_event;
+    eventHtml += `
+      <div class="card event-card">
+        <span class="ev-cat">${esc(ev.category || '人生抉择')}</span>
+        <div class="ev-title">${esc(ev.title)}</div>
+        <div class="ev-scene">${esc(ev.scene)}</div>
+        <div class="choice-list">
+          ${(ev.choices || []).map(c => `
+            <button class="choice-btn" onclick="chooseLife('${esc(c.id)}')">
+              <b>${esc(c.id)}. ${esc(c.label)}</b>
+              <span>${esc(c.hint || '')}</span>
+            </button>`).join('')}
+        </div>
+      </div>`;
+  } else {
+    eventHtml += `
+      <div class="card">
+        <button class="btn-big btn-green" id="btn-advance" onclick="advanceLife()">⏩ 推进人生 · 遭遇新的机遇与抉择</button>
+        <p style="font-size:12px;color:#888;margin-top:8px;text-align:center;">每次点击由 AI 结合你的国家、信仰、职业与过往经历生成独一无二的人生事件</p>
+      </div>`;
+  }
+
+  const histHtml = (p.history || []).slice().reverse().map(h => `
+    <div class="tl-item">
+      <div class="tl-age">${h.age}岁 · ${esc(h.time || '')}${h.title ? ' · ' + esc(h.title) : ''}</div>
+      <div class="tl-txt">${h.choice ? `<span style="color:#07c160;font-weight:600;">[选：${esc(h.choice)}]</span> ` : ''}${esc(h.text)}</div>
+    </div>`).join('');
+
+  el.innerHTML = `
+    <div class="card">
+      <div class="profile-head">
+        <div class="p-ava" style="background:${colorOf(p.name)}">${esc(p.name.slice(0,2))}</div>
+        <div>
+          <div class="p-name">${esc(p.name)} <span style="font-size:13px;font-weight:500;color:#666;">${esc(p.gender)} · ${p.age}岁</span></div>
+          <div class="p-sub">📍 ${esc(p.city)}（${esc(p.region)}）</div>
+        </div>
+      </div>
+      <div class="meta-grid">
+        <div class="meta-cell"><span>民族</span><b>${esc(p.ethnicity)}</b></div>
+        <div class="meta-cell"><span>宗教背景</span><b>${esc(p.religion)}</b></div>
+        <div class="meta-cell"><span>出身家庭</span><b>${esc(p.family)}</b></div>
+        <div class="meta-cell"><span>学业经历</span><b>${esc(p.education)}</b></div>
+        <div class="meta-cell"><span>当前职业</span><b>${esc(p.job)}</b></div>
+        <div class="meta-cell"><span>感情状态</span><b>${esc(p.relationship)}</b></div>
+      </div>
+      <div class="traits-row">${(p.traits || []).map(t => `<span class="trait-chip"># ${esc(t)}</span>`).join('')}</div>
+      <div class="stats-grid">
+        ${statItems.map(([k, v, c]) => `
+          <div class="stat-box">
+            <div class="s-lbl">${k}</div>
+            <div class="s-val">${v}</div>
+            <div class="stat-bar"><div class="stat-fill" style="width:${v}%;background:${c}"></div></div>
+          </div>`).join('')}
+      </div>
+    </div>
+    ${eventHtml}
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <b style="font-size:15px;">📖 人生轨迹</b>
+        <button class="btn-ghost" style="padding:0 12px;border-radius:6px;height:30px;font-size:12px;" onclick="registerPlayer(true)">🔄 重开一世</button>
+      </div>
+      ${histHtml}
+    </div>`;
+}
+
+async function registerPlayer(isReroll) {
+  if (isReroll && !confirm('确定放弃当前角色，重新随机投胎一世吗？')) return;
+  const nameInp = document.getElementById('reg-name');
+  const customName = nameInp ? nameInp.value.trim() : '';
+  const btn = document.getElementById('btn-register');
+  if (btn) { btn.disabled = true; btn.textContent = '正在抽取命运…'; }
+  lastOutcome = null;
+  try {
+    const res = await fetch(`${API_BASE}/api/register`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: customName, old_player_id: isReroll ? getPid() : '' })
+    });
+    const d = await res.json();
+    if (!d.ok) throw new Error(d.error || '注册失败');
+    localStorage.setItem(LS_PID, d.player.id);
+    state.me = d.player;
+    await fetchState(true);
+    renderLife();
+  } catch (e) {
+    alert('创建失败：' + e.message);
+  }
+}
+
+async function advanceLife() {
+  if (!state.me) return;
+  const btn = document.getElementById('btn-advance');
+  if (btn) { btn.disabled = true; btn.textContent = '命运齿轮转动中（AI 推演中）…'; }
+  lastOutcome = null;
+  try {
+    const res = await fetch(`${API_BASE}/api/life/advance`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ player_id: state.me.id })
+    });
+    const d = await res.json();
+    if (!d.ok) throw new Error(d.error || '推进失败');
+    state.me = d.player;
+    renderLife();
+  } catch (e) {
+    alert(e.message);
+    if (btn) { btn.disabled = false; btn.textContent = '⏩ 推进人生 · 遭遇新的机遇与抉择'; }
+  }
+}
+
+async function chooseLife(choiceId) {
+  if (!state.me) return;
+  document.querySelectorAll('.choice-btn').forEach(b => b.disabled = true);
+  try {
+    const res = await fetch(`${API_BASE}/api/life/choose`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ player_id: state.me.id, choice_id: choiceId })
+    });
+    const d = await res.json();
+    if (!d.ok) throw new Error(d.error || '结算失败');
+    lastOutcome = d.outcome;
+    state.me = d.player;
+    renderLife();
+    fetchState(false);
+  } catch (e) {
+    alert(e.message);
+    renderLife();
+  }
+}
+
+function renderMoments() {
+  const list = (state.moments || []).slice().reverse();
+  const meName = state.me ? state.me.name : '全球旅人';
+  const cards = list.map(m => {
+    const col = colorOf(m.speaker);
+    const likes = (m.likes || []).join('、');
+    const cmts = (m.comments || []).map(c => `<div class="m-cmt"><b>${esc(c.by)}</b>：${esc(c.text)}</div>`).join('');
     return `
       <article class="moment-card">
-        <div class="m-ava" style="background:${col}">${esc(shortName)}</div>
+        <div class="m-ava" style="background:${col}" onclick="openDM('${esc(m.speaker_id)}','${esc(m.speaker)}')">${esc((m.speaker||'A').slice(0,2))}</div>
         <div class="m-body">
           <div class="m-name">
-            <span>${esc(dispName)}</span>
+            <span>${esc(m.speaker)}</span>
             <span class="r-chip" style="background:${col}">${esc(m.role || '居民')}</span>
           </div>
           <div class="m-text">${esc(m.text)}</div>
-          ${m.location ? `<div class="m-loc">${esc(m.location)}</div>` : ''}
+          ${m.location ? `<div class="m-loc">📍 ${esc(m.location)}</div>` : ''}
           <div class="m-meta">
-            <span>${esc(fmtTime(m.time) || '刚刚')}</span>
-            <span>••</span>
+            <span>${esc(m.time || '刚刚')}</span>
+            <div class="m-actions">
+              <button class="m-act-btn" onclick="likeMoment('${esc(m.id)}')">♡ 赞</button>
+              <button class="m-act-btn" onclick="commentMoment('${esc(m.id)}')">💬 评论</button>
+            </div>
           </div>
-          <div class="m-interact">
-            <div class="m-likes">♡ ${likes}</div>
-            ${commentHtml}
-          </div>
+          ${(likes || cmts) ? `<div class="m-interact">${likes ? `<div class="m-likes">♡ ${esc(likes)}</div>` : ''}${cmts}</div>` : ''}
         </div>
       </article>`;
-  }).join('') : `<div style="padding:36px 20px;text-align:center;color:#999;font-size:13.5px;">暂无朋友圈动态，Agent 运行后会自动发朋友圈</div>`;
+  }).join('');
 
-  el.innerHTML = `
+  document.getElementById('moments-body').innerHTML = `
     <div class="moments-cover">
       <div class="cover-user">
-        <div class="cover-name">上海数字孪生 · 32人圈</div>
-        <div class="cover-ava">32A</div>
+        <div class="cover-name">${esc(meName)}</div>
+        <div class="cover-ava">${esc(meName.slice(0,2))}</div>
       </div>
     </div>
-    ${cards}`;
+    ${cards || '<div style="padding:36px;text-align:center;color:#999;">暂无朋友圈动态</div>'}`;
+}
+
+function openMomentModal() {
+  if (!state.me) { alert('请先在「🌍 人生」创建角色后再发朋友圈！'); switchTab('life'); return; }
+  document.getElementById('mom-text').value = '';
+  document.getElementById('mom-loc').value = state.me.city || '';
+  document.getElementById('moment-modal').classList.add('open');
+}
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+async function submitMoment() {
+  const txt = document.getElementById('mom-text').value.trim();
+  const loc = document.getElementById('mom-loc').value.trim();
+  if (!txt) return;
+  const btn = document.getElementById('mom-submit');
+  btn.disabled = true; btn.textContent = '发布中…';
+  try {
+    const res = await fetch(`${API_BASE}/api/chat`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ player_id: state.me.id, mode: 'moment', text: txt, location: loc })
+    });
+    const d = await res.json();
+    if (!d.ok) alert(d.error || '发布失败');
+    closeModal('moment-modal');
+    await fetchState(true);
+    renderMoments();
+  } finally {
+    btn.disabled = false; btn.textContent = '发布';
+  }
+}
+
+async function likeMoment(mid) {
+  if (!state.me) { alert('请先在「🌍 人生」创建角色'); switchTab('life'); return; }
+  await fetch(`${API_BASE}/api/chat`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ player_id: state.me.id, mode: 'moment_like', moment_id: mid, text: 'like' })
+  });
+  await fetchState(false);
+  renderMoments();
+}
+
+async function commentMoment(mid) {
+  if (!state.me) { alert('请先在「🌍 人生」创建角色'); switchTab('life'); return; }
+  const txt = window.prompt('写一句评论：', '');
+  if (!txt || !txt.trim()) return;
+  await fetch(`${API_BASE}/api/chat`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ player_id: state.me.id, mode: 'moment_comment', moment_id: mid, text: txt.trim() })
+  });
+  await fetchState(false);
+  renderMoments();
 }
 
 function renderContacts() {
-  const groups = { '城市领导': [], '片区经理': [], '施工工程师': [], '质检监理': [], '其他': [] };
-  const seen = new Set();
-  allEntries.forEach(e => {
-    if (!e.speaker || seen.has(e.speaker)) return;
-    seen.add(e.speaker);
-    const g = groups[e.role] ? e.role : '其他';
-    groups[g].push(e);
-  });
-  const el = document.getElementById('contacts-body');
+  const players = state.players || [];
+  const agents = state.agents || [];
+  const rowHtml = (p, isPlayer) => `
+    <div class="contact-item" onclick="openDM('${esc(p.id)}','${esc(p.name)}')">
+      <div class="contact-l">
+        <div class="msg-ava" style="background:${colorOf(p.name)}">${esc(p.name.slice(0,2))}</div>
+        <div style="min-width:0;">
+          <div style="font-size:15px;font-weight:500;">${esc(p.name)} <span style="font-size:11.5px;color:#888;">${esc(p.gender)}·${p.age}岁</span></div>
+          <div style="font-size:12px;color:#777;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(p.city)} · ${esc(p.ethnicity)} · ${esc(p.job)}</div>
+        </div>
+      </div>
+      <span class="dm-pill">${state.me && p.id === state.me.id ? '我自己' : '发私聊'}</span>
+    </div>`;
+
   let html = '';
-  Object.keys(groups).forEach(role => {
-    if (!groups[role].length) return;
-    html += `<div class="contact-sec">${role} (${groups[role].length})</div>`;
-    groups[role].forEach(e => {
-      const col = ROLE_COLORS[role] || '#475569';
-      const shortName = e.speaker.replace(/\(.*\)/, '').slice(-2);
-      html += `
-        <div class="contact-item" onclick="openSpeakerHistory('${esc(e.speaker)}')">
-          <div class="msg-ava" style="background:${col}">${esc(shortName)}</div>
-          <div>
-            <div style="font-size:15px;font-weight:500;">${esc(e.speaker)}</div>
-            <div style="font-size:12px;color:#888;">点击查看 TA 在大群/小群/朋友圈的全部发言</div>
-          </div>
-        </div>`;
-    });
-  });
-  el.innerHTML = html || `<div style="padding:36px;text-align:center;color:#999;font-size:13px;">等待 Agent 发言后自动生成活跃花名册</div>`;
+  if (players.length) {
+    html += `<div class="contact-sec">真实注册玩家 (${players.length})</div>` + players.map(p => rowHtml(p, true)).join('');
+  }
+  html += `<div class="contact-sec">全球 AI 居民 (${agents.length})</div>` + agents.map(a => rowHtml(a, false)).join('');
+  document.getElementById('contacts-body').innerHTML = html;
 }
 
-function updateControlUI() {
-  const btns = [document.getElementById('list-ctrl-btn'), document.getElementById('chat-ctrl-btn')];
-  btns.forEach(b => {
+function updateStatusPills() {
+  const on = !!(state.control && state.control.running);
+  ['list-status-pill', 'chat-status-pill'].forEach(id => {
+    const b = document.getElementById(id);
     if (!b) return;
-    b.className = 'mini-ctrl ' + (remoteRunning ? 'running' : 'stopped');
-    b.textContent = remoteRunning ? '⏹ 停止' : '▶ 启动';
+    b.className = 'status-pill ' + (on ? 'on' : 'off');
+    b.textContent = on ? '● 运行中' : '○ 已停止';
   });
-  const badge = document.getElementById('remote-badge');
-  const big = document.getElementById('big-ctrl-btn');
-  const ts = document.getElementById('remote-ts');
-  if (badge) {
-    badge.className = 'r-badge ' + (remoteRunning ? 'on' : 'off');
-    badge.textContent = remoteRunning ? '● 运行中' : '○ 已停止';
-  }
-  if (big) {
-    big.className = 'big-switch-btn ' + (remoteRunning ? 'stop' : 'start');
-    big.textContent = remoteRunning ? '⏹ 一键停止全部 Agent（省额度休息）' : '▶ 一键启动全部 Agent 聊天';
-  }
-  if (ts) {
-    ts.textContent = remoteUpdatedAt ? ('最近切换：' + remoteUpdatedAt) : '已与云端控制表同步';
+  if (state.me) {
+    document.getElementById('rail-me-ava').textContent = state.me.name.slice(0, 2);
   }
 }
 
-async function toggleRemoteAgent() {
-  let pin = getPin();
-  if (!pin) {
-    pin = window.prompt('请输入你的专属远程控制口令：', '');
-    if (pin === null) return;
-    pin = pin.trim();
-    if (!pin) return;
-    localStorage.setItem(LS_PIN, pin);
-  }
-  const nextRunning = !remoteRunning;
-  const api = getApiUrl();
-  const big = document.getElementById('big-ctrl-btn');
-  if (big) { big.disabled = true; big.textContent = '指令下发中…'; }
+function openAdminModal() {
+  const c = state.control || {};
+  document.getElementById('admin-info').innerHTML =
+    `当前状态：<b>${c.running ? '运行中' : '已停止'}</b><br>` +
+    `今日已调用 AI：<b>${c.daily_calls || 0} / ${c.max_daily_calls || 350}</b> 次<br>` +
+    `最近切换：${esc(c.updated_at || '-')}`;
+  document.getElementById('admin-pin').value = localStorage.getItem(LS_PIN) || '';
+  document.getElementById('admin-modal').classList.add('open');
+}
+
+async function setAdminRunning(wantRun) {
+  const pin = document.getElementById('admin-pin').value.trim();
+  if (!pin) { alert('请输入管理员控制口令'); return; }
+  localStorage.setItem(LS_PIN, pin);
+  const res = await fetch(`${API_BASE}/api/control`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ pin, running: wantRun })
+  });
+  const d = await res.json();
+  if (!d.ok) { alert(d.error || '操作失败'); return; }
+  state.control = d.control;
+  updateStatusPills();
+  closeModal('admin-modal');
+}
+
+async function fetchState(forceScroll = false) {
   try {
-    const url = `${api}?action=set_control&running=${nextRunning ? 'true' : 'false'}&pin=${encodeURIComponent(pin)}&_t=${Date.now()}`;
+    const pid = getPid();
+    const url = `${API_BASE}/api/state${pid ? '?player_id=' + encodeURIComponent(pid) : ''}`;
     const res = await fetch(url);
-    const data = await res.json();
-    if (!data.ok) {
-      if ((data.error || '').includes('口令')) localStorage.removeItem(LS_PIN);
-      alert('远程切换失败：' + (data.error || '未知错误'));
-    } else {
-      remoteRunning = !!(data.control && data.control.running);
-      remoteUpdatedAt = (data.control && data.control.updated_at) || '';
-      document.getElementById('chat-foot-txt').textContent = remoteRunning
-        ? '已下发【启动】，电脑端 8 秒内恢复'
-        : '已下发【停止】，电脑端 8 秒内暂停';
-    }
-  } catch (e) {
-    alert('网络请求失败：' + e.message);
-  } finally {
-    if (big) big.disabled = false;
-    updateControlUI();
-  }
-}
-
-function saveRemoteConfig() {
-  const u = document.getElementById('cfg-url').value.trim();
-  const p = document.getElementById('cfg-pin').value.trim();
-  if (u) localStorage.setItem(LS_API, u);
-  if (p) localStorage.setItem(LS_PIN, p);
-  alert('已保存到本机浏览器');
-  fetchLatest(true);
-}
-
-function renderAll(forceScroll = false) {
-  renderChannelList();
-  renderChat(forceScroll);
-  if (currentTab === 'moments') renderMoments();
-  if (currentTab === 'contacts') renderContacts();
-  const mCount = getMomentMessages().length;
-  if (mCount > 0 && currentTab !== 'moments') {
-    document.getElementById('moments-dot').classList.add('show');
-  }
-}
-
-async function fetchLatest(manual = false) {
-  const api = getApiUrl();
-  const tag = document.getElementById('top-live-tag');
-  try {
-    const res = await fetch(`${api}?_t=${Date.now()}`);
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const data = await res.json();
-    if (data && data.ok) {
-      if (data.control && typeof data.control.running === 'boolean') {
-        remoteRunning = data.control.running;
-        remoteUpdatedAt = data.control.updated_at || '';
-        updateControlUI();
-      }
-      if (Array.isArray(data.entries) && data.entries.length > 0) {
-        allEntries = data.entries;
-        tag.textContent = `(在线 · ${allEntries.length})`;
-      } else {
-        if (!allEntries.length) await loadFallback();
-        tag.textContent = '(云端就绪)';
-      }
-      renderAll(manual);
-      return;
-    }
-  } catch (_) {}
-  await loadFallback();
-  tag.textContent = '(静态兜底)';
-  renderAll(manual);
-}
-
-async function loadFallback() {
-  try {
-    const r = await fetch(`${FALLBACK_JSON}?_t=${Date.now()}`);
-    const d = await r.json();
-    if (Array.isArray(d.entries)) allEntries = d.entries;
+    const d = await res.json();
+    if (!d.ok) return;
+    state = d;
+    updateStatusPills();
+    renderChatList();
+    renderChatBody(forceScroll);
+    if (currentTab === 'moments') renderMoments();
+    if (currentTab === 'contacts') renderContacts();
+    if (currentTab === 'life' && !document.querySelector('#life-body .choice-btn')) renderLife();
   } catch (_) {}
 }
 
-updateControlUI();
-fetchLatest(true);
-setInterval(() => fetchLatest(false), 4000);
+async function triggerTick() {
+  if (!state.control || !state.control.running) return;
+  try {
+    const ch = activeChat.type === 'group' ? activeChat.id : '';
+    const res = await fetch(`${API_BASE}/api/tick`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ channel: ch })
+    });
+    const d = await res.json();
+    if (d && d.ok && !d.skipped) fetchState(false);
+  } catch (_) {}
+}
+
+fetchState(true);
+setInterval(() => fetchState(false), 5000);
+setInterval(triggerTick, 22000);
 </script>
 </body>
 </html>
