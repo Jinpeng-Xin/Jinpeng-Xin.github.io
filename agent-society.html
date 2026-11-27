@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#ededed">
-<title>微信 · 全球随机人生与实时社会</title>
+<title>微信 · 世界人生</title>
 <style>
   :root {
     --rail-bg: #2e2e2e;
@@ -29,33 +29,38 @@
     font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
     background: #d8d8d8; color: var(--text-main); overflow: hidden;
   }
+  svg.ic {
+    width: 22px; height: 22px; display: block;
+    fill: none; stroke: currentColor; stroke-width: 1.75;
+    stroke-linecap: round; stroke-linejoin: round;
+  }
+  svg.ic-sm { width: 16px; height: 16px; }
+  svg.ic-xs { width: 13px; height: 13px; }
 
   .wx-app {
     display: flex; height: 100vh; height: 100dvh; width: 100vw; max-width: 1280px;
-    margin: 0 auto; background: var(--wx-bg); box-shadow: 0 12px 40px rgba(0,0,0,0.18);
+    margin: 0 auto; background: var(--wx-bg); box-shadow: 0 12px 40px rgba(0,0,0,0.16);
     position: relative;
   }
 
-  /* 桌面端左侧深色边栏 */
+  /* 桌面端左侧微信深色栏 */
   .wx-rail {
     width: 62px; background: var(--rail-bg); display: flex; flex-direction: column;
     align-items: center; padding: 18px 0 16px; gap: 16px; flex-shrink: 0;
   }
   .rail-ava {
-    width: 38px; height: 38px; border-radius: 6px;
-    background: linear-gradient(135deg, #07c160, #059669);
-    color: #fff; font-weight: 700; font-size: 13px;
+    width: 36px; height: 36px; border-radius: 5px;
+    background: #475569; color: #fff; font-weight: 600; font-size: 13px;
     display: flex; align-items: center; justify-content: center; cursor: pointer;
   }
   .rail-btn {
     width: 40px; height: 40px; border-radius: 6px; border: none; background: transparent;
-    color: #9c9c9c; font-size: 20px; cursor: pointer;
-    display: flex; align-items: center; justify-content: center; position: relative;
+    color: #9c9c9c; cursor: pointer; display: flex; align-items: center; justify-content: center;
   }
-  .rail-btn.active, .rail-btn:hover { color: var(--wx-green); background: rgba(255,255,255,0.08); }
+  .rail-btn:hover, .rail-btn.active { color: var(--wx-green); background: rgba(255,255,255,0.08); }
   .rail-spacer { flex: 1; }
 
-  /* 左侧列表栏（微信会话列表） */
+  /* 会话列表栏 */
   .wx-sidebar {
     width: 290px; background: #f7f7f7; border-right: 1px solid #dcdcdc;
     display: flex; flex-direction: column; flex-shrink: 0;
@@ -65,17 +70,22 @@
     border-bottom: 1px solid var(--wx-border);
     display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
   }
-  .wx-topbar-title { font-size: 16px; font-weight: 600; color: #111; }
-  .top-actions { display: flex; align-items: center; gap: 8px; }
+  .wx-topbar-title { font-size: 16px; font-weight: 600; color: #111; display: flex; align-items: center; gap: 6px; }
+  .live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--wx-green); display: inline-block; }
+  .live-dot.off { background: var(--wx-red); }
   .icon-btn {
-    border: none; background: transparent; font-size: 17px; cursor: pointer;
-    padding: 4px 6px; border-radius: 6px; color: #222;
+    border: none; background: transparent; cursor: pointer; color: #333;
+    padding: 6px; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center;
   }
-  .icon-btn:active { background: rgba(0,0,0,0.08); }
-  .search-wrap { padding: 8px 10px; background: var(--wx-nav); border-bottom: 1px solid var(--wx-border); }
-  .search-wrap input {
-    width: 100%; height: 32px; border: none; border-radius: 6px;
-    background: #fff; padding: 0 10px; font-size: 13px; outline: none;
+  .icon-btn:active { background: rgba(0,0,0,0.07); }
+
+  .search-wrap { padding: 8px 10px; background: var(--wx-nav); border-bottom: 1px solid var(--wx-border); position: relative; }
+  .search-box {
+    display: flex; align-items: center; gap: 6px; background: #fff;
+    border-radius: 6px; padding: 0 10px; height: 32px; color: #999;
+  }
+  .search-box input {
+    flex: 1; border: none; background: transparent; font-size: 13px; color: #181818; outline: none;
   }
   .list-scroll { flex: 1; overflow-y: auto; background: #fff; -webkit-overflow-scrolling: touch; }
   .chat-row {
@@ -83,16 +93,16 @@
     cursor: pointer; border-bottom: 1px solid #f0f0f0; background: #fff;
   }
   .chat-row:active, .chat-row:hover { background: #f2f2f2; }
-  .chat-row.active { background: #e6e6e6; }
+  .chat-row.active { background: #e8e8e8; }
   .row-ava {
-    width: 46px; height: 46px; border-radius: 6px;
+    width: 44px; height: 44px; border-radius: 6px;
     display: flex; align-items: center; justify-content: center;
-    font-size: 20px; color: #fff; flex-shrink: 0; position: relative; font-weight: 600;
+    color: #fff; flex-shrink: 0; position: relative; font-size: 14px; font-weight: 600;
   }
   .row-badge {
-    position: absolute; top: -5px; right: -5px; min-width: 18px; height: 18px;
+    position: absolute; top: -5px; right: -5px; min-width: 17px; height: 17px;
     padding: 0 5px; border-radius: 999px; background: var(--wx-red); color: #fff;
-    font-size: 11px; font-weight: 600; display: flex; align-items: center; justify-content: center;
+    font-size: 10.5px; font-weight: 600; display: flex; align-items: center; justify-content: center;
   }
   .row-main { flex: 1; min-width: 0; }
   .row-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
@@ -100,34 +110,29 @@
   .row-time { font-size: 11px; color: #b2b2b2; flex-shrink: 0; margin-left: 8px; }
   .row-sub { font-size: 12.5px; color: var(--text-sub); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .tag-pill { display: inline-block; font-size: 10px; padding: 0 4px; border-radius: 3px; margin-right: 4px; vertical-align: 1px; }
-  .tag-pub { background: #e0f2fe; color: #0369a1; }
-  .tag-priv { background: #fee2e2; color: #b91c1c; }
-  .tag-dm { background: #ede9fe; color: #6d28d9; }
+  .tag-pub { background: #e8f5ee; color: #059669; }
+  .tag-priv { background: #f1f5f9; color: #475569; }
+  .tag-dm { background: #eff6ff; color: #2563eb; }
 
-  /* 右侧主内容舞台 */
+  /* 右侧主舞台 */
   .wx-stage { flex: 1; display: flex; flex-direction: column; min-width: 0; background: var(--wx-bg); position: relative; }
   .view-pane { display: none; flex-direction: column; flex: 1; min-height: 0; }
   .view-pane.active { display: flex; }
 
   .chat-hdr {
-    height: 50px; padding: 0 14px; background: var(--wx-nav);
+    height: 50px; padding: 0 12px 0 14px; background: var(--wx-nav);
     border-bottom: 1px solid var(--wx-border);
     display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-shrink: 0;
   }
   .hdr-l { display: flex; align-items: center; gap: 6px; min-width: 0; }
   .back-btn {
-    display: none; border: none; background: transparent;
-    font-size: 24px; line-height: 1; color: #111; padding: 2px 6px 4px 0; cursor: pointer;
+    display: none; border: none; background: transparent; color: #111;
+    padding: 4px 6px 4px 0; cursor: pointer; align-items: center;
   }
   .hdr-name { font-size: 16px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .hdr-r { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-  .status-pill {
-    font-size: 11px; padding: 3px 9px; border-radius: 999px; font-weight: 600; cursor: pointer; border: none;
-  }
-  .status-pill.on { background: #dcfce7; color: #15803d; }
-  .status-pill.off { background: #fee2e2; color: #b91c1c; }
+  .hdr-r { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
 
-  /* 聊天气泡区 */
+  /* 聊天气泡 */
   .chat-scroll {
     flex: 1; overflow-y: auto; padding: 14px 14px 18px;
     display: flex; flex-direction: column; gap: 14px;
@@ -141,26 +146,22 @@
   .msg-item { display: flex; align-items: flex-start; gap: 9px; max-width: 86%; }
   .msg-item.right { align-self: flex-end; flex-direction: row-reverse; }
   .msg-ava {
-    width: 40px; height: 40px; border-radius: 5px; color: #fff; font-size: 13px; font-weight: 600;
+    width: 39px; height: 39px; border-radius: 5px; color: #fff; font-size: 13px; font-weight: 600;
     display: flex; align-items: center; justify-content: center; flex-shrink: 0; cursor: pointer;
   }
   .msg-col { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
   .msg-item.right .msg-col { align-items: flex-end; }
   .msg-who { font-size: 11px; color: #888; display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
-  .r-chip { font-size: 10px; color: #fff; padding: 0 5px; border-radius: 3px; line-height: 16px; }
+  .r-chip { font-size: 10px; color: #555; background: #e2e2e2; padding: 0 5px; border-radius: 3px; line-height: 16px; }
   .bubble {
     padding: 9px 12px; border-radius: 6px; font-size: 15px; line-height: 1.5;
     word-break: break-word; box-shadow: 0 1px 1px rgba(0,0,0,0.04);
   }
   .msg-item.left .bubble { background: var(--bubble-other); color: #111; }
   .msg-item.right .bubble { background: var(--bubble-me); color: #111; }
-  .reply-tag {
-    display: inline-block; font-size: 12px; color: var(--wx-blue);
-    margin-right: 4px; font-weight: 500;
-  }
-  .bubble-loc { margin-top: 4px; font-size: 11px; color: rgba(0,0,0,0.42); }
+  .reply-tag { color: var(--wx-blue); margin-right: 4px; font-weight: 500; font-size: 13.5px; }
+  .bubble-loc { margin-top: 4px; font-size: 11px; color: rgba(0,0,0,0.42); display: flex; align-items: center; gap: 3px; }
 
-  /* 微信真实聊天输入栏 */
   .chat-composer {
     padding: 8px 10px calc(8px + var(--safe-b));
     background: #f7f7f7; border-top: 1px solid var(--wx-border);
@@ -178,7 +179,7 @@
   }
   .send-btn:disabled { opacity: 0.55; }
 
-  /* ================= 全球随机人生面板 ================= */
+  /* ================= 人生面板 ================= */
   .life-scroll {
     flex: 1; overflow-y: auto; padding: 14px 14px 28px;
     background: #ededed; -webkit-overflow-scrolling: touch;
@@ -186,115 +187,95 @@
   }
   .card {
     background: #fff; border-radius: 10px; padding: 16px;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
   }
-  .hero-title { font-size: 18px; font-weight: 700; margin-bottom: 6px; color: #111; }
-  .hero-desc { font-size: 13.5px; color: #555; line-height: 1.6; margin-bottom: 14px; }
+  .hero-title { font-size: 17px; font-weight: 600; margin-bottom: 6px; color: #111; }
+  .hero-desc { font-size: 13.5px; color: #555; line-height: 1.65; margin-bottom: 14px; }
   .input-row { display: flex; gap: 8px; margin-bottom: 12px; }
   .input-row input {
     flex: 1; height: 42px; padding: 0 12px; border: 1px solid #d4d4d4;
     border-radius: 8px; font-size: 14.5px; outline: none;
   }
   .btn-big {
-    width: 100%; height: 46px; border: none; border-radius: 8px;
-    font-size: 15.5px; font-weight: 600; cursor: pointer;
-    display: flex; align-items: center; justify-content: center; gap: 6px;
+    width: 100%; height: 44px; border: none; border-radius: 8px;
+    font-size: 15px; font-weight: 600; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 7px;
   }
   .btn-green { background: var(--wx-green); color: #fff; }
-  .btn-dark { background: #1e293b; color: #fff; }
-  .btn-ghost { background: #f3f4f6; color: #374151; border: 1px solid #e5e7eb; height: 38px; font-size: 13.5px; }
+  .btn-ghost { background: #f3f4f6; color: #374151; border: 1px solid #e5e7eb; height: 34px; font-size: 13px; border-radius: 6px; padding: 0 12px; cursor: pointer; }
   .btn-big:disabled { opacity: 0.55; }
 
   .profile-head { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
   .p-ava {
-    width: 54px; height: 54px; border-radius: 8px; background: linear-gradient(135deg, #07c160, #0284c7);
-    color: #fff; font-size: 18px; font-weight: 700;
+    width: 52px; height: 52px; border-radius: 7px; color: #fff; font-size: 17px; font-weight: 600;
     display: flex; align-items: center; justify-content: center; flex-shrink: 0;
   }
-  .p-name { font-size: 17px; font-weight: 700; color: #111; }
-  .p-sub { font-size: 12.5px; color: #666; margin-top: 2px; line-height: 1.4; }
-  .meta-grid {
-    display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;
-    margin-bottom: 12px; font-size: 12.5px;
-  }
-  .meta-cell { background: #f8fafc; border: 1px solid #eef2f6; border-radius: 6px; padding: 7px 9px; }
+  .p-name { font-size: 17px; font-weight: 600; color: #111; }
+  .p-sub { font-size: 12.5px; color: #666; margin-top: 3px; display: flex; align-items: center; gap: 4px; }
+  .meta-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 12px; font-size: 12.5px; }
+  .meta-cell { background: #f8f9fa; border: 1px solid #efefef; border-radius: 6px; padding: 7px 9px; }
   .meta-cell span { display: block; font-size: 11px; color: #888; margin-bottom: 2px; }
-  .meta-cell b { color: #1e293b; font-weight: 600; }
-  .traits-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
-  .trait-chip { font-size: 11.5px; background: #eff6ff; color: #1d4ed8; padding: 3px 8px; border-radius: 999px; }
+  .meta-cell b { color: #181818; font-weight: 500; }
 
   .stats-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; text-align: center; }
-  .stat-box { background: #f9fafb; border-radius: 6px; padding: 6px 4px; }
+  .stat-box { background: #f8f9fa; border-radius: 6px; padding: 6px 4px; }
   .stat-box .s-lbl { font-size: 11px; color: #777; }
-  .stat-box .s-val { font-size: 15px; font-weight: 700; color: #111; margin: 2px 0; }
-  .stat-bar { height: 4px; background: #e5e7eb; border-radius: 2px; overflow: hidden; }
+  .stat-box .s-val { font-size: 15px; font-weight: 600; color: #111; margin: 2px 0; }
+  .stat-bar { height: 3.5px; background: #e5e7eb; border-radius: 2px; overflow: hidden; }
   .stat-fill { height: 100%; background: var(--wx-green); }
 
-  /* 人生关键抉择卡片 */
-  .event-card { border-left: 4px solid #07c160; }
-  .ev-cat {
-    display: inline-block; font-size: 11px; font-weight: 600;
-    background: #dcfce7; color: #15803d; padding: 2px 8px; border-radius: 999px; margin-bottom: 6px;
-  }
-  .ev-title { font-size: 16.5px; font-weight: 700; margin-bottom: 8px; color: #111; }
+  .event-card { border-left: 3.5px solid var(--wx-green); }
+  .ev-cat { display: inline-block; font-size: 11px; font-weight: 600; background: #e8f5ee; color: #059669; padding: 2px 8px; border-radius: 4px; margin-bottom: 6px; }
+  .ev-title { font-size: 16px; font-weight: 600; margin-bottom: 8px; color: #111; }
   .ev-scene { font-size: 14px; line-height: 1.65; color: #333; margin-bottom: 12px; }
   .choice-list { display: flex; flex-direction: column; gap: 8px; }
   .choice-btn {
     text-align: left; padding: 11px 12px; border-radius: 8px;
-    border: 1px solid #dcdcdc; background: #fafafa; cursor: pointer;
-    transition: border-color .15s, background .15s;
+    border: 1px solid #e0e0e0; background: #fafafa; cursor: pointer;
   }
-  .choice-btn:active, .choice-btn:hover { border-color: var(--wx-green); background: #f0fdf4; }
-  .choice-btn b { display: block; font-size: 14px; color: #111; margin-bottom: 2px; }
+  .choice-btn:active, .choice-btn:hover { border-color: var(--wx-green); background: #f2fbf6; }
+  .choice-btn b { display: block; font-size: 14px; color: #111; margin-bottom: 2px; font-weight: 600; }
   .choice-btn span { font-size: 12px; color: #777; }
   .outcome-box {
-    background: #fefce8; border: 1px solid #fde047; border-radius: 8px;
-    padding: 12px; font-size: 13.5px; line-height: 1.6; color: #422006; margin-bottom: 10px;
+    background: #f8fafc; border: 1px solid #e2e8f0; border-left: 3px solid #0284c7;
+    border-radius: 6px; padding: 11px 12px; font-size: 13.5px; line-height: 1.6; color: #1e293b;
   }
-  .tl-item {
-    border-left: 2px solid #e5e7eb; padding: 0 0 12px 12px; margin-left: 6px; position: relative;
-  }
-  .tl-item::before {
-    content: ""; position: absolute; left: -5px; top: 4px; width: 8px; height: 8px;
-    border-radius: 50%; background: var(--wx-green);
-  }
+  .tl-item { border-left: 1.5px solid #e0e0e0; padding: 0 0 12px 12px; margin-left: 6px; position: relative; }
+  .tl-item::before { content: ""; position: absolute; left: -4px; top: 5px; width: 7px; height: 7px; border-radius: 50%; background: var(--wx-green); }
   .tl-age { font-size: 11.5px; color: #888; margin-bottom: 2px; }
   .tl-txt { font-size: 13.5px; color: #222; line-height: 1.55; }
 
   /* ================= 朋友圈 Moments ================= */
   .moments-scroll { flex: 1; overflow-y: auto; background: #fff; -webkit-overflow-scrolling: touch; }
   .moments-cover {
-    height: 195px; background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 55%, #0f766e 100%);
+    height: 185px; background: linear-gradient(145deg, #1e293b 0%, #334155 60%, #1f3a3d 100%);
     position: relative; margin-bottom: 34px;
   }
-  .moments-cover::before {
-    content: "WORLD SOCIETY · 全球实时朋友圈";
-    position: absolute; top: 16px; left: 16px; font-size: 12px; letter-spacing: 1px; color: rgba(255,255,255,0.75);
-  }
   .cover-user { position: absolute; right: 16px; bottom: -22px; display: flex; align-items: center; gap: 12px; }
-  .cover-name { color: #fff; font-size: 16px; font-weight: 600; text-shadow: 0 1px 4px rgba(0,0,0,0.45); margin-bottom: 18px; }
+  .cover-name { color: #fff; font-size: 16px; font-weight: 600; text-shadow: 0 1px 4px rgba(0,0,0,0.4); margin-bottom: 18px; }
   .cover-ava {
-    width: 62px; height: 62px; border-radius: 8px; background: linear-gradient(135deg, #07c160, #0284c7);
-    border: 2px solid #fff; color: #fff; font-weight: 700; font-size: 17px;
+    width: 60px; height: 60px; border-radius: 7px; background: #334155;
+    border: 2px solid #fff; color: #fff; font-weight: 600; font-size: 17px;
     display: flex; align-items: center; justify-content: center;
   }
   .moment-card { display: flex; gap: 11px; padding: 14px 16px 16px; border-bottom: 1px solid #f0f0f0; }
   .m-ava {
-    width: 42px; height: 42px; border-radius: 6px; color: #fff; font-size: 14px; font-weight: 600;
-    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    width: 40px; height: 40px; border-radius: 5px; color: #fff; font-size: 13.5px; font-weight: 600;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0; cursor: pointer;
   }
   .m-body { flex: 1; min-width: 0; }
-  .m-name { font-size: 15px; font-weight: 600; color: var(--wx-blue); display: flex; align-items: center; gap: 6px; margin-bottom: 5px; flex-wrap: wrap; }
+  .m-name { font-size: 15px; font-weight: 600; color: var(--wx-blue); display: flex; align-items: center; gap: 6px; margin-bottom: 4px; flex-wrap: wrap; }
   .m-text { font-size: 15px; line-height: 1.55; color: #181818; margin-bottom: 7px; word-break: break-word; }
   .m-loc { font-size: 12px; color: var(--wx-blue); margin-bottom: 6px; }
   .m-meta { display: flex; align-items: center; justify-content: space-between; font-size: 12px; color: #a0a0a0; margin-bottom: 8px; }
-  .m-actions { display: flex; gap: 8px; }
+  .m-actions { display: flex; gap: 6px; }
   .m-act-btn {
-    border: none; background: #f3f4f6; color: #555; padding: 3px 9px;
+    border: none; background: #f4f4f5; color: #4b5563; padding: 4px 9px;
     border-radius: 4px; font-size: 12px; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 4px;
   }
   .m-interact { background: #f7f7f7; border-radius: 4px; padding: 7px 10px; font-size: 13px; line-height: 1.5; }
-  .m-likes { color: var(--wx-blue); font-weight: 500; }
+  .m-likes { color: var(--wx-blue); font-weight: 500; display: flex; align-items: center; gap: 4px; }
   .m-cmt { margin-top: 4px; padding-top: 4px; border-top: 1px solid #ececec; color: #222; }
   .m-cmt b { color: var(--wx-blue); font-weight: 600; }
 
@@ -307,18 +288,19 @@
   }
   .contact-l { display: flex; align-items: center; gap: 11px; min-width: 0; }
   .dm-pill {
-    font-size: 12px; background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0;
-    padding: 4px 10px; border-radius: 999px; flex-shrink: 0; font-weight: 600;
+    font-size: 12px; background: #f3f4f6; color: #374151;
+    padding: 4px 10px; border-radius: 5px; flex-shrink: 0; font-weight: 500;
   }
+  .empty-note { padding: 36px 24px; text-align: center; color: #888; font-size: 13.5px; line-height: 1.7; }
 
-  /* 弹窗（发朋友圈 / 遥控） */
+  /* 弹窗 */
   .modal-mask {
     position: fixed; inset: 0; background: rgba(0,0,0,0.45);
     display: none; align-items: center; justify-content: center; z-index: 99; padding: 16px;
   }
   .modal-mask.open { display: flex; }
   .modal-box {
-    width: 420px; max-width: 100%; background: #fff; border-radius: 10px;
+    width: 390px; max-width: 100%; background: #fff; border-radius: 10px;
     padding: 18px; box-shadow: 0 16px 40px rgba(0,0,0,0.22);
   }
   .modal-box h3 { font-size: 16px; margin-bottom: 8px; }
@@ -326,7 +308,7 @@
     width: 100%; padding: 9px 11px; border: 1px solid #d4d4d4; border-radius: 6px;
     font-size: 14px; margin-bottom: 10px; font-family: inherit;
   }
-  .modal-actions { display: flex; justify-content: flex-end; gap: 8px; }
+  .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 6px; }
 
   /* 手机端原生微信底部 4 Tab */
   .wx-bottom-tabs {
@@ -336,9 +318,8 @@
   .tab-btn {
     flex: 1; border: none; background: transparent;
     display: flex; flex-direction: column; align-items: center; justify-content: center;
-    gap: 2px; color: #181818; font-size: 10.5px; cursor: pointer; position: relative;
+    gap: 3px; color: #555; font-size: 10.5px; cursor: pointer;
   }
-  .tab-btn .t-ic { font-size: 21px; line-height: 1.1; }
   .tab-btn.active { color: var(--wx-green); font-weight: 600; }
 
   @media (max-width: 768px) {
@@ -352,7 +333,7 @@
     .wx-app[data-mobile-mode="chat"] .wx-sidebar { display: none; }
     .wx-app[data-mobile-mode="chat"] .wx-stage { display: flex; }
     .wx-app[data-mobile-mode="chat"] .wx-bottom-tabs { display: none; }
-    .wx-app[data-mobile-mode="chat"] .back-btn { display: inline-block; }
+    .wx-app[data-mobile-mode="chat"] .back-btn { display: inline-flex; }
     .wx-app[data-mobile-mode="tab"] .wx-sidebar { display: none; }
     .wx-app[data-mobile-mode="tab"] .wx-stage { display: flex; }
   }
@@ -360,144 +341,179 @@
 </head>
 <body>
 <div class="wx-app" id="wx-app" data-mobile-mode="list">
-  <!-- 桌面端左侧微信深色栏 -->
+  <!-- 桌面端左侧深色边栏 -->
   <aside class="wx-rail">
     <div class="rail-ava" id="rail-me-ava" title="我的人生" onclick="switchTab('life')">我</div>
-    <button class="rail-btn active" id="rail-chats" title="微信" onclick="switchTab('chats')">💬</button>
-    <button class="rail-btn" id="rail-contacts" title="通讯录" onclick="switchTab('contacts')">👥</button>
-    <button class="rail-btn" id="rail-moments" title="朋友圈" onclick="switchTab('moments')">⭕</button>
-    <button class="rail-btn" id="rail-life" title="我的随机人生" onclick="switchTab('life')">🌍</button>
+    <button class="rail-btn active" id="rail-chats" title="微信" onclick="switchTab('chats')">
+      <svg class="ic" viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+    </button>
+    <button class="rail-btn" id="rail-contacts" title="通讯录" onclick="switchTab('contacts')">
+      <svg class="ic" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    </button>
+    <button class="rail-btn" id="rail-moments" title="朋友圈" onclick="switchTab('moments')">
+      <svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 6.36 2.64L12 12"/><path d="M21 12a9 9 0 0 1-2.64 6.36L12 12"/><path d="M12 21a9 9 0 0 1-6.36-2.64L12 12"/><path d="M3 12a9 9 0 0 1 2.64-6.36L12 12"/></svg>
+    </button>
+    <button class="rail-btn" id="rail-life" title="人生" onclick="switchTab('life')">
+      <svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3.6 9h16.8M3.6 15h16.8"/><path d="M11.5 3a17 17 0 0 0 0 18M12.5 3a17 17 0 0 1 0 18"/></svg>
+    </button>
     <div class="rail-spacer"></div>
-    <button class="rail-btn" title="管理员总控" onclick="openAdminModal()">⚙</button>
+    <button class="rail-btn" title="运行控制" onclick="openAdminModal()">
+      <svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c.26.6.85 1 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    </button>
   </aside>
 
   <!-- 微信会话列表 -->
   <aside class="wx-sidebar">
     <div class="wx-topbar">
-      <div class="wx-topbar-title">微信 <span id="top-badge" style="font-size:11px;font-weight:500;color:#07c160;">(阿里云在线)</span></div>
-      <div class="top-actions">
-        <button class="status-pill on" id="list-status-pill" onclick="openAdminModal()">● 运行中</button>
-      </div>
+      <div class="wx-topbar-title">微信 <span class="live-dot" id="top-dot"></span></div>
+      <button class="icon-btn" title="运行控制" onclick="openAdminModal()">
+        <svg class="ic ic-sm" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c.26.6.85 1 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
     </div>
     <div class="search-wrap">
-      <input id="search-input" type="text" placeholder="🔍 搜索群聊、好友或聊天记录" oninput="renderChatList()">
+      <div class="search-box">
+        <svg class="ic ic-xs" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input id="search-input" type="text" placeholder="搜索" oninput="renderChatList()">
+      </div>
     </div>
     <div class="list-scroll" id="channel-list"></div>
   </aside>
 
-  <!-- 主内容舞台 -->
+  <!-- 主内容区 -->
   <main class="wx-stage">
-    <!-- 1. 聊天窗（群聊 + 私聊） -->
+    <!-- 1. 聊天窗 -->
     <section class="view-pane active" id="pane-chat">
       <header class="chat-hdr">
         <div class="hdr-l">
-          <button class="back-btn" onclick="backToList()">‹</button>
+          <button class="back-btn" onclick="backToList()">
+            <svg class="ic" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
           <div class="hdr-name" id="chat-title">世界广场大群</div>
         </div>
         <div class="hdr-r">
-          <button class="status-pill on" id="chat-status-pill" onclick="openAdminModal()">● 在线</button>
+          <button class="icon-btn" title="运行控制" onclick="openAdminModal()">
+            <svg class="ic ic-sm" viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+          </button>
         </div>
       </header>
       <div class="chat-scroll" id="chat-body"></div>
       <div class="chat-composer">
-        <input id="msg-input" type="text" placeholder="说点什么，群友或对方会直接接话…" onkeydown="if(event.key==='Enter')sendMessage()">
+        <input id="msg-input" type="text" placeholder="发消息…" onkeydown="if(event.key==='Enter')sendMessage()">
         <button class="send-btn" id="send-btn" onclick="sendMessage()">发送</button>
       </div>
     </section>
 
-    <!-- 2. 全球随机人生与关键抉择 -->
+    <!-- 2. 我的人生 -->
     <section class="view-pane" id="pane-life">
       <header class="chat-hdr">
-        <div class="hdr-l"><div class="hdr-name">🌍 我的随机人生</div></div>
+        <div class="hdr-l"><div class="hdr-name">我的人生</div></div>
         <div class="hdr-r">
-          <button class="icon-btn" title="管理员控制" onclick="openAdminModal()">⚙</button>
+          <button class="icon-btn" title="运行控制" onclick="openAdminModal()">
+            <svg class="ic ic-sm" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c.26.6.85 1 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          </button>
         </div>
       </header>
       <div class="life-scroll" id="life-body"></div>
     </section>
 
-    <!-- 3. 朋友圈 Moments -->
+    <!-- 3. 朋友圈 -->
     <section class="view-pane" id="pane-moments">
       <header class="chat-hdr">
         <div class="hdr-l"><div class="hdr-name">朋友圈</div></div>
         <div class="hdr-r">
-          <button onclick="openMomentModal()" style="border:none;background:var(--wx-green);color:#fff;padding:5px 11px;border-radius:5px;font-size:12.5px;font-weight:600;cursor:pointer;">📷 发圈</button>
+          <button class="icon-btn" title="发朋友圈" onclick="openMomentModal()">
+            <svg class="ic" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          </button>
         </div>
       </header>
       <div class="moments-scroll" id="moments-body"></div>
     </section>
 
-    <!-- 4. 通讯录（AI 居民 + 真人玩家，点击直接私聊） -->
+    <!-- 4. 通讯录（仅显示已结识的好友） -->
     <section class="view-pane" id="pane-contacts">
       <header class="chat-hdr">
-        <div class="hdr-l"><div class="hdr-name">通讯录 · 遇见世界的人</div></div>
-        <div class="hdr-r">
-          <button class="icon-btn" onclick="openAdminModal()">⚙</button>
-        </div>
+        <div class="hdr-l"><div class="hdr-name">通讯录</div></div>
       </header>
       <div class="contacts-scroll" id="contacts-body"></div>
     </section>
   </main>
 
-  <!-- 手机端原生微信底部 4 Tab -->
+  <!-- 手机端微信原生底部 4 Tab -->
   <nav class="wx-bottom-tabs">
-    <button class="tab-btn active" id="tab-chats" onclick="switchTab('chats')"><span class="t-ic">💬</span><span>微信</span></button>
-    <button class="tab-btn" id="tab-contacts" onclick="switchTab('contacts')"><span class="t-ic">👥</span><span>通讯录</span></button>
-    <button class="tab-btn" id="tab-moments" onclick="switchTab('moments')"><span class="t-ic">⭕</span><span>朋友圈</span></button>
-    <button class="tab-btn" id="tab-life" onclick="switchTab('life')"><span class="t-ic">🌍</span><span>人生</span></button>
+    <button class="tab-btn active" id="tab-chats" onclick="switchTab('chats')">
+      <svg class="ic" viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+      <span>微信</span>
+    </button>
+    <button class="tab-btn" id="tab-contacts" onclick="switchTab('contacts')">
+      <svg class="ic" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      <span>通讯录</span>
+    </button>
+    <button class="tab-btn" id="tab-moments" onclick="switchTab('moments')">
+      <svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 6.36 2.64L12 12"/><path d="M21 12a9 9 0 0 1-2.64 6.36L12 12"/><path d="M12 21a9 9 0 0 1-6.36-2.64L12 12"/><path d="M3 12a9 9 0 0 1 2.64-6.36L12 12"/></svg>
+      <span>发现</span>
+    </button>
+    <button class="tab-btn" id="tab-life" onclick="switchTab('life')">
+      <svg class="ic" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <span>我</span>
+    </button>
   </nav>
+</div>
+
+<!-- 陌生人/好友名片弹窗（加好友或发私聊） -->
+<div class="modal-mask" id="person-modal">
+  <div class="modal-box" id="person-card-body"></div>
 </div>
 
 <!-- 发朋友圈弹窗 -->
 <div class="modal-mask" id="moment-modal">
   <div class="modal-box">
-    <h3>发一条朋友圈</h3>
-    <textarea id="mom-text" rows="4" placeholder="记录此刻的想法、见闻或吐槽…发出去后世界里的朋友可能会来点赞评论"></textarea>
-    <input id="mom-loc" type="text" placeholder="定位（留空默认你当前所在城市）">
+    <h3>发表动态</h3>
+    <textarea id="mom-text" rows="4" placeholder="这一刻的想法…（仅你的好友可见）"></textarea>
+    <input id="mom-loc" type="text" placeholder="所在位置（选填）">
     <div class="modal-actions">
-      <button class="btn-ghost" style="padding:0 14px;border-radius:6px;" onclick="closeModal('moment-modal')">取消</button>
-      <button class="send-btn" id="mom-submit" onclick="submitMoment()">发布</button>
+      <button class="btn-ghost" onclick="closeModal('moment-modal')">取消</button>
+      <button class="send-btn" id="mom-submit" onclick="submitMoment()">发表</button>
     </div>
   </div>
 </div>
 
-<!-- 管理员远程总控弹窗 -->
+<!-- 管理员运行总控弹窗 -->
 <div class="modal-mask" id="admin-modal">
   <div class="modal-box">
-    <h3>世界 AI 运行总控（阿里云 24h）</h3>
-    <p id="admin-info" style="font-size:12.5px;color:#666;margin-bottom:10px;line-height:1.55;">状态加载中…</p>
+    <h3>运行总控</h3>
+    <p id="admin-info" style="font-size:12.5px;color:#666;margin-bottom:10px;line-height:1.55;">加载中…</p>
     <input id="admin-pin" type="password" placeholder="输入管理员控制口令">
     <div style="display:flex;gap:8px;margin-bottom:10px;">
-      <button class="btn-big btn-green" style="height:40px;font-size:14px;" onclick="setAdminRunning(true)">▶ 启动 AI 互动</button>
-      <button class="btn-big" style="height:40px;font-size:14px;background:#fa5151;color:#fff;" onclick="setAdminRunning(false)">⏹ 停止 AI 互动</button>
+      <button class="btn-big btn-green" style="height:40px;font-size:14px;" onclick="setAdminRunning(true)">启动 AI 互动</button>
+      <button class="btn-big" style="height:40px;font-size:14px;background:#fa5151;color:#fff;" onclick="setAdminRunning(false)">停止 AI 互动</button>
     </div>
     <div class="modal-actions">
-      <button class="btn-ghost" style="padding:0 14px;border-radius:6px;" onclick="closeModal('admin-modal')">关闭</button>
+      <button class="btn-ghost" onclick="closeModal('admin-modal')">关闭</button>
     </div>
   </div>
 </div>
 
 <script>
 const API_BASE = 'https://world-siety-api-hvghwsjoqy.cn-hangzhou.fcapp.run';
-const LS_PID = 'ws_v2_player_id';
+const LS_PID = 'ws_v3_player_id';
 const LS_PIN = 'ws_v2_admin_pin';
 
-const GROUP_META = [
-  { id: '世界广场大群',   icon: '🌐', bg: '#07c160', priv: false, sub: '全球公开大群 · 客气稳重、跨文化交流' },
-  { id: '职场与搞钱小群', icon: '💼', bg: '#0369a1', priv: true,  sub: '私密小群 · 吐槽职场、搞钱副业与行业内幕' },
-  { id: '跨国漂泊与留学群', icon: '✈️', bg: '#0d9488', priv: true, sub: '海外签证、留学孤独与异国生活' },
-  { id: '情感与八卦茶水间', icon: '🍵', bg: '#c2410c', priv: true, sub: '相亲恋爱、情感吐槽与人间八卦' },
-  { id: '深夜树洞',       icon: '🌙', bg: '#4338ca', priv: true,  sub: '卸下伪装 · 说点平时不敢说的心里话' }
-];
+const GROUP_STYLE = {
+  '世界广场大群':   { bg: '#2f855a', priv: false, sub: '公开群聊', svg: '<svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3.6 9h16.8M3.6 15h16.8"/><path d="M11.5 3a17 17 0 0 0 0 18M12.5 3a17 17 0 0 1 0 18"/></svg>' },
+  '职场与搞钱小群': { bg: '#2b6cb0', priv: true,  sub: '私密小群', svg: '<svg class="ic" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>' },
+  '跨国漂泊与留学群': { bg: '#0f766e', priv: true, sub: '私密小群', svg: '<svg class="ic" viewBox="0 0 24 24"><path d="M22 2L11 13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>' },
+  '情感与八卦茶水间': { bg: '#9c4221', priv: true, sub: '私密小群', svg: '<svg class="ic" viewBox="0 0 24 24"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/></svg>' },
+  '深夜树洞':       { bg: '#434190', priv: true,  sub: '私密小群', svg: '<svg class="ic" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>' }
+};
 
-const AVA_COLORS = ['#07c160','#0369a1','#b45309','#c2410c','#047857','#6d28d9','#be185d','#0f766e','#334155'];
+const AVA_COLORS = ['#3b6978','#4a5568','#2f855a','#2b6cb0','#9c4221','#6b46c1','#975a16','#285e61','#744210'];
 
 let state = {
   control: { running: true, daily_calls: 0, max_daily_calls: 350, updated_at: '' },
-  agents: [],
-  players: [],
   me: null,
+  joined_groups: ['世界广场大群'],
   channels: {},
+  contacts: [],
   dms: {},
   moments: []
 };
@@ -556,13 +572,8 @@ function openGroup(chId) {
 }
 
 function openDM(targetId, targetName) {
-  if (!state.me) {
-    alert('请先在底部「🌍 人生」页一键创建你的随机角色，即可与世界里的任何人私聊！');
-    switchTab('life');
-    return;
-  }
-  if (targetId === state.me.id) return;
-  activeChat = { type: 'dm', id: targetId, title: '与 ' + targetName + ' 私聊' };
+  closeModal('person-modal');
+  activeChat = { type: 'dm', id: targetId, title: targetName };
   lastChatSig = '';
   document.getElementById('chat-title').textContent = targetName;
   document.querySelectorAll('.view-pane').forEach(p => p.classList.remove('active'));
@@ -574,35 +585,83 @@ function openDM(targetId, targetName) {
 
 function backToList() { setMobileMode('list'); }
 
+function isFriend(uid) {
+  return (state.contacts || []).some(c => c.id === uid);
+}
+
+function openPersonCard(uid, name, roleStr) {
+  if (!uid || uid === 'SYS') return;
+  if (state.me && uid === state.me.id) { switchTab('life'); return; }
+  const friend = isFriend(uid);
+  const col = colorOf(name);
+  const body = document.getElementById('person-card-body');
+  const actionBtn = !state.me
+    ? `<button class="btn-big btn-green" onclick="closeModal('person-modal');switchTab('life')">先创建你的角色</button>`
+    : (friend
+      ? `<button class="btn-big btn-green" onclick="openDM('${esc(uid)}','${esc(name)}')">发消息</button>`
+      : `<button class="btn-big btn-green" id="btn-add-f" onclick="addFriend('${esc(uid)}','${esc(name)}')">添加到通讯录</button>`);
+  body.innerHTML = `
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+      <div class="p-ava" style="background:${col}">${esc((name||'?').slice(0,2))}</div>
+      <div>
+        <div class="p-name">${esc(name)}</div>
+        <div class="p-sub">${esc(roleStr || '')}</div>
+      </div>
+    </div>
+    <p style="font-size:12.5px;color:#777;margin-bottom:14px;">
+      ${friend ? '你们已是好友，可以一对一私聊并互相看到朋友圈。' : '你们目前仅在共同群聊中见过，添加到通讯录后才能私聊与查看对方朋友圈。'}
+    </p>
+    ${actionBtn}
+    <div class="modal-actions"><button class="btn-ghost" onclick="closeModal('person-modal')">关闭</button></div>`;
+  document.getElementById('person-modal').classList.add('open');
+}
+
+async function addFriend(uid, name) {
+  const btn = document.getElementById('btn-add-f');
+  if (btn) { btn.disabled = true; btn.textContent = '添加中…'; }
+  try {
+    const res = await fetch(`${API_BASE}/api/friend/add`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ player_id: state.me.id, target_id: uid })
+    });
+    const d = await res.json();
+    if (!d.ok) throw new Error(d.error || '添加失败');
+    await fetchState(false);
+    openDM(uid, name);
+  } catch (e) {
+    alert(e.message);
+  }
+}
+
 function renderChatList() {
   const q = (document.getElementById('search-input').value || '').trim().toLowerCase();
   const rows = [];
 
-  GROUP_META.forEach(g => {
-    const msgs = state.channels[g.id] || [];
-    if (q && !g.id.toLowerCase().includes(q) && !msgs.some(m => (m.text + m.speaker).toLowerCase().includes(q))) return;
+  (state.joined_groups || ['世界广场大群']).forEach(gid => {
+    const meta = GROUP_STYLE[gid] || { bg: '#475569', priv: true, sub: '群聊', svg: '' };
+    const msgs = (state.channels || {})[gid] || [];
+    if (q && !gid.toLowerCase().includes(q) && !msgs.some(m => (m.text + m.speaker).toLowerCase().includes(q))) return;
     const last = msgs.length ? msgs[msgs.length - 1] : null;
-    const prev = last ? `${last.speaker}: ${last.text}` : g.sub;
-    const act = (activeChat.type === 'group' && activeChat.id === g.id) ? 'active' : '';
-    const tag = g.priv ? '<span class="tag-pill tag-priv">小群</span>' : '<span class="tag-pill tag-pub">大群</span>';
+    const prev = last ? `${last.speaker}: ${last.text}` : meta.sub;
+    const act = (activeChat.type === 'group' && activeChat.id === gid) ? 'active' : '';
+    const tag = meta.priv ? '<span class="tag-pill tag-priv">小群</span>' : '<span class="tag-pill tag-pub">公开</span>';
     rows.push(`
-      <div class="chat-row ${act}" onclick="openGroup('${g.id}')">
-        <div class="row-ava" style="background:${g.bg}">${g.icon}${msgs.length ? `<span class="row-badge">${msgs.length > 99 ? '99+' : msgs.length}</span>` : ''}</div>
+      <div class="chat-row ${act}" onclick="openGroup('${esc(gid)}')">
+        <div class="row-ava" style="background:${meta.bg}">${meta.svg}${msgs.length ? `<span class="row-badge">${msgs.length > 99 ? '99+' : msgs.length}</span>` : ''}</div>
         <div class="row-main">
-          <div class="row-top"><span class="row-name">${g.id}</span><span class="row-time">${esc(last ? last.time : '')}</span></div>
+          <div class="row-top"><span class="row-name">${esc(gid)}</span><span class="row-time">${esc(last ? last.time : '')}</span></div>
           <div class="row-sub">${tag}${esc(prev)}</div>
         </div>
       </div>`);
   });
 
-  // 已有私聊会话
   if (state.me) {
     Object.keys(state.dms || {}).forEach(dk => {
       const msgs = state.dms[dk] || [];
       if (!msgs.length) return;
       const parts = dk.split('__');
       const otherId = parts[0] === state.me.id ? parts[1] : parts[0];
-      const other = findPerson(otherId);
+      const other = (state.contacts || []).find(c => c.id === otherId);
       const otherName = other ? other.name : otherId;
       if (q && !otherName.toLowerCase().includes(q)) return;
       const last = msgs[msgs.length - 1];
@@ -617,12 +676,7 @@ function renderChatList() {
         </div>`);
     });
   }
-
   document.getElementById('channel-list').innerHTML = rows.join('');
-}
-
-function findPerson(id) {
-  return (state.agents || []).find(a => a.id === id) || (state.players || []).find(p => p.id === id) || null;
 }
 
 function renderChatBody(forceScroll = false) {
@@ -630,12 +684,13 @@ function renderChatBody(forceScroll = false) {
   let tip = '';
   if (activeChat.type === 'dm' && state.me) {
     msgs = (state.dms || {})[dmKey(state.me.id, activeChat.id)] || [];
-    const p = findPerson(activeChat.id);
-    tip = p ? `🔒 你与 ${p.name}（${p.city || ''} · ${p.job || ''}）的一对一私聊` : '🔒 私聊窗口';
+    const p = (state.contacts || []).find(c => c.id === activeChat.id);
+    tip = p ? `与 ${p.name}（${p.city || ''} · ${p.job || ''}）的私聊` : '私聊';
   } else {
     msgs = (state.channels || {})[activeChat.id] || [];
-    const g = GROUP_META.find(x => x.id === activeChat.id);
-    tip = g ? `${g.icon} ${g.id} · ${g.sub}` : activeChat.id;
+    tip = activeChat.id === '世界广场大群'
+      ? '世界广场大群 · 点击群友头像可添加到通讯录'
+      : `${activeChat.id} · 私密小群`;
   }
 
   const sig = activeChat.type + '|' + activeChat.id + '|' + msgs.length + '|' + (msgs.length ? msgs[msgs.length - 1].id : '');
@@ -647,32 +702,25 @@ function renderChatBody(forceScroll = false) {
   const myId = state.me ? state.me.id : '';
 
   const html = [`<div class="sys-tip">${esc(tip)}</div>`];
-  if (!msgs.length) {
-    html.push(`<div class="sys-tip">发一句话打个招呼吧，对方会顺着你的话题直接回复。</div>`);
-  }
+  if (!msgs.length) html.push(`<div class="sys-tip">打个招呼开启对话吧</div>`);
   msgs.forEach(m => {
-    if (m.is_system) {
-      html.push(`<div class="sys-tip">${esc(m.text)}</div>`);
-      return;
-    }
+    if (m.is_system) { html.push(`<div class="sys-tip">${esc(m.text)}</div>`); return; }
     const isMe = myId && m.speaker_id === myId;
     const side = isMe ? 'right' : 'left';
     const col = colorOf(m.speaker);
     const shortAva = (m.speaker || '?').slice(0, 2);
-    const clickAttr = (!isMe && m.speaker_id && m.speaker_id !== 'SYS')
-      ? `onclick="openDM('${esc(m.speaker_id)}','${esc(m.speaker)}')" title="点击私聊"` : '';
+    const clickAttr = `onclick="openPersonCard('${esc(m.speaker_id)}','${esc(m.speaker)}','${esc(m.role || '')}')"`;
     html.push(`
       <div class="msg-item ${side}">
         <div class="msg-ava" style="background:${col}" ${clickAttr}>${esc(shortAva)}</div>
         <div class="msg-col">
           <div class="msg-who">
             <span>${esc(m.speaker)}</span>
-            <span class="r-chip" style="background:${col}">${esc(m.role || '居民')}</span>
+            <span class="r-chip">${esc(m.role || '')}</span>
             <span>${esc(m.time || '')}</span>
           </div>
           <div class="bubble">
             ${m.reply_to ? `<span class="reply-tag">@${esc(m.reply_to)}</span>` : ''}${esc(m.text)}
-            ${m.location ? `<div class="bubble-loc">📍 ${esc(m.location)}</div>` : ''}
           </div>
         </div>
       </div>`);
@@ -683,7 +731,7 @@ function renderChatBody(forceScroll = false) {
 
 async function sendMessage() {
   if (!state.me) {
-    alert('你还没有角色，先去「🌍 人生」一键抽取你的全球随机身份吧！');
+    alert('请先在底部「我」创建你的角色');
     switchTab('life');
     return;
   }
@@ -715,15 +763,14 @@ function renderLife() {
   if (!state.me) {
     el.innerHTML = `
       <div class="card">
-        <div class="hero-title">🎲 开启你的全球随机人生</div>
+        <div class="hero-title">开启你的随机人生</div>
         <div class="hero-desc">
-          你的出生地、民族、宗教、家庭背景、学业与天赋完全随机——可能降生在肯尼亚内罗毕、日本东京、法国巴黎、埃及开罗、澳大利亚悉尼或中国成都。<br><br>
-          创建角色后，你可以手动推进人生遭遇可遇不可求的关键抉择（爱情、学业、职业、迁徙、命运），也能进入微信大群/小群/朋友圈，与全球 AI 居民和其他真实玩家直接对话相识。
+          出生地、民族、信仰、家庭背景与职业完全随机。初始你只会认识身边的两位熟人、身处公开大群；随着人生推进与抉择，你会结识新朋友、受邀加入私密小群，并在朋友圈看到熟悉之人的日常。
         </div>
         <div class="input-row">
-          <input id="reg-name" type="text" placeholder="输入自定义名字（留空则按出生国随机取名）" maxlength="16">
+          <input id="reg-name" type="text" placeholder="自定义名字（留空则按出生地随机取名）" maxlength="16">
         </div>
-        <button class="btn-big btn-green" id="btn-register" onclick="registerPlayer(false)">🎲 抽取我的随机人生</button>
+        <button class="btn-big btn-green" id="btn-register" onclick="registerPlayer(false)">抽取我的随机人生</button>
       </div>`;
     return;
   }
@@ -731,22 +778,22 @@ function renderLife() {
   const p = state.me;
   const st = p.stats || {};
   const statItems = [
-    ['财富', st.wealth || 50, '#f59e0b'],
-    ['健康', st.health || 70, '#10b981'],
-    ['心情', st.happiness || 60, '#3b82f6'],
-    ['声望', st.reputation || 40, '#8b5cf6'],
-    ['运气', st.luck || 50, '#ec4899']
+    ['财富', st.wealth || 50, '#d97706'],
+    ['健康', st.health || 75, '#059669'],
+    ['心情', st.happiness || 60, '#2563eb'],
+    ['声望', st.reputation || 40, '#6d28d9'],
+    ['运气', st.luck || 50, '#be185d']
   ];
 
   let eventHtml = '';
   if (lastOutcome) {
-    eventHtml += `<div class="outcome-box"><b>📌 上一抉择结局：</b>${esc(lastOutcome)}</div>`;
+    eventHtml += `<div class="outcome-box"><b>抉择结果：</b>${esc(lastOutcome)}</div>`;
   }
   if (p.pending_event) {
     const ev = p.pending_event;
     eventHtml += `
       <div class="card event-card">
-        <span class="ev-cat">${esc(ev.category || '人生抉择')}</span>
+        <span class="ev-cat">${esc(ev.category || '抉择')}</span>
         <div class="ev-title">${esc(ev.title)}</div>
         <div class="ev-scene">${esc(ev.scene)}</div>
         <div class="choice-list">
@@ -760,15 +807,15 @@ function renderLife() {
   } else {
     eventHtml += `
       <div class="card">
-        <button class="btn-big btn-green" id="btn-advance" onclick="advanceLife()">⏩ 推进人生 · 遭遇新的机遇与抉择</button>
-        <p style="font-size:12px;color:#888;margin-top:8px;text-align:center;">每次点击由 AI 结合你的国家、信仰、职业与过往经历生成独一无二的人生事件</p>
+        <button class="btn-big btn-green" id="btn-advance" onclick="advanceLife()">推进人生 · 遭遇新事件</button>
+        <p style="font-size:12px;color:#888;margin-top:8px;text-align:center;">推进过程中会遇到学业、感情、职业抉择，并可能结识新朋友或受邀加入小群</p>
       </div>`;
   }
 
   const histHtml = (p.history || []).slice().reverse().map(h => `
     <div class="tl-item">
       <div class="tl-age">${h.age}岁 · ${esc(h.time || '')}${h.title ? ' · ' + esc(h.title) : ''}</div>
-      <div class="tl-txt">${h.choice ? `<span style="color:#07c160;font-weight:600;">[选：${esc(h.choice)}]</span> ` : ''}${esc(h.text)}</div>
+      <div class="tl-txt">${h.choice ? `<span style="color:#07c160;font-weight:600;">[${esc(h.choice)}]</span> ` : ''}${esc(h.text)}</div>
     </div>`).join('');
 
   el.innerHTML = `
@@ -776,19 +823,18 @@ function renderLife() {
       <div class="profile-head">
         <div class="p-ava" style="background:${colorOf(p.name)}">${esc(p.name.slice(0,2))}</div>
         <div>
-          <div class="p-name">${esc(p.name)} <span style="font-size:13px;font-weight:500;color:#666;">${esc(p.gender)} · ${p.age}岁</span></div>
-          <div class="p-sub">📍 ${esc(p.city)}（${esc(p.region)}）</div>
+          <div class="p-name">${esc(p.name)} <span style="font-size:13px;font-weight:400;color:#666;">${esc(p.gender)} · ${p.age}岁</span></div>
+          <div class="p-sub">${esc(p.city)} · ${esc(p.job)}</div>
         </div>
       </div>
       <div class="meta-grid">
         <div class="meta-cell"><span>民族</span><b>${esc(p.ethnicity)}</b></div>
         <div class="meta-cell"><span>宗教背景</span><b>${esc(p.religion)}</b></div>
-        <div class="meta-cell"><span>出身家庭</span><b>${esc(p.family)}</b></div>
-        <div class="meta-cell"><span>学业经历</span><b>${esc(p.education)}</b></div>
-        <div class="meta-cell"><span>当前职业</span><b>${esc(p.job)}</b></div>
-        <div class="meta-cell"><span>感情状态</span><b>${esc(p.relationship)}</b></div>
+        <div class="meta-cell"><span>家庭背景</span><b>${esc(p.family)}</b></div>
+        <div class="meta-cell"><span>学历</span><b>${esc(p.education)}</b></div>
+        <div class="meta-cell"><span>职业</span><b>${esc(p.job)}</b></div>
+        <div class="meta-cell"><span>感情</span><b>${esc(p.relationship)}</b></div>
       </div>
-      <div class="traits-row">${(p.traits || []).map(t => `<span class="trait-chip"># ${esc(t)}</span>`).join('')}</div>
       <div class="stats-grid">
         ${statItems.map(([k, v, c]) => `
           <div class="stat-box">
@@ -801,19 +847,19 @@ function renderLife() {
     ${eventHtml}
     <div class="card">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-        <b style="font-size:15px;">📖 人生轨迹</b>
-        <button class="btn-ghost" style="padding:0 12px;border-radius:6px;height:30px;font-size:12px;" onclick="registerPlayer(true)">🔄 重开一世</button>
+        <b style="font-size:15px;">人生轨迹</b>
+        <button class="btn-ghost" onclick="registerPlayer(true)">重开一世</button>
       </div>
       ${histHtml}
     </div>`;
 }
 
 async function registerPlayer(isReroll) {
-  if (isReroll && !confirm('确定放弃当前角色，重新随机投胎一世吗？')) return;
+  if (isReroll && !confirm('确定重新抽取一世新的人生吗？')) return;
   const nameInp = document.getElementById('reg-name');
   const customName = nameInp ? nameInp.value.trim() : '';
   const btn = document.getElementById('btn-register');
-  if (btn) { btn.disabled = true; btn.textContent = '正在抽取命运…'; }
+  if (btn) { btn.disabled = true; btn.textContent = '生成中…'; }
   lastOutcome = null;
   try {
     const res = await fetch(`${API_BASE}/api/register`, {
@@ -834,7 +880,7 @@ async function registerPlayer(isReroll) {
 async function advanceLife() {
   if (!state.me) return;
   const btn = document.getElementById('btn-advance');
-  if (btn) { btn.disabled = true; btn.textContent = '命运齿轮转动中（AI 推演中）…'; }
+  if (btn) { btn.disabled = true; btn.textContent = '推演中…'; }
   lastOutcome = null;
   try {
     const res = await fetch(`${API_BASE}/api/life/advance`, {
@@ -847,7 +893,7 @@ async function advanceLife() {
     renderLife();
   } catch (e) {
     alert(e.message);
-    if (btn) { btn.disabled = false; btn.textContent = '⏩ 推进人生 · 遭遇新的机遇与抉择'; }
+    if (btn) { btn.disabled = false; btn.textContent = '推进人生 · 遭遇新事件'; }
   }
 }
 
@@ -863,8 +909,8 @@ async function chooseLife(choiceId) {
     if (!d.ok) throw new Error(d.error || '结算失败');
     lastOutcome = d.outcome;
     state.me = d.player;
+    await fetchState(false);
     renderLife();
-    fetchState(false);
   } catch (e) {
     alert(e.message);
     renderLife();
@@ -873,32 +919,38 @@ async function chooseLife(choiceId) {
 
 function renderMoments() {
   const list = (state.moments || []).slice().reverse();
-  const meName = state.me ? state.me.name : '全球旅人';
-  const cards = list.map(m => {
-    const col = colorOf(m.speaker);
-    const likes = (m.likes || []).join('、');
-    const cmts = (m.comments || []).map(c => `<div class="m-cmt"><b>${esc(c.by)}</b>：${esc(c.text)}</div>`).join('');
-    return `
-      <article class="moment-card">
-        <div class="m-ava" style="background:${col}" onclick="openDM('${esc(m.speaker_id)}','${esc(m.speaker)}')">${esc((m.speaker||'A').slice(0,2))}</div>
-        <div class="m-body">
-          <div class="m-name">
-            <span>${esc(m.speaker)}</span>
-            <span class="r-chip" style="background:${col}">${esc(m.role || '居民')}</span>
-          </div>
-          <div class="m-text">${esc(m.text)}</div>
-          ${m.location ? `<div class="m-loc">📍 ${esc(m.location)}</div>` : ''}
-          <div class="m-meta">
-            <span>${esc(m.time || '刚刚')}</span>
-            <div class="m-actions">
-              <button class="m-act-btn" onclick="likeMoment('${esc(m.id)}')">♡ 赞</button>
-              <button class="m-act-btn" onclick="commentMoment('${esc(m.id)}')">💬 评论</button>
+  const meName = state.me ? state.me.name : '未登录';
+  const cards = !state.me
+    ? `<div class="empty-note">请先在「我」创建角色，之后即可在这里查看好友的朋友圈动态。</div>`
+    : (list.length ? list.map(m => {
+      const col = colorOf(m.speaker);
+      const likes = (m.likes || []).join('、');
+      const cmts = (m.comments || []).map(c => `<div class="m-cmt"><b>${esc(c.by)}</b>：${esc(c.text)}</div>`).join('');
+      return `
+        <article class="moment-card">
+          <div class="m-ava" style="background:${col}" onclick="openPersonCard('${esc(m.speaker_id)}','${esc(m.speaker)}','${esc(m.role || '')}')">${esc((m.speaker||'A').slice(0,2))}</div>
+          <div class="m-body">
+            <div class="m-name">
+              <span>${esc(m.speaker)}</span>
+              <span class="r-chip">${esc(m.role || '')}</span>
             </div>
+            <div class="m-text">${esc(m.text)}</div>
+            ${m.location ? `<div class="m-loc">${esc(m.location)}</div>` : ''}
+            <div class="m-meta">
+              <span>${esc(m.time || '刚刚')}</span>
+              <div class="m-actions">
+                <button class="m-act-btn" onclick="likeMoment('${esc(m.id)}')">
+                  <svg class="ic ic-xs" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>赞
+                </button>
+                <button class="m-act-btn" onclick="commentMoment('${esc(m.id)}')">
+                  <svg class="ic ic-xs" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>评论
+                </button>
+              </div>
+            </div>
+            ${(likes || cmts) ? `<div class="m-interact">${likes ? `<div class="m-likes">${esc(likes)}</div>` : ''}${cmts}</div>` : ''}
           </div>
-          ${(likes || cmts) ? `<div class="m-interact">${likes ? `<div class="m-likes">♡ ${esc(likes)}</div>` : ''}${cmts}</div>` : ''}
-        </div>
-      </article>`;
-  }).join('');
+        </article>`;
+    }).join('') : `<div class="empty-note">你的好友们最近还没发朋友圈。你可以在群聊中认识更多朋友，或点右上角相机发一条自己的动态。</div>`);
 
   document.getElementById('moments-body').innerHTML = `
     <div class="moments-cover">
@@ -907,11 +959,11 @@ function renderMoments() {
         <div class="cover-ava">${esc(meName.slice(0,2))}</div>
       </div>
     </div>
-    ${cards || '<div style="padding:36px;text-align:center;color:#999;">暂无朋友圈动态</div>'}`;
+    ${cards}`;
 }
 
 function openMomentModal() {
-  if (!state.me) { alert('请先在「🌍 人生」创建角色后再发朋友圈！'); switchTab('life'); return; }
+  if (!state.me) { alert('请先在「我」创建角色'); switchTab('life'); return; }
   document.getElementById('mom-text').value = '';
   document.getElementById('mom-loc').value = state.me.city || '';
   document.getElementById('moment-modal').classList.add('open');
@@ -923,24 +975,24 @@ async function submitMoment() {
   const loc = document.getElementById('mom-loc').value.trim();
   if (!txt) return;
   const btn = document.getElementById('mom-submit');
-  btn.disabled = true; btn.textContent = '发布中…';
+  btn.disabled = true; btn.textContent = '发表中…';
   try {
     const res = await fetch(`${API_BASE}/api/chat`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ player_id: state.me.id, mode: 'moment', text: txt, location: loc })
     });
     const d = await res.json();
-    if (!d.ok) alert(d.error || '发布失败');
+    if (!d.ok) alert(d.error || '发表失败');
     closeModal('moment-modal');
     await fetchState(true);
     renderMoments();
   } finally {
-    btn.disabled = false; btn.textContent = '发布';
+    btn.disabled = false; btn.textContent = '发表';
   }
 }
 
 async function likeMoment(mid) {
-  if (!state.me) { alert('请先在「🌍 人生」创建角色'); switchTab('life'); return; }
+  if (!state.me) return;
   await fetch(`${API_BASE}/api/chat`, {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ player_id: state.me.id, mode: 'moment_like', moment_id: mid, text: 'like' })
@@ -950,7 +1002,7 @@ async function likeMoment(mid) {
 }
 
 async function commentMoment(mid) {
-  if (!state.me) { alert('请先在「🌍 人生」创建角色'); switchTab('life'); return; }
+  if (!state.me) return;
   const txt = window.prompt('写一句评论：', '');
   if (!txt || !txt.trim()) return;
   await fetch(`${API_BASE}/api/chat`, {
@@ -962,47 +1014,44 @@ async function commentMoment(mid) {
 }
 
 function renderContacts() {
-  const players = state.players || [];
-  const agents = state.agents || [];
-  const rowHtml = (p, isPlayer) => `
+  const list = state.contacts || [];
+  if (!state.me) {
+    document.getElementById('contacts-body').innerHTML = `<div class="empty-note">请先在「我」创建角色。建立身份后，通讯录仅显示你真正结识的好友。</div>`;
+    return;
+  }
+  if (!list.length) {
+    document.getElementById('contacts-body').innerHTML = `<div class="empty-note">暂无好友。可在群聊中点击群友头像添加，或推进人生事件结识新朋友。</div>`;
+    return;
+  }
+  const rows = list.map(p => `
     <div class="contact-item" onclick="openDM('${esc(p.id)}','${esc(p.name)}')">
       <div class="contact-l">
         <div class="msg-ava" style="background:${colorOf(p.name)}">${esc(p.name.slice(0,2))}</div>
         <div style="min-width:0;">
-          <div style="font-size:15px;font-weight:500;">${esc(p.name)} <span style="font-size:11.5px;color:#888;">${esc(p.gender)}·${p.age}岁</span></div>
-          <div style="font-size:12px;color:#777;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(p.city)} · ${esc(p.ethnicity)} · ${esc(p.job)}</div>
+          <div style="font-size:15px;font-weight:500;">${esc(p.name)}</div>
+          <div style="font-size:12px;color:#888;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(p.city)} · ${esc(p.job)}</div>
         </div>
       </div>
-      <span class="dm-pill">${state.me && p.id === state.me.id ? '我自己' : '发私聊'}</span>
-    </div>`;
-
-  let html = '';
-  if (players.length) {
-    html += `<div class="contact-sec">真实注册玩家 (${players.length})</div>` + players.map(p => rowHtml(p, true)).join('');
-  }
-  html += `<div class="contact-sec">全球 AI 居民 (${agents.length})</div>` + agents.map(a => rowHtml(a, false)).join('');
-  document.getElementById('contacts-body').innerHTML = html;
+      <span class="dm-pill">发消息</span>
+    </div>`).join('');
+  document.getElementById('contacts-body').innerHTML =
+    `<div class="contact-sec">已结识的好友 (${list.length})</div>${rows}` +
+    `<div class="empty-note" style="padding:18px;font-size:12px;">陌生人不会直接出现在通讯录中。在群聊里点击头像添加，或推进人生事件自然相识。</div>`;
 }
 
-function updateStatusPills() {
+function updateTopIndicators() {
   const on = !!(state.control && state.control.running);
-  ['list-status-pill', 'chat-status-pill'].forEach(id => {
-    const b = document.getElementById(id);
-    if (!b) return;
-    b.className = 'status-pill ' + (on ? 'on' : 'off');
-    b.textContent = on ? '● 运行中' : '○ 已停止';
-  });
-  if (state.me) {
-    document.getElementById('rail-me-ava').textContent = state.me.name.slice(0, 2);
-  }
+  const dot = document.getElementById('top-dot');
+  if (dot) dot.className = 'live-dot' + (on ? '' : ' off');
+  if (state.me) document.getElementById('rail-me-ava').textContent = state.me.name.slice(0, 2);
 }
 
 function openAdminModal() {
   const c = state.control || {};
   document.getElementById('admin-info').innerHTML =
     `当前状态：<b>${c.running ? '运行中' : '已停止'}</b><br>` +
-    `今日已调用 AI：<b>${c.daily_calls || 0} / ${c.max_daily_calls || 350}</b> 次<br>` +
-    `最近切换：${esc(c.updated_at || '-')}`;
+    `今日 AI 调用：<b>${c.daily_calls || 0} / ${c.max_daily_calls || 350}</b> 次<br>` +
+    `最近更新：${esc(c.updated_at || '-')}`;
   document.getElementById('admin-pin').value = localStorage.getItem(LS_PIN) || '';
   document.getElementById('admin-modal').classList.add('open');
 }
@@ -1018,7 +1067,7 @@ async function setAdminRunning(wantRun) {
   const d = await res.json();
   if (!d.ok) { alert(d.error || '操作失败'); return; }
   state.control = d.control;
-  updateStatusPills();
+  updateTopIndicators();
   closeModal('admin-modal');
 }
 
@@ -1030,7 +1079,7 @@ async function fetchState(forceScroll = false) {
     const d = await res.json();
     if (!d.ok) return;
     state = d;
-    updateStatusPills();
+    updateTopIndicators();
     renderChatList();
     renderChatBody(forceScroll);
     if (currentTab === 'moments') renderMoments();
