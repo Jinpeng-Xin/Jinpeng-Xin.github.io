@@ -277,6 +277,13 @@
   }
   .m-tab.active { color: var(--ink); font-weight: 700; }
 
+  #pane-messages.active { height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
+  #pane-messages .sticky-hdr { flex-shrink: 0; }
+  #dm-inbox { flex: 1; min-height: 0; overflow-y: auto; }
+  #dm-thread { flex: 1; min-height: 0; height: auto !important; flex-direction: column; overflow: hidden; }
+  #dm-msgs { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+  #pane-messages .dm-bar { flex-shrink: 0; background: #fff; border-top: 1px solid var(--border); }
+
   @media (max-width: 1000px) { .x-right { display: none; } }
   @media (max-width: 720px) {
     .x-nav { display: none; }
@@ -284,11 +291,8 @@
     .x-mobile-nav { display: flex; }
     body.kb-open .x-mobile-nav { display: none !important; }
     body.kb-open .x-main { padding-bottom: 0; }
-    #pane-messages.active { height: calc(100dvh - 60px - var(--safe-b)); display: flex; flex-direction: column; overflow: hidden; }
+    #pane-messages.active { height: calc(100dvh - 60px - var(--safe-b)); }
     body.kb-open #pane-messages.active { height: 100dvh; }
-    #pane-messages .dm-box { flex: 1; min-height: 0; height: auto !important; display: flex; flex-direction: column; }
-    #pane-messages .dm-msgs { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; }
-    #pane-messages .dm-bar { flex-shrink: 0; position: sticky; bottom: 0; background: #fff; }
   }
 </style>
 </head>
