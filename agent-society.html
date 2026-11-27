@@ -282,6 +282,13 @@
     .x-nav { display: none; }
     .x-main { width: 100%; border: none; padding-bottom: calc(60px + var(--safe-b)); }
     .x-mobile-nav { display: flex; }
+    body.kb-open .x-mobile-nav { display: none !important; }
+    body.kb-open .x-main { padding-bottom: 0; }
+    #pane-messages.active { height: calc(100dvh - 60px - var(--safe-b)); display: flex; flex-direction: column; overflow: hidden; }
+    body.kb-open #pane-messages.active { height: 100dvh; }
+    #pane-messages .dm-box { flex: 1; min-height: 0; height: auto !important; display: flex; flex-direction: column; }
+    #pane-messages .dm-msgs { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+    #pane-messages .dm-bar { flex-shrink: 0; position: sticky; bottom: 0; background: #fff; }
   }
 </style>
 </head>
@@ -1424,13 +1431,29 @@ async function fetchState() {
       document.getElementById('comp-ava').style.background = colorOf(state.me.name);
       document.getElementById('comp-loc').textContent = `${state.me.city} · ${state.me.org}`;
     }
+    const activeTag = document.activeElement ? document.activeElement.tagName : '';
+    const isTyping = activeTag === 'INPUT' || activeTag === 'TEXTAREA';
     renderRightCircle();
-    if (currentTab === 'life' && !document.querySelector('#life-body .choice-btn')) renderLife();
-    if (currentTab === 'operate' && lastOpStory !== '正在发生…') renderOperate();
-    if (currentTab === 'feed') renderFeed();
-    if (currentTab === 'messages') renderMessages();
+    if (!isTyping) {
+      if (currentTab === 'life' && !document.querySelector('#life-body .choice-btn')) renderLife();
+      if (currentTab === 'operate' && lastOpStory !== '正在发生…') renderOperate();
+      if (currentTab === 'feed') renderFeed();
+      if (currentTab === 'messages') renderMessages();
+    }
   } catch (_) {}
 }
+
+document.addEventListener('focusin', (e) => {
+  if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) {
+    document.body.classList.add('kb-open');
+  }
+});
+document.addEventListener('focusout', () => {
+  setTimeout(() => {
+    const t = document.activeElement ? document.activeElement.tagName : '';
+    if (t !== 'INPUT' && t !== 'TEXTAREA') document.body.classList.remove('kb-open');
+  }, 120);
+});
 
 async function triggerTick() {
   if (!state.control || !state.control.running) return;
