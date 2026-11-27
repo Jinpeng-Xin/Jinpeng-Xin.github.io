@@ -277,12 +277,12 @@
   }
   .m-tab.active { color: var(--ink); font-weight: 700; }
 
-  #pane-messages.active { height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
+  #pane-messages.active { height: 100vh; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
   #pane-messages .sticky-hdr { flex-shrink: 0; }
   #dm-inbox { flex: 1; min-height: 0; overflow-y: auto; }
   #dm-thread { flex: 1; min-height: 0; height: auto !important; flex-direction: column; overflow: hidden; }
-  #dm-msgs { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; }
-  #pane-messages .dm-bar { flex-shrink: 0; background: #fff; border-top: 1px solid var(--border); }
+  #dm-msgs { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-bottom: 88px; }
+  #pane-messages .dm-bar { flex-shrink: 0; position: sticky; bottom: 0; z-index: 30; background: #fff; border-top: 1px solid var(--border); }
 
   @media (max-width: 1000px) { .x-right { display: none; } }
   @media (max-width: 720px) {
@@ -291,8 +291,10 @@
     .x-mobile-nav { display: flex; }
     body.kb-open .x-mobile-nav { display: none !important; }
     body.kb-open .x-main { padding-bottom: 0; }
-    #pane-messages.active { height: calc(100dvh - 60px - var(--safe-b)); }
-    body.kb-open #pane-messages.active { height: 100dvh; }
+    #pane-messages.active { height: calc(100vh - 60px - var(--safe-b)); height: calc(100dvh - 60px - var(--safe-b)); }
+    body.kb-open #pane-messages.active { height: 100vh; height: 100dvh; }
+    #pane-messages .dm-bar { position: fixed; left: 0; right: 0; bottom: calc(60px + var(--safe-b)); z-index: 40; box-shadow: 0 -2px 10px rgba(0,0,0,0.04); }
+    body.kb-open #pane-messages .dm-bar { bottom: 0; }
   }
 </style>
 </head>
